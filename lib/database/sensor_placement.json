@@ -1,0 +1,153 @@
+[
+  {
+    "placementMuscleName": "Suprahyoid",
+    "FK_Placement_bodyRegionId": 3,
+    "placementAction": "They primarily raise the hyoid bone in swallowing and/or opening the jaw",
+    "placementMuscleInsertions": "The suprahyoid muscles originate on the mandible and insert on the hyoid bone.",
+    "placementLocationDescription": "One set of electrodes is placed under the chin in the midline, running in the anterior-to posterior direction. Palpate the area by placing the fingers under the chin; ask the patient to swallow a few times. Place the electrodes in the center of that mass.",
+    "placementBehavioralTest": "Swallowing, jaw opening."
+  },
+  {
+    "placementMuscleName": "Anterior Temporalis",
+    "FK_Placement_bodyRegionId": 3,
+    "placementAction": "Elevation of the mandible, retraction and lateral deviation of mandible, assistance in chewing.",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+  {
+    "placementMuscleName": "Masseter",
+    "FK_Placement_bodyRegionId": 3,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+  {
+    "placementMuscleName": "Cheek",
+    "FK_Placement_bodyRegionId": 3,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+  
+
+  
+  {
+    "placementMuscleName": "T-12 Paraspinal",
+    "FK_Placement_bodyRegionId": 1,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+  {
+    "placementMuscleName": "Latissimus Dorsi",
+    "FK_Placement_bodyRegionId": 1,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+  {
+    "placementMuscleName": "Low-back",
+    "FK_Placement_bodyRegionId": 1,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+  {
+    "placementMuscleName": "Lateral Low-back",
+    "FK_Placement_bodyRegionId": 1,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+
+
+  {
+    "placementMuscleName": "Anterior Deltoid",
+    "FK_Placement_bodyRegionId": 2,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+  {
+    "placementMuscleName": "Middle Deltoid",
+    "FK_Placement_bodyRegionId": 2,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+  {
+    "placementMuscleName": "Posterior Deltoid",
+    "FK_Placement_bodyRegionId": 2,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+  {
+    "placementMuscleName": "Biceps-brachium",
+    "FK_Placement_bodyRegionId": 2,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+  {
+    "placementMuscleName": "Triceps",
+    "FK_Placement_bodyRegionId": 2,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+
+
+  {
+    "placementMuscleName": "Femoral Triangle",
+    "FK_Placement_bodyRegionId": 7,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+  {
+    "placementMuscleName": "Hip Flexor",
+    "FK_Placement_bodyRegionId": 7,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+  {
+    "placementMuscleName": "Tensor Fasciae Latae",
+    "FK_Placement_bodyRegionId": 7,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+  {
+    "placementMuscleName": "Gluteus Medius",
+    "FK_Placement_bodyRegionId": 7,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  },
+  {
+    "placementMuscleName": "Gluteus Maximus",
+    "FK_Placement_bodyRegionId": 7,
+    "placementAction": "",
+    "placementMuscleInsertions": "",
+    "placementLocationDescription": "",
+    "placementBehavioralTest": ""
+  }
+]
