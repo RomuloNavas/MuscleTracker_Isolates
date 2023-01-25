@@ -1,0 +1,106 @@
+name: neuro_sdk_isolate_example
+description: Demonstrates how to use the neuro_sdk_isolate plugin.
+
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+environment:
+  sdk: '>=2.18.4 <3.0.0'
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+
+  flutter:
+    sdk: flutter
+
+  neuro_sdk_isolate:
+    path: ../
+
+  cupertino_icons: ^1.0.2
+  permission_handler: ^10.2.0
+  flutter_bluetooth_serial: ^0.4.0
+  google_fonts: ^2.3.2
+  syncfusion_flutter_charts: ^20.1.51
+  intl: ^0.18.0
+  get: ^4.6.5
+  geolocator: ^9.0.1
+  location: ^4.4.0
+  flutter_svg: ^1.1.5
+  # Dependencies required for the backend: 
+  sqflite: ^2.1.0
+  path_provider: ^2.0.11
+  # Read and write contacts
+  contacts_service: ^0.6.3
+  collection: ^1.16.0
+  # Required for debugging: Exports Logs to a file
+  # f_logs: ^2.0.1
+  # Keep screen awake
+  wakelock: ^0.6.2 
+  
+  # Record video
+  # camera: ^0.9.4+3
+  # video_player: ^2.2.6 
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^2.0.0
+  # flutter_launcher_name: ^0.0.1
+  flutter_launcher_icons: ^0.11.0
+
+
+# flutter_launcher_name:
+#   name: "Callibri Muscle Tracker"
+
+flutter_icons:
+  image_path: "flaticon.png" 
+  android: true
+
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - assets/icons/
+    - assets/icons/ui/
+    - assets/images/
+    - assets/images/sensor_placements/
+    - assets/images/sensor_placements/Back/
+    - assets/images/sensor_placements/Upper Limb/
+    - assets/images/sensor_placements/Head and Neck/
+    - assets/images/sensor_placements/Thorax/
+    - assets/images/sensor_placements/Abdomen/
+    - assets/images/sensor_placements/Pelvis and Perineum/
+    - assets/images/sensor_placements/Lower Limb/
+    - lib/database/sensor_placement.json
+    - lib/database/test_clients.json
+    - lib/database/workouts.json
+  
+  fonts:
+    - family: oceanwide
+      fonts:
+        - asset: assets/fonts/oceanwide-semibold.otf
+          weight: 700
+        - asset: assets/fonts/oceanwide-semibold-oblique.otf
+          weight: 700
+          style: italic
+    - family: inputmono
+      fonts:
+        - asset: assets/fonts/InputMonoCompressed-Black.ttf
+          weight: 700
+        - asset: assets/fonts/InputMonoCompressed-Bold.ttf
+          weight: 600
+        - asset: assets/fonts/InputMonoCompressed-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/InputMonoCompressed-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/InputMonoCompressed-Light.ttf
+          weight: 300
