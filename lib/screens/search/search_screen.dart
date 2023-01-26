@@ -12,13 +12,14 @@ import 'package:neuro_sdk_isolate_example/screens/search/controllers/search_cont
 import 'package:neuro_sdk_isolate_example/screens/search/widgets/prepare.dart';
 import 'package:neuro_sdk_isolate_example/screens/search/widgets/search_body.dart';
 import 'package:neuro_sdk_isolate_example/screens/search/widgets/searching_animation.dart';
+import 'package:neuro_sdk_isolate_example/screens/sensor/controllers/sensor_conroller.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor/sensor_screen.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/utils/build_from_sensor.dart';
 import 'package:neuro_sdk_isolate_example/utils/extension_methods.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
-import 'package:neuro_sdk_isolate_example/widgets/app_header_info.dart';
-import 'package:neuro_sdk_isolate_example/widgets/app_screen_bottom.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_bottom.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -35,6 +36,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   final List<SensorInfo> _foundSensorsWithCallback = [];
   List<SensorForCheckBox> _foundSensorsForCheckbox = [];
+  List<Sensor> connectedSensors = [];
 
   bool _isLoading = true;
   bool _isReadyToStartDiscovery = false;
@@ -104,36 +106,64 @@ class _SearchScreenState extends State<SearchScreen> {
               child: Text("Необходимо предоставить разрешения!"),
             );
           }
-          if (_isScannerFinished == true) {
+          if (_isScannerFinished == true && _foundSensorsWithCallback.isEmpty) {
+            return Center(
+              child: Column(
+                children: [
+                  AppHeaderInfo(
+                      title: _foundSensorsWithCallback.length == 1
+                          ? 'Found 1 device'
+                          : 'Found ${_foundSensorsWithCallback.length} devices',
+                      labelPrimary: _foundSensorsWithCallback.isEmpty
+                          ? 'Make sure that devices are near and turned on'
+                          : 'Select your devices and press on the button Connect'),
+                  Expanded(child: SizedBox()),
+                  AppBottom(
+                    mainText: 'Repeat scan',
+                    onPressed: () {
+                      setState(() {
+                        _isReadyToStartDiscovery = true;
+                        _isScannerFinished = false;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            );
+          }
+          if (_isScannerFinished == true &&
+              _foundSensorsWithCallback.isNotEmpty) {
             return Column(
               children: [
                 AppHeaderInfo(
                     title: _foundSensorsWithCallback.length == 1
                         ? 'Found 1 device'
                         : 'Found ${_foundSensorsWithCallback.length} devices',
-                    label: _foundSensorsWithCallback.isEmpty
+                    labelPrimary: _foundSensorsWithCallback.isEmpty
                         ? 'Make sure that devices are near and turned on'
                         : 'Select your devices and press on the button Connect'),
                 _buildDiscoveredSensorsCheckBox(),
-                AppScreenBottom(
+                AppBottom(
                     mainText:
                         'Connect to ${_foundSensorsForCheckbox.where((e) => e.value == true).length.toString()} devices',
-                    onPressed: () {
-                      FlutterBluetoothSerial.instance.isEnabled.then((value) {
-                        if (value == true) {
-                          List<SensorInfo> listSensorsInfoToConnect = [];
-                          var listMarkedSensors = _foundSensorsForCheckbox
+                    onPressed: () async {
+                      _isLoading = true;
+                      setState(() {});
+                      _searchController.stopScanner();
+                      _foundSensorsWithCallback.clear();
+                      List<Sensor> listSensor = [];
+                      List<SensorForCheckBox> listMarkedSensorsFromCheckBox =
+                          _foundSensorsForCheckbox
                               .where((s) => s.value == true)
                               .toList();
-                          for (var markedSensor in listMarkedSensors) {
-                            listSensorsInfoToConnect
-                                .add(markedSensor.sensorInfo);
-                          }
-                          _openSensorScreen(listSensorsInfoToConnect);
-                        } else {
-                          _getxServicesManager.requestBluetoothAndGPS();
-                        }
-                      });
+                      for (var s in listMarkedSensorsFromCheckBox) {
+                        var sensor = await Sensor.create(s.sensorInfo);
+                        listSensor.add(sensor);
+                      }
+
+                      Get.off(() => SensorScreen(
+                            listConnectedSensor: listSensor,
+                          ));
                     }),
               ],
             );
@@ -144,12 +174,15 @@ class _SearchScreenState extends State<SearchScreen> {
               servicesManager: _getxServicesManager,
               notifyParentStartDiscovery: () {
                 _isReadyToStartDiscovery = true;
-                startScanner();
               },
             );
           }
           if (_isReadyToStartDiscovery) {
-            return SearchingSensorsScreen(notifyParentStopScanner: () {
+            return SearchingSensorsScreen(notifyParentStartScanner: () {
+              if (_foundSensorsWithCallback.isEmpty) {
+                startScanner();
+              }
+            }, notifyParentStopScanner: () {
               stopScanner();
               _isScannerFinished = true;
               setState(() {});
@@ -266,6 +299,7 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   void startScanner() {
+    _searchController.stopScanner();
     _searchController.startScanner();
     setState(() {});
   }
@@ -274,15 +308,19 @@ class _SearchScreenState extends State<SearchScreen> {
     _searchController.stopScanner();
     setState(() {});
     for (var sensor in _foundSensorsWithCallback) {
-      var sensorCheckbox = SensorForCheckBox(sensorInfo: sensor, value: true);
+      var sensorCheckbox = SensorForCheckBox(
+        sensorInfo: sensor,
+        value: true,
+      );
       _foundSensorsForCheckbox.add(sensorCheckbox);
     }
   }
 
-  void _openSensorScreen(List<SensorInfo> sensorsInfo) {
+  void _openSensorScreen(List<SensorForCheckBox> sensorsForCheckbox) {
     _searchController.stopScanner();
-    Get.off(() => SensorScreen(sensorsInfo: sensorsInfo),
-        transition: Transition.circularReveal);
+
+    // Get.off(() => SensorScreen(connectedSensors: sensorsForCheckbox),
+    //     transition: Transition.circularReveal);
 
     _foundSensorsWithCallback.clear();
     setState(() {});

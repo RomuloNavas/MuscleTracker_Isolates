@@ -5,8 +5,8 @@ import 'package:neuro_sdk_isolate_example/controllers/services_manager.dart';
 import 'package:neuro_sdk_isolate_example/screens/search/search_screen.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
-import 'package:neuro_sdk_isolate_example/widgets/app_header_info.dart';
-import 'package:neuro_sdk_isolate_example/widgets/app_screen_bottom.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_bottom.dart';
 
 class GetReadyScreen extends StatelessWidget {
   final Function() notifyParentStartDiscovery;
@@ -27,7 +27,8 @@ class GetReadyScreen extends StatelessWidget {
           children: [
             const AppHeaderInfo(
               title: "Let's connect to your Callibri sensors",
-              label: 'Make sure that they are near, turned on and charged',
+              labelPrimary:
+                  'Make sure that they are near, turned on and charged',
             ),
             Expanded(
               child: Container(
@@ -41,7 +42,7 @@ class GetReadyScreen extends StatelessWidget {
                 ),
               ),
             ),
-            AppScreenBottom(
+            AppBottom(
               onPressed: () {
                 FlutterBluetoothSerial.instance.isEnabled.then((value) {
                   if (value == true) {

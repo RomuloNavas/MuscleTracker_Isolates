@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:developer';
 import 'dart:math' as math;
@@ -15,14 +14,15 @@ import 'package:neuro_sdk_isolate_example/screens/search/widgets/search_body.dar
 import 'package:neuro_sdk_isolate_example/screens/sensor/sensor_screen.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
-import 'package:neuro_sdk_isolate_example/widgets/app_header_info.dart';
-
+import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
 
 class SearchingSensorsScreen extends StatefulWidget {
   final Function() notifyParentStopScanner;
+  final Function() notifyParentStartScanner;
   const SearchingSensorsScreen({
     Key? key,
     required this.notifyParentStopScanner,
+    required this.notifyParentStartScanner,
   }) : super(key: key);
 
   @override
@@ -47,9 +47,14 @@ class _SearchingSensorsScreenState extends State<SearchingSensorsScreen>
       setState(() {
         countDown--;
       });
+      if (countDown == 2 || countDown == 4 || countDown == 6 ) {
+        // There is a bug in library that doesn't find any device, it gets to work after calling several times startScanner()
+        widget.notifyParentStartScanner();
+      }
       if (countDown <= 0) {
         widget.notifyParentStopScanner();
         t.cancel();
+        countDown = 10;
       }
     });
     _startAnimation();
@@ -95,7 +100,7 @@ class _SearchingSensorsScreenState extends State<SearchingSensorsScreen>
           top: 0,
           child: AppHeaderInfo(
             title: "Searching for Callibri devices",
-            label: 'It is going to take just a few seconds',
+            labelPrimary: 'It is going to take just a few seconds',
           ),
         ),
         Positioned(
