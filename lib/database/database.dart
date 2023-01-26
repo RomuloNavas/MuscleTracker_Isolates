@@ -15,7 +15,7 @@ class DatabaseRepository {
   static final DatabaseRepository instance =
       DatabaseRepository.privateConstructor();
 
-  final _databaseName = 'database1';
+  final _databaseName = 'database3';
   final _databaseVersion = 1;
 
   static Database? _database;
@@ -25,15 +25,6 @@ class DatabaseRepository {
       return _database!;
     } else {
       _database = await _initDatabase();
-
-      // MOVE TO ANOTHER PAGE
-      // //RUNS ONLY IF DATABASES ARE EMPTY:
-      // await ClientOperations().initTestClients();
-      // // await PlacementOperations().deleteAllPlacements();
-      // await ExerciseOperations().initWorkouts();
-      // await BodyRegionOperations().initBodyRegions();
-      // await PlacementOperations().initPlacements();
-
       return _database!;
     }
   }
