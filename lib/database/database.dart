@@ -15,7 +15,7 @@ class DatabaseRepository {
   static final DatabaseRepository instance =
       DatabaseRepository.privateConstructor();
 
-  final _databaseName = 'database3';
+  final _databaseName = 'database4';
   final _databaseVersion = 1;
 
   static Database? _database;

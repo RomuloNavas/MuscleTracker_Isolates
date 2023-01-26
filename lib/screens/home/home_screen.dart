@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
           compareString(ascending, value1.birthday, value2.birthday));
     } else if (columnIndex == 2) {
       allRegisteredClients.sort((value1, value2) => compareString(
-          ascending, value1.registrationDate, value2.registrationDate));
+          ascending, value1.lastVisit ?? '', value2.lastVisit ?? ''));
     }
     setState(() {
       sortColumnIndex = columnIndex;
@@ -165,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ? AppTheme.appDarkTheme.textTheme.bodyText2
                             : AppTheme.appTheme.textTheme.bodyText2),
                   ),
-                  DataCell(Text(c.registrationDate,
+                  DataCell(Text(c.lastVisit ?? (""),
                       style: Get.isDarkMode
                           ? AppTheme.appDarkTheme.textTheme.bodyText2
                           : AppTheme.appTheme.textTheme.bodyText2))
@@ -319,9 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               SizedBox(width: 12),
                               AppIconButton(
                                 size: ButtonSize.big,
-                                iconData: Icons.person,
-                                iconColor:
-                                    Theme.of(context).colorScheme.primary,
+                                iconData: Icons.person_add,
                                 onPressed: () => null,
                               ),
                             ],
@@ -365,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   onSort: onSort),
                               DataColumn(
                                   tooltip: 'Date when client was registered',
-                                  label: Text('Registered',
+                                  label: Text('Last session',
                                       style: Get.isDarkMode
                                           ? AppTheme
                                               .appDarkTheme.textTheme.headline5
@@ -1111,7 +1109,7 @@ class ContactCircleAvatar extends StatelessWidget {
               ? Color.fromARGB(((10 + math.Random().nextInt(100 - 10))).toInt(),
                   150, 150, 150)
               : Color.fromARGB(
-                  115,
+                  45,
                   80,
                   120,
                   180 + (math.Random().nextDouble() * 1.2).toInt(),
@@ -1136,7 +1134,7 @@ class ContactCircleAvatar extends StatelessWidget {
                       150,
                       150)
                   : Color.fromARGB(
-                      115,
+                      80,
                       80,
                       120,
                       180 + (math.Random().nextDouble() * 1.2).toInt(),
