@@ -3,6 +3,12 @@ import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/utils/global_utils.dart';
 import '../theme.dart';
 
+enum ButtonSize {
+  small,
+  medium,
+  big,
+}
+
 class AppFilledButton extends StatelessWidget {
   final Widget child;
   final VoidCallback onPressed;
@@ -102,22 +108,19 @@ class AppOutlinedButton extends StatelessWidget {
 class AppTextButton extends StatelessWidget {
   const AppTextButton({
     Key? key,
-    required Widget child,
-    required VoidCallback action,
-    required Color color,
-  })  : _child = child,
-        _action = action,
-        _color = color,
-        super(key: key);
+    required this.text,
+    required this.onPressed,
+    this.colorText,
+  }) : super(key: key);
 
-  final Widget _child;
-  final VoidCallback _action;
+  final String text;
+  final VoidCallback onPressed;
+  final Color? colorText;
 
-  final Color _color;
   @override
   Widget build(BuildContext context) {
     return OutlinedButton(
-        onPressed: _action,
+        onPressed: onPressed,
         style: ButtonStyle(
           // Border Color
           side: MaterialStateProperty.all(
@@ -130,31 +133,43 @@ class AppTextButton extends StatelessWidget {
           splashFactory: NoSplash
               .splashFactory, //Enable/Disable splash when button is pressed
           // Text color
-          foregroundColor: MaterialStateProperty.all(_color),
+          foregroundColor: MaterialStateProperty.all(colorText),
           surfaceTintColor:
               MaterialStateProperty.all(AppTheme.appTheme.primaryColorDark),
           backgroundColor: MaterialStateProperty.all(Colors.transparent),
           shape: MaterialStateProperty.all(RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.0))),
         ),
-        child: _child);
+        child: Text(
+          text,
+          style: Get.isDarkMode
+              ? AppTheme.appDarkTheme.textTheme.button?.copyWith(
+                  color: colorText ??
+                      (AppTheme.appDarkTheme.colorScheme.secondary),
+                )
+              : AppTheme.appTheme.textTheme.button?.copyWith(
+                  color: colorText ?? (AppTheme.appTheme.colorScheme.secondary),
+                ),
+        ));
   }
 }
 
-class AppIconButtonMedium extends StatelessWidget {
-  const AppIconButtonMedium({
-    Key? key,
-    required VoidCallback onPressed,
-    required this.iconData,
-    this.iconColor,
-    this.backgroundColor,
-  })  : _onPressed = onPressed,
+class AppIconButton extends StatelessWidget {
+  const AppIconButton(
+      {Key? key,
+      required VoidCallback onPressed,
+      required this.iconData,
+      this.iconColor,
+      this.backgroundColor,
+      this.size})
+      : _onPressed = onPressed,
         super(key: key);
 
   final VoidCallback _onPressed;
   final Color? backgroundColor;
   final Color? iconColor;
   final IconData iconData;
+  final ButtonSize? size;
 
   @override
   Widget build(BuildContext context) {
@@ -169,88 +184,44 @@ class AppIconButtonMedium extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(30),
-          onTap: _onPressed,
-          child: SizedBox(
-            width: 44,
-            height: 44,
-            child: Icon(
-              iconData,
-              size: 22,
-              color: iconColor ?? (Color(0xff838997)),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class AppIconButtonBig extends StatelessWidget {
-  const AppIconButtonBig({
-    Key? key,
-    required Widget icon32px,
-    required VoidCallback onPressed,
-    this.backgroundColor,
-  })  : _icon32px = icon32px,
-        _onPressed = onPressed,
-        super(key: key);
-
-  final Widget _icon32px;
-  final VoidCallback _onPressed;
-  final Color? backgroundColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: _onPressed,
-          child: SizedBox(width: 48, height: 48, child: _icon32px),
-        ),
-      ),
-    );
-  }
-}
-
-class AppIconButtonVeryBig extends StatelessWidget {
-  const AppIconButtonVeryBig({
-    Key? key,
-    required Widget icon40px,
-    this.backgroundColor,
-    required VoidCallback onPressed,
-    String? tooltip,
-  })  : _icon40px = icon40px,
-        _onPressed = onPressed,
-        _tooltip = tooltip,
-        super(key: key);
-
-  final Color? backgroundColor;
-  final Widget _icon40px;
-  final VoidCallback _onPressed;
-  final String? _tooltip;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: _tooltip ?? '',
-      child: Container(
-        decoration: BoxDecoration(
-            color: backgroundColor, borderRadius: BorderRadius.circular(20)),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(30),
             onTap: _onPressed,
-            child: SizedBox(width: 50, height: 50, child: _icon40px),
-          ),
-        ),
+            child: Builder(
+              builder: (context) {
+                if (size == ButtonSize.big) {
+                  return SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: Icon(
+                      iconData,
+                      size: 28,
+                      color: iconColor ??
+                          (Get.isDarkMode ? Colors.white : Color(0xff000b1d)),
+                    ),
+                  );
+                }
+                if (size == ButtonSize.medium) {
+                  return SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: Icon(
+                      iconData,
+                      size: 25,
+                      color: iconColor ?? (Color(0xff838997)),
+                    ),
+                  );
+                }
+                return SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Icon(
+                    iconData,
+                    size: 22,
+                    color: iconColor ?? (Color(0xff838997)),
+                  ),
+                );
+              },
+            )),
       ),
     );
   }
