@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor__operations.dart';
+import 'package:neuro_sdk_isolate_example/screens/home/home_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/search/get_ready_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/search/search_screen.dart';
 import 'package:get/get.dart';
@@ -30,6 +32,8 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     initRegisteredSensors = initRegisteredSensorsAsync();
     super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: [SystemUiOverlay.bottom]);
   }
 
   @override
@@ -48,12 +52,12 @@ class _MyAppState extends State<MyApp> {
             if (snapshot.data!.isEmpty) {
               return const SearchScreen();
             } else {
-              return Container(
-                color: Colors.pink,
-              );
+              return HomeScreen();
             }
           } else {
-            return CircularProgressIndicator();
+            return Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
           }
         },
       ),
