@@ -120,7 +120,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
     return Scaffold(
       backgroundColor: Get.isDarkMode
           ? AppTheme.appDarkTheme.scaffoldBackgroundColor
-          : const Color(0xffF2F3F5),
+          : AppTheme.appTheme.scaffoldBackgroundColor,
       body: SafeArea(
         child: (widget.allSensorsUsedInSession.isNotEmpty)
             ? Row(
@@ -156,6 +156,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                           children: [
                             AppIconButton(
                                 iconData: Icons.check,
+                                iconColor: Theme.of(context).colorScheme.error,
                                 size: ButtonSize.big,
                                 onPressed: () async {
                                   _isSessionFinished = true;
@@ -236,8 +237,8 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                           alignment: Alignment.centerLeft,
                           child: Text('Controls',
                               style: Get.isDarkMode
-                                  ? AppTheme.appDarkTheme.textTheme.headline4
-                                  : AppTheme.appTheme.textTheme.headline4),
+                                  ? AppTheme.appDarkTheme.textTheme.headline5
+                                  : AppTheme.appTheme.textTheme.headline5),
                         ),
                         const SizedBox(height: 2),
                         Container(
@@ -391,94 +392,85 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                     });
 
                                                     // - CALLBACK: START ELECTRODE STATE
-                                                    // for (var sensorUsedInSession
-                                                    //     in allSensorsUsedInSession) {
-                                                    //   // ~ 1 Init sensor envelope stream
-                                                    //   sensorUsedInSession
-                                                    //       .sensor.electrodeStateStream
-                                                    //       .init();
-                                                    //   Stream
-                                                    //       sensorEnvelopeStream =
-                                                    //       sensorUsedInSession
-                                                    //           .sensor.electrodeStateStream
-                                                    //           .stream;
+                                                    for (var sensorUsedInSession
+                                                        in widget
+                                                            .allSensorsUsedInSession) {
+                                                      sensorUsedInSession.sensor
+                                                          .electrodeStateStream
+                                                          .init();
+                                                      Stream
+                                                          sensorEnvelopeStream =
+                                                          sensorUsedInSession
+                                                              .sensor
+                                                              .electrodeStateStream
+                                                              .stream;
 
-                                                    //   sensorEnvelopeStream
-                                                    //       .listen((event) {});
+                                                      sensorEnvelopeStream
+                                                          .listen(
+                                                              (electrodeState) {
+                                                        if (sensorUsedInSession
+                                                                .electrodeState !=
+                                                            electrodeState) {
+                                                          sensorUsedInSession
+                                                              .countLastElectrodeState = 0;
+                                                        }
+                                                        sensorUsedInSession
+                                                            .countLastElectrodeState++;
+                                                        sensorUsedInSession
+                                                                .electrodeState =
+                                                            electrodeState;
+                                                        if (sensorUsedInSession
+                                                                .countLastElectrodeState ==
+                                                            3) {
+                                                          setState(() {});
+                                                        }
+                                                      });
+                                                    }
 
-                                                    // ! TODO: SENSOR STATE
-                                                    // sensorUsedInSession.sensor
-                                                    //         .callibriElectrodeStateCallback =
-                                                    //     (electrodeState) {
-                                                    //   if (sensorUsedInSession
-                                                    //           .electrodeState !=
-                                                    //       electrodeState) {
-                                                    //     sensorUsedInSession
-                                                    //         .countLastElectrodeState = 0;
-                                                    //   }
-                                                    //   sensorUsedInSession
-                                                    //       .countLastElectrodeState++;
-                                                    //   sensorUsedInSession
-                                                    //           .electrodeState =
-                                                    //       electrodeState;
-                                                    //   if (sensorUsedInSession
-                                                    //           .countLastElectrodeState ==
-                                                    //       3) {
-                                                    //     setState(() {});
-                                                    //   }
-                                                    // };
-                                                    // }
+                                                    // - Reconnect timer
+                                                    void startTimerReconnect() {
+                                                      if (_isSessionFinished ==
+                                                          false) {
+                                                        // Will try to reconnect to sensor each 30 seconds
+                                                        _timerReconnect =
+                                                            Timer.periodic(
+                                                                const Duration(
+                                                                    seconds:
+                                                                        20),
+                                                                (timerTryToReconnect) {
+                                                          if (_isSessionFinished ==
+                                                              false) {
+                                                            List<SensorUsedInSession>
+                                                                listOfDisconnectedSensors =
+                                                                widget
+                                                                    .allSensorsUsedInSession
+                                                                    .where((s) =>
+                                                                        s.isConnected ==
+                                                                        false)
+                                                                    .toList();
 
-                                                    // // - Reconnect timer
-                                                    // void startTimerReconnect() {
-                                                    //   if (_isSessionFinished ==
-                                                    //       false) {
-                                                    //     _timerReconnect =
-                                                    //         Timer.periodic(
-                                                    //             const Duration(
-                                                    //                 seconds:
-                                                    //                     40),
-                                                    //             (timerTryToReconnect) {
-                                                    //       if (_isSessionFinished ==
-                                                    //           false) {
-                                                    //         List<SensorUsedInSession>
-                                                    //             listOfDisconnectedSensors =
-                                                    //             allSensorsUsedInSession
-                                                    //                 .where((s) =>
-                                                    //                     s.isConnected ==
-                                                    //                     false)
-                                                    //                 .toList();
+                                                            for (var disconnectedSensor
+                                                                in listOfDisconnectedSensors) {
+                                                              disconnectedSensor
+                                                                  .sensor
+                                                                  .connect();
 
-                                                    //         for (var disconnectedSensor
-                                                    //             in listOfDisconnectedSensors) {
-                                                    //           // FLog.info(
-                                                    //           //     className:
-                                                    //           //         disconnectedSensor
-                                                    //           //             .envelopeValuesForAnalytics
-                                                    //           //             .address,
-                                                    //           //     methodName: '',
-                                                    //           //     dataLogType: '',
-                                                    //           //     text:
-                                                    //           //         'TRYING TO RECONNECT...');
-                                                    //           // disconnectedSensor
-                                                    //           //     .sensor
-                                                    //           //     .connectSensor();
-                                                    //           // Future.delayed(
-                                                    //           //     const Duration(
-                                                    //           //         seconds:
-                                                    //           //             2),
-                                                    //           //     () {
-                                                    //           //   disconnectedSensor
-                                                    //           //       .sensor
-                                                    //           //       .execCommandSensor(
-                                                    //           //           SensorCommand
-                                                    //           //               .startEnvelope);
-                                                    //           // });
-                                                    //         }
-                                                    //       }
-                                                    //     });
-                                                    //   }
-                                                    // }
+                                                              Future.delayed(
+                                                                  const Duration(
+                                                                      seconds:
+                                                                          2),
+                                                                  () {
+                                                                disconnectedSensor
+                                                                    .sensor
+                                                                    .executeCommand(
+                                                                        SensorCommand
+                                                                            .startEnvelope);
+                                                              });
+                                                            }
+                                                          }
+                                                        });
+                                                      }
+                                                    }
 
                                                     void
                                                         stopReconnectingTimer() {
@@ -487,118 +479,97 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                     }
 
                                                     void
-                                                        stoptimerAddCerosToDisconnectedDevice() {
+                                                        stopTimerAddCerosToDisconnectedDevice() {
                                                       // log('TIMER ADD 0 CANCELED');
                                                       _timerAddCerosToDisconnectedDevice
                                                           ?.cancel();
                                                     }
 
                                                     // -  Adds ceros (0) to sensor.listEnvSamplesValues when sensor it is disconnected
-                                                    // void
-                                                    //     startTimerAddCerosToDisconnectedDevice() {
-                                                    //   if (_isSessionFinished ==
-                                                    //       false) {
-                                                    //     _timerAddCerosToDisconnectedDevice =
-                                                    //         Timer.periodic(
-                                                    //             const Duration(
-                                                    //                 milliseconds:
-                                                    //                     30),
-                                                    //             (addCeroTimerInside) {
-                                                    //       log('STARTED _timerAddCerosToDisconnectedDevice');
-                                                    //       List<SensorUsedInSession>
-                                                    //           listOfDisconnectedSensors =
-                                                    //           allSensorsUsedInSession
-                                                    //               .where((s) =>
-                                                    //                   s.envelopeValuesForAnalytics
-                                                    //                       .isConnected ==
-                                                    //                   false)
-                                                    //               .toList();
+                                                    void
+                                                        startTimerAddCerosToDisconnectedDevice() {
+                                                      if (_isSessionFinished ==
+                                                          false) {
+                                                        _timerAddCerosToDisconnectedDevice =
+                                                            Timer.periodic(
+                                                                const Duration(
+                                                                    milliseconds:
+                                                                        30),
+                                                                (addCeroTimerInside) {
+                                                          log('STARTED _timerAddCerosToDisconnectedDevice');
+                                                          List<SensorUsedInSession>
+                                                              listOfDisconnectedSensors =
+                                                              widget
+                                                                  .allSensorsUsedInSession
+                                                                  .where((s) =>
+                                                                      s.envelopeValuesForAnalytics
+                                                                          .isConnected ==
+                                                                      false)
+                                                                  .toList();
 
-                                                    //       for (var disconnectedSensor
-                                                    //           in listOfDisconnectedSensors) {
-                                                    //         //-TEST: COUNT CEROS
-                                                    //         // disconnectedSensor
-                                                    //         //     .envelopeValuesForAnalytics
-                                                    //         //     .countCerosAdded++;
-
-                                                    //         disconnectedSensor
-                                                    //             .listEnvSamplesValuesForGraphic
-                                                    //             .add(0);
-                                                    //         disconnectedSensor
-                                                    //             .envelopeValuesForAnalytics
-                                                    //             .listEnvSamplesValuesForStatistics
-                                                    //             .add(0);
-                                                    //       }
-                                                    //     });
-                                                    //   }
-                                                    // }
+                                                          for (var disconnectedSensor
+                                                              in listOfDisconnectedSensors) {
+                                                            disconnectedSensor
+                                                                .listEnvSamplesValuesForGraphic
+                                                                .add(0);
+                                                            disconnectedSensor
+                                                                .envelopeValuesForAnalytics
+                                                                .listEnvSamplesValuesForStatistics
+                                                                .add(0);
+                                                          }
+                                                        });
+                                                      }
+                                                    }
 
                                                     // -Timer that checks if sensors are connected. When a sensor is disconnected starts functions to add ceros and reconnect to device
-                                                    // Timer.periodic(
-                                                    //   const Duration(
-                                                    //       milliseconds: 225),
-                                                    //   (_timer) {
-                                                    //     for (SensorUsedInSession sensorUsedInSession
-                                                    //         in allSensorsUsedInSession) {
-                                                    //       bool isConnected =
-                                                    //           sensorUsedInSession
-                                                    //                   .signalForCheckingSensorState >
-                                                    //               0;
+                                                    Timer.periodic(
+                                                      const Duration(
+                                                          milliseconds: 225),
+                                                      (_timer) {
+                                                        for (SensorUsedInSession sensorUsedInSession
+                                                            in widget
+                                                                .allSensorsUsedInSession) {
+                                                          bool isConnected =
+                                                              sensorUsedInSession
+                                                                      .signalForCheckingSensorState >
+                                                                  0;
 
-                                                    //       if (!isConnected &&
-                                                    //           sensorUsedInSession
-                                                    //               .isConnected) {
-                                                    //         // FLog.warning(
-                                                    //         //     className: '\n\n\n' +
-                                                    //         //         sensorUsedInSession
-                                                    //         //             .sensor
-                                                    //         //             .address,
-                                                    //         //     methodName: '',
-                                                    //         //     dataLogType: '',
-                                                    //         //     text:
-                                                    //         //         '====================DISCONNECTED===================');
+                                                          if (!isConnected &&
+                                                              sensorUsedInSession
+                                                                  .isConnected) {
+                                                            sensorUsedInSession
+                                                                    .isConnected =
+                                                                false;
 
-                                                    //         sensorUsedInSession
-                                                    //                 .isConnected =
-                                                    //             false;
-                                                    //         // Notify about disconnection the EnvelopeValuesForAnalytics to make sync timer work faster
-                                                    //         sensorUsedInSession
-                                                    //             .envelopeValuesForAnalytics
-                                                    //             .isConnected = false;
-                                                    //         setState(() {});
-                                                    //         startTimerAddCerosToDisconnectedDevice();
-                                                    //         startTimerReconnect();
-                                                    //       }
-                                                    //       if (isConnected &&
-                                                    //           sensorUsedInSession
-                                                    //                   .isConnected ==
-                                                    //               false) {
-                                                    //         // FLog.warning(
-                                                    //         //     className: '\n\n' +
-                                                    //         //         sensorUsedInSession
-                                                    //         //             .sensor
-                                                    //         //             .address,
-                                                    //         //     methodName: '',
-                                                    //         //     dataLogType: '',
-                                                    //         //     text:
-                                                    //         //         '========RECONNECTED=========');
-                                                    //         // log('RECONNECTED ${sensorUsedInSession.sensor.name}');
-                                                    //         sensorUsedInSession
-                                                    //                 .isConnected =
-                                                    //             true;
-                                                    //         // Notify about connection the EnvelopeValuesForAnalytics to make sync timer work normally
-                                                    //         sensorUsedInSession
-                                                    //             .envelopeValuesForAnalytics
-                                                    //             .isConnected = true;
-                                                    //         stopReconnectingTimer();
-                                                    //         stoptimerAddCerosToDisconnectedDevice();
-                                                    //         setState(() {});
-                                                    //       }
-                                                    //       sensorUsedInSession
-                                                    //           .signalForCheckingSensorState = 0;
-                                                    //     }
-                                                    //   },
-                                                    // );
+                                                            /// Notify about disconnection the EnvelopeValuesForAnalytics to make sync timer work faster:
+                                                            sensorUsedInSession
+                                                                .envelopeValuesForAnalytics
+                                                                .isConnected = false;
+                                                            setState(() {});
+                                                            startTimerAddCerosToDisconnectedDevice();
+                                                            startTimerReconnect();
+                                                          }
+                                                          if (isConnected &&
+                                                              sensorUsedInSession
+                                                                      .isConnected ==
+                                                                  false) {
+                                                            sensorUsedInSession
+                                                                    .isConnected =
+                                                                true;
+
+                                                            /// Notify about connection the EnvelopeValuesForAnalytics to make sync timer work normally:
+                                                            sensorUsedInSession
+                                                                .envelopeValuesForAnalytics
+                                                                .isConnected = true;
+                                                            stopReconnectingTimer();
+                                                            stopTimerAddCerosToDisconnectedDevice();
+                                                            setState(() {});
+                                                          }
+                                                          sensorUsedInSession
+                                                              .signalForCheckingSensorState = 0;
+                                                        }
+                                                      },
+                                                    );
 
                                                     // - Timer to synchronize EnvValues for Analytics
                                                     Timer.periodic(
@@ -670,7 +641,6 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                               .removeLast();
                                                           nextSensorAnalytics
                                                               .countRemovedValues++;
-                                                          // log('DONE removing LAST: SMALLER ${currentSensorAnalytics.address} ${currentSensorAnalytics.listEnvSamplesValuesForStatistics.length} GREATER ${nextSensorAnalytics.address} ${nextSensorAnalytics.listEnvSamplesValuesForStatistics.length}');
                                                         }
                                                       }
                                                     });
@@ -696,13 +666,13 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                           ),
                         ),
 
-                        SizedBox(height: 8),
+                        SizedBox(height: 12),
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text('Amplitude',
                               style: Get.isDarkMode
-                                  ? AppTheme.appDarkTheme.textTheme.headline4
-                                  : AppTheme.appTheme.textTheme.headline4),
+                                  ? AppTheme.appDarkTheme.textTheme.headline5
+                                  : AppTheme.appTheme.textTheme.headline5),
                         ),
                         SizedBox(height: 2),
                         Container(
@@ -746,15 +716,15 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                         ),
 
                         ///SESSION PROGRESS
-                        SizedBox(height: 8),
+                        const SizedBox(height: 12),
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text('Session Progress',
                               style: Get.isDarkMode
-                                  ? AppTheme.appDarkTheme.textTheme.headline4
-                                  : AppTheme.appTheme.textTheme.headline4),
+                                  ? AppTheme.appDarkTheme.textTheme.headline5
+                                  : AppTheme.appTheme.textTheme.headline5),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Container(
                           color: Get.isDarkMode
                               ? AppTheme.appDarkTheme.cardColor
@@ -824,30 +794,6 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                           color: Colors.white,
                                         ),
                                         itemBuilder: (context) => [
-                                              // TODO: Add filters to the list of exercises
-                                              // PopupMenuItem(
-                                              //   onTap: null,
-                                              //   child: Row(
-                                              //     children: [
-                                              //       IconButton(
-                                              //         onPressed: () =>
-                                              //             log('hi'),
-                                              //         icon: Icon(Icons
-                                              //             .align_vertical_top_sharp),
-                                              //       ),
-                                              //       IconButton(
-                                              //         onPressed: null,
-                                              //         icon: Icon(Icons
-                                              //             .align_vertical_top_sharp),
-                                              //       ),
-                                              //       IconButton(
-                                              //         onPressed: null,
-                                              //         icon: Icon(Icons
-                                              //             .align_vertical_top_sharp),
-                                              //       )
-                                              //     ],
-                                              //   ),
-                                              // ),
                                               for (var i = 0;
                                                   i < allExercises.length;
                                                   i++)
@@ -1016,8 +962,6 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
 
       if (smallestListLength.first > 0) {
         for (var s in widget.allSensorsUsedInSession) {
-          /// Is better to use >= than ==. (The app could skip the moment when  `s.chartData.length >= 120`)
-
           // ---- THIS CODE UPDATES THE COLUMN CHART
           // s.columnChartData.first =
           //     ChartSampleData(x: 0, y: s.listEnvSamplesValuesForGraphic.last);
@@ -1101,81 +1045,21 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
     required ControllerDeviceScreenMultiple controllerChartMultiple,
     required SensorUsedInSession connectedSensorUsedInSession,
   }) {
-    // LinearGradient buildGradientFromCallibriColorType(
-    //     CallibriColorType callibriColorType) {
-    //   late List<Color> colors;
+    final List<double> stops = <double>[];
+    stops.add(0.0);
+    stops.add(0.5);
+    stops.add(1.0);
 
-    //   switch (callibriColorType) {
-    //     case CallibriColorType.white:
-    //       colors = <Color>[
-    //         Colors.grey[200]!,
-    //         Colors.grey[400]!,
-    //         Colors.grey[700]!
-    //       ];
-    //       break;
-    //     case CallibriColorType.red:
-    //       colors = <Color>[
-    //         Colors.red[200]!,
-    //         Colors.red[400]!,
-    //         Colors.red[700]!
-    //       ];
-    //       break;
-    //     case CallibriColorType.blue:
-    //       colors = <Color>[
-    //         Colors.blue[200]!,
-    //         Colors.blue[400]!,
-    //         Colors.blue[700]!
-    //       ];
-    //       break;
-    //     case CallibriColorType.yellow:
-    //       colors = <Color>[
-    //         Colors.yellow[200]!,
-    //         Colors.yellow[400]!,
-    //         Colors.yellow[700]!
-    //       ];
-    //       break;
-    //     default:
-    //       colors = <Color>[
-    //         Colors.grey[200]!,
-    //         Colors.grey[400]!,
-    //         Colors.grey[700]!
-    //       ];
-    //   }
-    //   var linearGradient = LinearGradient(
-    //       begin: Alignment.bottomCenter,
-    //       end: Alignment.topCenter,
-    //       colors: colors,
-    //       stops: const <double>[
-    //         (0.0),
-    //         (0.5),
-    //         (1.0),
-    //       ]);
-    //   return linearGradient;
-    // }
-
-    // final List<double> stops = <double>[];
-    // stops.add(0.0);
-    // stops.add(0.5);
-    // stops.add(1.0);
     // double columnChartWidth = 50;
 
-    //  final LinearGradient gradientColors =
-    //   LinearGradient(colors: color, stops: stops);
+    final List<Color> color = <Color>[];
 
-    // final List<Color> color = <Color>[];
-    // color.add(darkerColorFrom(color: deviceColor, amount: 0.4));
-    // color.add(deviceColor);
-    // color.add(darkerColorFrom(color: deviceColor, amount: 0.4));
+    final LinearGradient gradientColors =
+        LinearGradient(colors: color, stops: stops);
 
-    // Color deviceColor = buildColorFromCallibriColorType(
-    //     connectedSensorUsedInSession.sensor.colorCallibri);
-    double columnChartWidth = 0;
+    Color deviceColor = buildColorFromSensorName(
+        rawSensorNameAndColor: connectedSensorUsedInSession.color!);
 
-    //  While bigger is the chart (the space that the y values use in the area), the more will be the raster (worse performance)
-    // with a 20valueMax/100areaMax graphic, the raster is 17ms  (+gradient)
-    // with a 20valueMax/60areaMax graphic, the raster is 22ms (+gradient)
-    // with a 20valueMax/20areaMax graphic, the raster is 33ms (+gradient)
-    //gradient affects in just a couple of ms (1-4)ms
     return Row(
       children: [
         Container(
@@ -1184,17 +1068,17 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
               32 / widget.allSensorsUsedInSession.length,
           width: MediaQuery.of(context).size.width -
               sidebarWidth -
-              16 -
-              columnChartWidth,
+              16, // add (minus) - columnChartWidth if column is added
+
           child: SfCartesianChart(
-            margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+            margin: const EdgeInsets.fromLTRB(0, 0, 0, 0),
 
             title: ChartTitle(
               alignment: ChartAlignment.near,
-              // text: buildTextForChart(connectedSensorUsedInSession),
+              text: buildTextForChart(connectedSensorUsedInSession),
               textStyle: Get.isDarkMode
-                  ? AppTheme.appDarkTheme.textTheme.bodyText1
-                  : AppTheme.appTheme.textTheme.bodyText1,
+                  ? AppTheme.appDarkTheme.textTheme.caption
+                  : AppTheme.appTheme.textTheme.caption,
             ),
 
             series: <CartesianSeries>[
@@ -1208,10 +1092,10 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                 yValueMapper: (ChartSampleData sales, _) => sales.y,
                 color: buildColorFromSensorName(
                     rawSensorNameAndColor: connectedSensorUsedInSession.color!),
-                // gradient: buildGradientFromCallibriColorType(
-                //     connectedSensorUsedInSession.sensor.colorCallibri),
-                // borderColor: buildColorFromCallibriColorType(
-                //     connectedSensorUsedInSession.sensor.colorCallibri),
+                // gradient: buildGradientFromCallibriColor(
+                //     connectedSensorUsedInSession.color!),
+                borderColor: buildColorFromSensorName(
+                    rawSensorNameAndColor: connectedSensorUsedInSession.color!),
                 borderWidth: 3,
               ),
             ],
@@ -1232,16 +1116,17 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
 
             borderColor: Get.isDarkMode
                 ? AppTheme.appDarkTheme.scaffoldBackgroundColor
-                : const Color(0xffF2F3F5), //frame of widgetƑ
+                : AppTheme.appTheme.scaffoldBackgroundColor, //frame of widgetƑ
             backgroundColor: Get.isDarkMode
                 ? AppTheme.appDarkTheme.scaffoldBackgroundColor
-                : const Color(0xffF2F3F5), // Background of frame
-            plotAreaBackgroundColor: Get.isDarkMode
-                ? const Color(0xff282828)
-                : const Color(0xffF2F3F5), // main background
-            // plotAreaBackgroundColor: buildPlotAreaBackgroundColorFromSensor(
-            //     connectedSensorUsedInSession:
-            //         connectedSensorUsedInSession), // main background
+                : AppTheme
+                    .appTheme.scaffoldBackgroundColor, // Background of frame
+            // plotAreaBackgroundColor: Get.isDarkMode
+            //     ? AppTheme.appDarkTheme.scaffoldBackgroundColor
+            //     : AppTheme.appTheme.scaffoldBackgroundColor, // main background
+            plotAreaBackgroundColor: buildPlotAreaBackgroundColorFromSensor(
+                connectedSensorUsedInSession:
+                    connectedSensorUsedInSession), // main background
             plotAreaBorderColor: Get.isDarkMode
                 ? AppTheme.appDarkTheme.colorScheme.outline
                 : const Color(
@@ -1327,46 +1212,46 @@ class ChartSampleData {
 
 Color buildPlotAreaBackgroundColorFromSensor(
     {required SensorUsedInSession connectedSensorUsedInSession}) {
-  Color plotAreaBackgroundColor =
-      Get.isDarkMode ? const Color(0xff282828) : const Color(0xffF2F3F5);
+  Color plotAreaBackgroundColor = Get.isDarkMode
+      ? AppTheme.appDarkTheme.scaffoldBackgroundColor
+      : AppTheme.appTheme.scaffoldBackgroundColor;
   if (connectedSensorUsedInSession.electrodeState !=
       CallibriElectrodeState.elStNormal) {
-    plotAreaBackgroundColor = Colors.red.shade700.withOpacity(0.3);
+    plotAreaBackgroundColor = AppTheme.appTheme.errorColor.withOpacity(0.5);
   }
   if (connectedSensorUsedInSession.isConnected == false) {
-    plotAreaBackgroundColor = Colors.red.shade700.withOpacity(0.4);
+    plotAreaBackgroundColor = AppTheme.appTheme.errorColor.withOpacity(0.7);
   }
 
   return plotAreaBackgroundColor;
 }
 
-// String buildTextForChart(SensorUsedInSession connectedSensorUsedInSession) {
-// String sensorName =
-//     connectedSensorUsedInSession.sensor.name.split('_').join(' ');
-// String textForChart = connectedSensorUsedInSession.placement != null
-//     ? '$sensorName - ${connectedSensorUsedInSession.placement!.muscleName}'
-//     : sensorName;
+String buildTextForChart(SensorUsedInSession connectedSensorUsedInSession) {
+  String sensorName = 'Callibri ${connectedSensorUsedInSession.color!}';
+  String textForChart = connectedSensorUsedInSession.placement != null
+      ? '$sensorName - ${connectedSensorUsedInSession.placement!.muscleName}'
+      : sensorName;
 
 // REMOVED TO AVOID SET STATE
-// if (connectedSensorUsedInSession.electrodeState !=
-//     CallibriElectrodeState.elStNormal) {
-//   switch (connectedSensorUsedInSession.electrodeState) {
-//     case CallibriElectrodeState.elStDetached:
-//       textForChart = '$sensorName - ELECTRODE DETACHED';
-//       break;
-//     case CallibriElectrodeState.elStHighResistance:
-//       textForChart = '$sensorName - HIGH RESISTANCE';
-//       break;
+  if (connectedSensorUsedInSession.electrodeState !=
+      CallibriElectrodeState.elStNormal) {
+    switch (connectedSensorUsedInSession.electrodeState) {
+      case CallibriElectrodeState.elStDetached:
+        textForChart = '$sensorName - ELECTRODE DETACHED';
+        break;
+      case CallibriElectrodeState.elStHighResistance:
+        textForChart = '$sensorName - HIGH RESISTANCE';
+        break;
 
-//     case CallibriElectrodeState.elStNormal:
-//       break;
-//   }
-// }
-// if (connectedSensorUsedInSession.isConnected == false) {
-//   textForChart = '$sensorName DISCONNECTED';
-// }
-// return textForChart;
-// }
+      case CallibriElectrodeState.elStNormal:
+        break;
+    }
+  }
+  if (connectedSensorUsedInSession.isConnected == false) {
+    textForChart = '$sensorName DISCONNECTED';
+  }
+  return textForChart;
+}
 
 void _startCallibriEnvelopeCallback(
     List<SensorUsedInSession> allSensorsUsedInSession) {
@@ -1385,9 +1270,8 @@ void _startCallibriEnvelopeCallback(
                 .envelopeValuesForAnalytics.listEnvSamplesValuesForStatistics
                 .add(envData.sample);
           }
-          log(sensorUsedInSession.listEnvSamplesValuesForGraphic.toString());
 
-          // Count to see if the devices is disconnected
+          // Counter to see if the devices is disconnected
           sensorUsedInSession.signalForCheckingSensorState++;
         }
       });
