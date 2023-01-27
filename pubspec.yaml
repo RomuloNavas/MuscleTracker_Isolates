@@ -27,7 +27,8 @@ dependencies:
   flutter_bluetooth_serial: ^0.4.0
   google_fonts: ^2.3.2
   syncfusion_flutter_charts: ^20.1.51
-  intl: ^0.18.0
+  intl: ^0.17.0
+  timeago: ^3.3.0
   get: ^4.6.5
   geolocator: ^9.0.1
   location: ^4.4.0
@@ -36,7 +37,7 @@ dependencies:
   sqflite: ^2.1.0
   path_provider: ^2.0.11
   # Read and write contacts
-  contacts_service: ^0.6.3
+  # contacts_service: ^0.6.3
   collection: ^1.16.0
   # Required for debugging: Exports Logs to a file
   # f_logs: ^2.0.1
