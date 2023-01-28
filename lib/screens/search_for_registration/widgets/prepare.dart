@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/controllers/services_manager.dart';
-import 'package:neuro_sdk_isolate_example/screens/search/search_screen.dart';
+import 'package:neuro_sdk_isolate_example/screens/search_for_registration/search_screen.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';

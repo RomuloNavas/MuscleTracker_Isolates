@@ -66,42 +66,44 @@ class AppFilledButton extends StatelessWidget {
 }
 
 class AppOutlinedButton extends StatelessWidget {
-  const AppOutlinedButton({
-    Key? key,
-    required Widget child,
-    required VoidCallback action,
-    required Color color,
-  })  : _child = child,
-        _action = action,
-        _color = color,
-        super(key: key);
+  const AppOutlinedButton(
+      {Key? key,
+      required this.child,
+      required this.action,
+      required this.color,
+      this.buttonSize})
+      : super(key: key);
 
-  final Widget _child;
-  final VoidCallback _action;
-
-  final Color _color;
+  final Widget child;
+  final VoidCallback action;
+  final Color color;
+  final ButtonSize? buttonSize;
   @override
   Widget build(BuildContext context) {
     return OutlinedButton(
-        onPressed: _action,
+        onPressed: action,
         style: ButtonStyle(
           // Border Color
-          side: MaterialStateProperty.all(BorderSide(width: 2, color: _color)),
-          overlayColor: MaterialStateProperty.all(_color.withOpacity(0.5)),
-          minimumSize: MaterialStateProperty.all(const Size(0, 48)),
-          shadowColor:
-              MaterialStateProperty.all(AppTheme.appTheme.primaryColorDark),
+          side: MaterialStateProperty.all(BorderSide(width: 1, color: color)),
+          overlayColor: MaterialStateProperty.all(color.withOpacity(0.3)),
+          minimumSize: MaterialStateProperty.all(buttonSize == ButtonSize.medium
+              ? const Size(0, 32)
+              : buttonSize == ButtonSize.big
+                  ? const Size(0, 48)
+                  : const Size(0, 16)),
+          shadowColor: MaterialStateProperty.all(
+              darkerColorFrom(color: color, amount: 0.5)),
           //Color when button is pressed
-          splashFactory: NoSplash.splashFactory,
+          // splashFactory: NoSplash.splashFactory,
           // Text color
-          foregroundColor: MaterialStateProperty.all(_color),
+          foregroundColor: MaterialStateProperty.all(color),
           surfaceTintColor:
               MaterialStateProperty.all(AppTheme.appTheme.primaryColorDark),
-          backgroundColor: MaterialStateProperty.all(_color.withOpacity(0.3)),
+          backgroundColor: MaterialStateProperty.all(color.withOpacity(0.3)),
           shape: MaterialStateProperty.all(RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.0))),
         ),
-        child: _child);
+        child: child);
   }
 }
 
@@ -159,6 +161,7 @@ class AppIconButton extends StatelessWidget {
       {Key? key,
       required VoidCallback onPressed,
       required this.iconData,
+      this.text,
       this.iconColor,
       this.backgroundColor,
       this.size})
@@ -166,6 +169,7 @@ class AppIconButton extends StatelessWidget {
         super(key: key);
 
   final VoidCallback _onPressed;
+  final String? text;
   final Color? backgroundColor;
   final Color? iconColor;
   final IconData iconData;
@@ -188,10 +192,13 @@ class AppIconButton extends StatelessWidget {
             onTap: _onPressed,
             child: Builder(
               builder: (context) {
+                Row? textButton;
+                SizedBox? button;
+
                 if (size == ButtonSize.big) {
-                  return SizedBox(
-                    width: 56,
-                    height: 56,
+                  button = SizedBox(
+                    width: 53,
+                    height: 53,
                     child: Icon(
                       iconData,
                       size: 28,
@@ -199,9 +206,8 @@ class AppIconButton extends StatelessWidget {
                           (Get.isDarkMode ? Colors.white : Color(0xff000b1d)),
                     ),
                   );
-                }
-                if (size == ButtonSize.medium) {
-                  return SizedBox(
+                } else if (size == ButtonSize.medium) {
+                  button = SizedBox(
                     width: 50,
                     height: 50,
                     child: Icon(
@@ -210,16 +216,33 @@ class AppIconButton extends StatelessWidget {
                       color: iconColor ?? (Color(0xff838997)),
                     ),
                   );
+                } else if (size == ButtonSize.small || size == null) {
+                  button = SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Icon(
+                      iconData,
+                      size: 22,
+                      color: iconColor ?? (Color(0xff838997)),
+                    ),
+                  );
                 }
-                return SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: Icon(
-                    iconData,
-                    size: 22,
-                    color: iconColor ?? (Color(0xff838997)),
-                  ),
-                );
+
+                if (text == null) {
+                  return button!;
+                } else {
+                  return textButton = Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(text!,
+                          style: Get.isDarkMode
+                              ? AppTheme.appDarkTheme.textTheme.button
+                              : AppTheme.appTheme.textTheme.button),
+                      SizedBox(width: 4),
+                      button!
+                    ],
+                  );
+                }
               },
             )),
       ),

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
-import 'package:neuro_sdk_isolate_example/screens/sensor/controllers/sensor_conroller.dart';
+import 'package:neuro_sdk_isolate_example/screens/sensor_registration/controllers/sensor_conroller.dart';
 
 class SensorScreenBody extends StatefulWidget {
   final List<SensorInfo> sensorsInfo;
@@ -13,10 +13,7 @@ class SensorScreenBody extends StatefulWidget {
 }
 
 class _SensorScreenBodyState extends State<SensorScreenBody> {
-  final SensorController _controller1 = SensorController();
-  final SensorController _controller2 = SensorController();
-  final SensorController _controller3 = SensorController();
-  final SensorController _controller4 = SensorController();
+  final SensorController _controller = SensorController();
 
   bool _isLoading = true;
 
@@ -27,7 +24,7 @@ class _SensorScreenBodyState extends State<SensorScreenBody> {
   }
 
   void initController() async {
-    await _controller1.init(widget.sensorsInfo.first);
+    await _controller.init(widget.sensorsInfo.first);
 
     setState(() {
       _isLoading = false;
@@ -37,7 +34,7 @@ class _SensorScreenBodyState extends State<SensorScreenBody> {
   @override
   void dispose() {
     super.dispose();
-    _controller1.dispose();
+    _controller.dispose();
   }
 
   @override
@@ -56,19 +53,19 @@ class _SensorScreenBodyState extends State<SensorScreenBody> {
           Center(
             child: Column(
               children: [
-                Text(_controller1.name),
-                Text(_controller1.address),
-                Text(_controller1.serialNumber),
-                Text(_controller1.color.name),
+                Text(_controller.name),
+                Text(_controller.address),
+                Text(_controller.serialNumber),
+                Text(_controller.color.name),
                 Text(
-                  '${_controller1.version.fwMajor}:${_controller1.version.fwMinor}:${_controller1.version.fwPatch}:${_controller1.version.hwMajor}:${_controller1.version.hwMinor}:${_controller1.version.hwPatch}:${_controller1.version.extMajor}',
+                  '${_controller.version.fwMajor}:${_controller.version.fwMinor}:${_controller.version.fwPatch}:${_controller.version.hwMajor}:${_controller.version.hwMinor}:${_controller.version.hwPatch}:${_controller.version.extMajor}',
                 ),
-                Text(_controller1.firmwareMode.name),
+                Text(_controller.firmwareMode.name),
 
                 // Sensor battery value
                 StreamBuilder(
-                  initialData: _controller1.initialBatteryValue,
-                  stream: _controller1.batteryStream,
+                  initialData: _controller.initialBatteryValue,
+                  stream: _controller.batteryStream,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       return Text('${snapshot.data} %');
@@ -78,8 +75,8 @@ class _SensorScreenBodyState extends State<SensorScreenBody> {
                 ),
                 // Sensor state
                 StreamBuilder(
-                  initialData: _controller1.initialState,
-                  stream: _controller1.stateStream,
+                  initialData: _controller.initialState,
+                  stream: _controller.stateStream,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       return Text(snapshot.data!.name);
@@ -95,16 +92,16 @@ class _SensorScreenBodyState extends State<SensorScreenBody> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                  onPressed: _controller1.connect,
+                  onPressed: _controller.connect,
                   child: const Text("Подключить")),
               ElevatedButton(
-                  onPressed: _controller1.disconnect,
+                  onPressed: _controller.disconnect,
                   child: const Text("Отключить")),
             ],
           ),
 
           // Set frequency
-          if (_controller1.sensor
+          if (_controller.sensor
               .isSupportedParameter(SensorParameter.samplingFrequency))
             Column(
               children: [
@@ -115,12 +112,12 @@ class _SensorScreenBodyState extends State<SensorScreenBody> {
                   firstParam: SensorSamplingFrequency.frequencyHz500,
                   secondParam: SensorSamplingFrequency.frequencyHz250,
                   onButtonPressed: setFrequency,
-                  currentParam: _controller1.frequency,
+                  currentParam: _controller.frequency,
                 ),
               ],
             ),
           // Set gain
-          if (_controller1.sensor.isSupportedParameter(SensorParameter.gain))
+          if (_controller.sensor.isSupportedParameter(SensorParameter.gain))
             Column(
               children: [
                 const Text("Gain:"),
@@ -130,12 +127,12 @@ class _SensorScreenBodyState extends State<SensorScreenBody> {
                   firstParam: SensorGain.gain8,
                   secondParam: SensorGain.gain12,
                   onButtonPressed: setGain,
-                  currentParam: _controller1.gain,
+                  currentParam: _controller.gain,
                 ),
               ],
             ),
           // Set offset
-          if (_controller1.sensor.isSupportedParameter(SensorParameter.offset))
+          if (_controller.sensor.isSupportedParameter(SensorParameter.offset))
             Column(
               children: [
                 const Text("Data offset:"),
@@ -145,12 +142,12 @@ class _SensorScreenBodyState extends State<SensorScreenBody> {
                   firstParam: SensorDataOffset.dataOffset4,
                   secondParam: SensorDataOffset.dataOffset5,
                   onButtonPressed: setOffset,
-                  currentParam: _controller1.offset,
+                  currentParam: _controller.offset,
                 ),
               ],
             ),
           // Set ADCInput
-          if (_controller1.sensor
+          if (_controller.sensor
               .isSupportedParameter(SensorParameter.adcInputState))
             Column(
               children: [
@@ -161,12 +158,12 @@ class _SensorScreenBodyState extends State<SensorScreenBody> {
                   firstParam: SensorADCInput.electrodes,
                   secondParam: SensorADCInput.resistance,
                   onButtonPressed: setADCInput,
-                  currentParam: _controller1.adcInput,
+                  currentParam: _controller.adcInput,
                 ),
               ],
             ),
           // Set ExternalSwitchInput
-          if (_controller1.sensor
+          if (_controller.sensor
               .isSupportedParameter(SensorParameter.externalSwitchState))
             Column(
               children: [
@@ -178,13 +175,13 @@ class _SensorScreenBodyState extends State<SensorScreenBody> {
                   firstParam: SensorExternalSwitchInput.mioElectrodes,
                   secondParam: SensorExternalSwitchInput.mioElectrodesRespUSB,
                   onButtonPressed: setExternalSwitchInput,
-                  currentParam: _controller1.switchInput,
+                  currentParam: _controller.switchInput,
                 ),
               ],
             ),
 
           // Set firmwareMode
-          if (_controller1.sensor
+          if (_controller.sensor
               .isSupportedParameter(SensorParameter.firmwareMode))
             Column(
               children: [
@@ -195,18 +192,18 @@ class _SensorScreenBodyState extends State<SensorScreenBody> {
                   firstParam: SensorFirmwareMode.modeBootloader,
                   secondParam: SensorFirmwareMode.modeApplication,
                   onButtonPressed: setFirmwareMode,
-                  currentParam: _controller1.firmwareMode,
+                  currentParam: _controller.firmwareMode,
                 ),
               ],
             ),
           // Signal example
-          if (_controller1.sensor.isSupportedFeature(SensorFeature.signal))
+          if (_controller.sensor.isSupportedFeature(SensorFeature.signal))
             Column(
               children: [
                 const Text("Сигнал:"),
                 Center(
                   child: StreamBuilder(
-                    stream: _controller1.signalStream,
+                    stream: _controller.signalStream,
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         return Text('${snapshot.data!.last.samples.last}');
@@ -219,23 +216,23 @@ class _SensorScreenBodyState extends State<SensorScreenBody> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                        onPressed: _controller1.startSignal,
+                        onPressed: _controller.startSignal,
                         child: const Text("Старт")),
                     ElevatedButton(
-                        onPressed: _controller1.stopSignal,
+                        onPressed: _controller.stopSignal,
                         child: const Text("Стоп")),
                   ],
                 ),
               ],
             ),
           // Envelope example
-          if (_controller1.sensor.isSupportedFeature(SensorFeature.envelope))
+          if (_controller.sensor.isSupportedFeature(SensorFeature.envelope))
             Column(
               children: [
                 const Text("Огибающая:"),
                 Center(
                   child: StreamBuilder(
-                    stream: _controller1.envelopeStream,
+                    stream: _controller.envelopeStream,
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         return Text('${snapshot.data!.last.sample}');
@@ -248,16 +245,16 @@ class _SensorScreenBodyState extends State<SensorScreenBody> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                        onPressed: _controller1.startEnvelope,
+                        onPressed: _controller.startEnvelope,
                         child: const Text("Старт")),
                     ElevatedButton(
-                        onPressed: _controller1.stopEnvelope,
+                        onPressed: _controller.stopEnvelope,
                         child: const Text("Стоп")),
                   ],
                 ),
               ],
             ),
-          if (_controller1.sensor
+          if (_controller.sensor
               .isSupportedParameter(SensorParameter.hardwareFilterState))
             Column(
               children: [
@@ -280,35 +277,35 @@ class _SensorScreenBodyState extends State<SensorScreenBody> {
   }
 
   void setFirmwareMode(SensorFirmwareMode mode) {
-    asyncSensorCallback(() => _controller1.setFirmwareMode(mode));
+    asyncSensorCallback(() => _controller.setFirmwareMode(mode));
   }
 
   void setGain(SensorGain gain) {
-    asyncSensorCallback(() => _controller1.setGain(gain));
+    asyncSensorCallback(() => _controller.setGain(gain));
   }
 
   void setOffset(SensorDataOffset offset) {
-    asyncSensorCallback(() => _controller1.setOffset(offset));
+    asyncSensorCallback(() => _controller.setOffset(offset));
   }
 
   void setADCInput(SensorADCInput input) {
-    asyncSensorCallback(() => _controller1.setADCInput(input));
+    asyncSensorCallback(() => _controller.setADCInput(input));
   }
 
   void setExternalSwitchInput(SensorExternalSwitchInput input) {
-    asyncSensorCallback(() => _controller1.setExternalSwitchInput(input));
+    asyncSensorCallback(() => _controller.setExternalSwitchInput(input));
   }
 
   void setFrequency(SensorSamplingFrequency frequency) {
-    asyncSensorCallback(() => _controller1.setFrequency(frequency));
+    asyncSensorCallback(() => _controller.setFrequency(frequency));
   }
 
   void addFilters() {
-    asyncSensorCallback(() => _controller1.addFilters());
+    asyncSensorCallback(() => _controller.addFilters());
   }
 
   void removeLastFilter() {
-    asyncSensorCallback(() => _controller1.removeFilter());
+    asyncSensorCallback(() => _controller.removeFilter());
   }
 
   Future<void> asyncSensorCallback(Future<void> Function() callback) async {
