@@ -1,5 +1,5 @@
 import 'dart:developer';
-import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
@@ -9,14 +9,21 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
 import 'package:neuro_sdk_isolate_example/controllers/services_manager.dart';
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
-import 'package:neuro_sdk_isolate_example/database/registered_sensor__operations.dart';
-import 'package:neuro_sdk_isolate_example/screens/search/controllers/search_controller.dart';
+import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
+import 'package:neuro_sdk_isolate_example/screens/home/widgets/tapper_registered_sensor_info.dart';
+import 'package:neuro_sdk_isolate_example/screens/client_journal/client_history_screen.dart';
+import 'package:neuro_sdk_isolate_example/screens/search_for_registration/controllers/search_controller.dart';
+import 'package:neuro_sdk_isolate_example/screens/sensor_registration/sensor_screen.dart';
 import 'dart:async';
-
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/utils/global_utils.dart';
 import 'package:neuro_sdk_isolate_example/utils/utils.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_battery_indicator.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_client_avatart.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_pop_menu_item_child.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_text_field.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -82,7 +89,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void onSort(int columnIndex, bool ascending) {
-    log('sorted');
     if (columnIndex == 0) {
       allRegisteredClients.sort((value1, value2) =>
           compareString(ascending, value1.surname, value2.surname));
@@ -107,9 +113,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return clients
         .map((Client c) => DataRow(
                 onSelectChanged: (value) {
-                  // Get.to(() => ClientHistoryScreen(
-                  //       client: c,
-                  //     ));
+                  Get.to(
+                    () => ClientHistoryScreen(
+                      client: c,
+                    ),
+                  );
                 },
                 cells: [
                   DataCell(
@@ -165,10 +173,21 @@ class _HomeScreenState extends State<HomeScreen> {
                             ? AppTheme.appDarkTheme.textTheme.bodyText2
                             : AppTheme.appTheme.textTheme.bodyText2),
                   ),
-                  DataCell(Text(c.lastVisit ?? (""),
-                      style: Get.isDarkMode
-                          ? AppTheme.appDarkTheme.textTheme.bodyText2
-                          : AppTheme.appTheme.textTheme.bodyText2))
+                  DataCell(Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(c.lastVisit ?? (""),
+                          style: Get.isDarkMode
+                              ? AppTheme.appDarkTheme.textTheme.bodyText2
+                              : AppTheme.appTheme.textTheme.bodyText2),
+                      if (c.lastVisit != null)
+                        Text(timeago.format(DateTime.parse(c.lastVisit!)),
+                            style: Get.isDarkMode
+                                ? AppTheme.appDarkTheme.textTheme.caption
+                                : AppTheme.appTheme.textTheme.caption),
+                    ],
+                  ))
                 ]))
         .toList();
   }
@@ -261,65 +280,31 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Flexible(
                                 flex: 1,
-                                child: TextField(
-                                  controller: _textEditingController,
-                                  style: TextStyle(
-                                      color: Get.isDarkMode
-                                          ? Colors.white
-                                          : Colors.black),
-                                  cursorColor: Colors.grey,
-                                  decoration: InputDecoration(
-                                    fillColor: Get.isDarkMode
-                                        ? Colors.white.withOpacity(0.05)
-                                        : Colors.black.withOpacity(0.05),
-                                    filled: true,
-                                    contentPadding: const EdgeInsets.all(0),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                        borderSide: BorderSide.none),
-                                    hintText: 'Search client',
-                                    hintStyle: TextStyle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .shadow,
-                                        fontSize: 18),
-                                    prefixIcon: Container(
-                                      padding: const EdgeInsets.all(15),
-                                      width: 18,
-                                      child: Icon(
-                                        Icons.search,
-                                        size: 26,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .shadow,
-                                      ),
-                                    ),
-                                    suffixIcon: GestureDetector(
-                                      onTap: () {
-                                        if (_textEditingController.text != '') {
-                                          searchedClients.clear();
-                                          _textEditingController.text = '';
-                                        } else {
-                                          FocusManager.instance.primaryFocus
-                                              ?.unfocus();
-                                        }
-                                        setState(() {});
-                                      },
-                                      child: Icon(
-                                        Icons.cancel,
-                                        size: 26,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .shadow,
-                                      ),
-                                    ),
-                                  ),
+                                child: AppTextField(
+                                  textEditingController: _textEditingController,
+                                  hintText: 'Search client',
+                                  onCancelButtonPressed: () {
+                                    if (_textEditingController.text != '') {
+                                      searchedClients.clear();
+                                      _textEditingController.text = '';
+                                    } else {
+                                      FocusManager.instance.primaryFocus
+                                          ?.unfocus();
+                                    }
+                                    setState(() {});
+                                  },
                                 ),
                               ),
                               SizedBox(width: 12),
                               AppIconButton(
-                                size: ButtonSize.big,
                                 iconData: Icons.person_add,
+                                size: ButtonSize.big,
+                                backgroundColor: Get.isDarkMode
+                                    ? AppTheme.appDarkTheme.colorScheme.primary
+                                        .withAlpha(200)
+                                    : AppTheme.appTheme.colorScheme.primary
+                                        .withAlpha(200),
+                                iconColor: Colors.white,
                                 onPressed: () => null,
                               ),
                             ],
@@ -423,10 +408,9 @@ class AppPopMenuButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton(
-        constraints: BoxConstraints(minWidth: 220),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
-            Radius.circular(20.0),
+            Radius.circular(16.0),
           ),
         ),
         elevation: 0.2,
@@ -435,29 +419,16 @@ class AppPopMenuButton extends StatelessWidget {
             : AppTheme.appTheme.colorScheme.surface,
         position: PopupMenuPosition.under,
         offset: Offset(0, 12),
-        // position: PopupMenuPosition.over,
-        // offset: Offset(48, -10),
         splashRadius: 26,
         icon: Icon(
           Icons.more_vert,
           color: Get.isDarkMode ? Color(0xffdcdcdc) : Colors.black,
         ),
         itemBuilder: (context) => [
-              PopupMenuItem(
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.edit,
-                      color: Get.isDarkMode
-                          ? AppTheme.appDarkTheme.colorScheme.secondary
-                          : AppTheme.appTheme.colorScheme.secondary,
-                    ),
-                    SizedBox(width: 10),
-                    Text('Edit client',
-                        style: Get.isDarkMode
-                            ? AppTheme.appDarkTheme.textTheme.bodyText1
-                            : AppTheme.appTheme.textTheme.bodyText1),
-                  ],
+              const PopupMenuItem(
+                child: AppPopMenuItemChild(
+                  title: 'Edit client',
+                  iconData: Icons.edit,
                 ),
               ),
               PopupMenuItem(
@@ -468,36 +439,18 @@ class AppPopMenuButton extends StatelessWidget {
                   await ClientOperations().updateClient(client);
                   notifyParentClientAddedToFavorites();
                 },
-                child: Row(
-                  children: [
-                    Icon(Icons.star,
-                        color: Get.isDarkMode
-                            ? AppTheme.appDarkTheme.colorScheme.secondary
-                            : AppTheme.appTheme.colorScheme.secondary),
-                    SizedBox(width: 10),
-                    Text(
-                        client.isFavorite == 0
-                            ? 'Add to favorites'
-                            : 'Remove from favorites',
-                        style: Get.isDarkMode
-                            ? AppTheme.appDarkTheme.textTheme.bodyText1
-                            : AppTheme.appTheme.textTheme.bodyText1),
-                  ],
+                child: AppPopMenuItemChild(
+                  title: client.isFavorite == 0
+                      ? 'Add to favorites'
+                      : 'Remove from favorites',
+                  iconData:
+                      client.isFavorite == 0 ? Icons.star_outline : Icons.star,
                 ),
               ),
-              PopupMenuItem(
-                child: Row(
-                  children: [
-                    Icon(Icons.sports_gymnastics_outlined,
-                        color: Get.isDarkMode
-                            ? AppTheme.appDarkTheme.colorScheme.secondary
-                            : AppTheme.appTheme.colorScheme.secondary),
-                    const SizedBox(width: 10),
-                    Text('Start new session',
-                        style: Get.isDarkMode
-                            ? AppTheme.appDarkTheme.textTheme.bodyText1
-                            : AppTheme.appTheme.textTheme.bodyText1),
-                  ],
+              const PopupMenuItem(
+                child: AppPopMenuItemChild(
+                  title: 'Start new session',
+                  iconData: Icons.sports_gymnastics_outlined,
                 ),
               ),
               PopupMenuItem(
@@ -505,102 +458,15 @@ class AppPopMenuButton extends StatelessWidget {
                   await ClientOperations().deleteClient(client);
                   notifyParentClientDeleted();
                 },
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.delete_outlined,
-                      color: Color(0xffd85a53),
-                    ),
-                    SizedBox(width: 10),
-                    Text("Delete client",
-                        style: Get.isDarkMode
-                            ? AppTheme.appDarkTheme.textTheme.bodyText1
-                            : AppTheme.appTheme.textTheme.bodyText1),
-                  ],
+                child: AppPopMenuItemChild(
+                  title: 'Delete client',
+                  iconData: Icons.delete_outlined,
+                  iconColor: Get.isDarkMode
+                      ? AppTheme.appDarkTheme.colorScheme.error
+                      : AppTheme.appTheme.colorScheme.error,
                 ),
               ),
             ]);
-  }
-}
-
-class ImportContactsCard extends StatelessWidget {
-  const ImportContactsCard({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.centerLeft,
-      children: [
-        Container(
-          height: 70,
-          width: MediaQuery.of(context).size.width - 372,
-          color: Get.isDarkMode
-              ? AppTheme.appDarkTheme.cardColor
-              : AppTheme.appTheme.cardColor,
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12.0),
-                decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xff26c6f4),
-                        Color(0xff6f78fa),
-                        Color(0xffa73de4),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(4)),
-                child: const Icon(
-                  Icons.contacts,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Import people from your phone's contacts",
-                    style: Get.isDarkMode
-                        ? AppTheme.appDarkTheme.textTheme.bodyText2
-                        : AppTheme.appTheme.textTheme.bodyText2,
-                  ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: null,
-                    child: Text(
-                      'Import contacts',
-                      style: Get.isDarkMode
-                          ? AppTheme.appDarkTheme.textTheme.bodyText2?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.appDarkTheme.colorScheme.primary)
-                          : AppTheme.appTheme.textTheme.bodyText2?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.appTheme.colorScheme.primary),
-                    ),
-                  )
-                ],
-              ),
-            ],
-          ),
-        ),
-        Positioned(
-          top: 8,
-          right: 12,
-          child: GestureDetector(
-            onTap: null,
-            child: const Icon(Icons.close),
-          ),
-        )
-      ],
-    );
   }
 }
 
@@ -625,7 +491,8 @@ class _SidePanelState extends State<SidePanel> {
   late StreamSubscription _subscription;
   final List<SensorInfo> _foundSensorsWithCallback = [];
 
-  List<RegisteredSensor> allRegisteredSensors = [];
+  RegisteredSensor? _tappedRegisteredSensorInfo;
+  List<RegisteredSensor> _allRegisteredSensors = [];
   late Future<void> initRegisteredSensors;
 
   @override
@@ -641,7 +508,6 @@ class _SidePanelState extends State<SidePanel> {
       setState(() {
         _foundSensorsWithCallback.clear();
         _foundSensorsWithCallback.addAll(sensors);
-        log(_foundSensorsWithCallback.length.toString());
       });
     });
 
@@ -657,79 +523,6 @@ class _SidePanelState extends State<SidePanel> {
     _searchController.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
-  }
-
-  RegisteredSensor? _lastTappedSensor;
-
-  Widget buildSensorInfoCard({required RegisteredSensor tappedSensor}) {
-    return Container(
-      margin: const EdgeInsets.only(left: 12, right: 12),
-      padding: const EdgeInsets.only(top: 20, bottom: 24),
-      decoration: BoxDecoration(
-        color: Get.isDarkMode
-            ? AppTheme.appDarkTheme.colorScheme.surface
-            : AppTheme.appTheme.colorScheme.surface,
-        borderRadius: const BorderRadius.all(
-          Radius.circular(16),
-        ),
-      ),
-      child: Column(
-        children: [
-          CircleAvatar(
-            backgroundColor: Get.isDarkMode
-                ? Colors.white.withOpacity(0.05)
-                : Colors.black.withOpacity(0.05),
-            radius: 22,
-            child: SvgPicture.asset(
-                'assets/icons/callibri_device-${tappedSensor.color.split('.').last}.svg',
-                width: 16,
-                semanticsLabel: 'Battery'),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: sidePanelWidth - (32 * 2),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                InformationTile(
-                    title: 'Serial Number',
-                    description: tappedSensor.serialNumber.toUpperCase()),
-                InformationTile(
-                    title: 'Address',
-                    description: tappedSensor.address.toUpperCase()),
-                InformationTile(
-                    title: 'Color',
-                    description:
-                        tappedSensor.color.split('.').last.toCapitalized()),
-                InformationTile(
-                    title: 'Gain',
-                    description:
-                        tappedSensor.gain.split('.').last.toCapitalized()),
-                InformationTile(
-                    title: 'Data offset',
-                    description: tappedSensor.dataOffset
-                        .split('.')
-                        .last
-                        .toCapitalized()),
-                InformationTile(
-                    title: 'ADC Input',
-                    description:
-                        tappedSensor.adcInput.split('.').last.toCapitalized()),
-                InformationTile(
-                    title: 'Hardware filters',
-                    description: tappedSensor.hardwareFilters),
-                InformationTile(
-                    title: 'Sampling frequency',
-                    description: tappedSensor.samplingFrequency
-                        .split('frequency')
-                        .last
-                        .toUpperCase()),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -782,7 +575,7 @@ class _SidePanelState extends State<SidePanel> {
                                 children: <TextSpan>[
                                   const TextSpan(text: 'Your Sensors: '),
                                   TextSpan(
-                                      text: '3',
+                                      text: '${_allRegisteredSensors.length}',
                                       style: AppTheme
                                           .appDarkTheme.textTheme.headline3
                                           ?.copyWith(
@@ -802,38 +595,46 @@ class _SidePanelState extends State<SidePanel> {
                               ),
                             ),
                             AppIconButton(
-                              onPressed: () {
-                                log(_foundSensorsWithCallback.length
-                                    .toString());
+                              onPressed: () async {
                                 setState(() {
                                   _isLoading = true;
-                                  _searchController.stopScanner();
-                                  _searchController.startScanner();
                                 });
-                                // _initRegisteredSensorsDBAsync();
+                                _searchController.startScanner();
+                                await Future.delayed(Duration(seconds: 2));
+                                _searchController.stopScanner();
+                                _searchController.startScanner();
+                                await Future.delayed(Duration(seconds: 2));
+                                _searchController.stopScanner();
+
+                                _initRegisteredSensorsDBAsync();
                               },
-                              iconData: Icons.battery_5_bar_rounded,
+                              iconData: Icons.refresh,
                               iconColor: Color(0xff107c10),
                             )
                           ],
                         ),
                         Container(
                             margin: const EdgeInsets.only(top: 8),
-                            height: 80,
+                            height: 100,
                             width: sidePanelWidth - (12 * 2),
                             decoration: BoxDecoration(
                                 color: Get.isDarkMode
                                     ? AppTheme.appDarkTheme.colorScheme.surface
                                     : AppTheme.appTheme.colorScheme.surface,
                                 borderRadius:
-                                    BorderRadius.all(Radius.circular(16))),
+                                    _tappedRegisteredSensorInfo == null
+                                        ? const BorderRadius.all(
+                                            Radius.circular(16))
+                                        : const BorderRadius.only(
+                                            topLeft: Radius.circular(16),
+                                            topRight: Radius.circular(16))),
                             child: Padding(
                                 padding:
                                     const EdgeInsets.fromLTRB(12, 8, 12, 8),
                                 child: Builder(
                                   builder: (context) {
                                     if (_isLoading == true) {
-                                      return Center(
+                                      return const Center(
                                         child: CircularProgressIndicator(),
                                       );
                                     }
@@ -842,59 +643,63 @@ class _SidePanelState extends State<SidePanel> {
                                           MainAxisAlignment.spaceAround,
                                       children: [
                                         for (var registeredSensor
-                                            in allRegisteredSensors)
+                                            in _allRegisteredSensors)
                                           Column(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
                                               const SizedBox(height: 2),
                                               InkWell(
-                                                // onTap: () {
-                                                //   RegisteredSensor
-                                                //       currentTappedSensor =
-                                                //       homeStatusManager
-                                                //               .currentSavedDevices[
-                                                //           index];
-                                                //   if (_lastTappedSensor?.id ==
-                                                //       currentTappedSensor.id) {
-                                                //     _lastTappedSensor = null;
-                                                //   } else {
-                                                //     _lastTappedSensor =
-                                                //         currentTappedSensor;
-                                                //   }
-                                                //   setState(() {});
-                                                // },
+                                                onTap: () => setState(() {
+                                                  _tappedRegisteredSensorInfo =
+                                                      (_tappedRegisteredSensorInfo ==
+                                                              registeredSensor)
+                                                          ? null
+                                                          : registeredSensor;
+                                                }),
                                                 child: CircleAvatar(
-                                                  backgroundColor: Get
-                                                          .isDarkMode
-                                                      ? Colors.white
-                                                          .withOpacity(0.05)
-                                                      : const Color(0xffdddddd),
-                                                  radius: 24,
-                                                  child: SvgPicture.asset(
-                                                      'assets/icons/callibri_device-${registeredSensor.color}.svg',
-                                                      width: 16,
-                                                      semanticsLabel:
-                                                          'Callibri icon'),
+                                                  backgroundColor:
+                                                      _tappedRegisteredSensorInfo ==
+                                                              registeredSensor
+                                                          ? Colors.white
+                                                          : Colors.transparent,
+                                                  radius: 26,
+                                                  child: CircleAvatar(
+                                                    backgroundColor: Get
+                                                            .isDarkMode
+                                                        ? Colors.white
+                                                            .withOpacity(0.05)
+                                                        : Colors.black
+                                                            .withOpacity(0.05),
+                                                    radius: 24,
+                                                    child: SvgPicture.asset(
+                                                        'assets/icons/callibri_device-${registeredSensor.color}.svg',
+                                                        width: 16,
+                                                        semanticsLabel:
+                                                            'Callibri icon'),
+                                                  ),
                                                 ),
                                               ),
                                               const SizedBox(height: 2),
-                                              // if (isCurrentSensorAvailable)
-                                              //   Text(
-                                              //     '${connectedSensorsInfo.first.batteryLevel}%',
-                                              //     style: GoogleFonts.roboto(
-                                              //       fontSize: 12,
-                                              //       fontWeight: FontWeight.w400,
-                                              //     ),
-                                              //   )
+                                              if (registeredSensor.battery !=
+                                                  null)
+                                                AppBatteryIndicator(
+                                                    appBatteryIndicatorLabelPosition:
+                                                        AppBatteryIndicatorLabelPosition
+                                                            .inside,
+                                                    batteryLevel:
+                                                        registeredSensor
+                                                            .battery!)
                                             ],
                                           ),
                                       ],
                                     );
                                   },
                                 ))),
-                        if (_lastTappedSensor != null)
-                          buildSensorInfoCard(tappedSensor: _lastTappedSensor!),
+                        if (_tappedRegisteredSensorInfo != null)
+                          TapperRegisteredSensorInfo(
+                              tappedRegisteredSensorInfo:
+                                  _tappedRegisteredSensorInfo!),
                       ],
                     ),
                   )
@@ -936,230 +741,53 @@ class _SidePanelState extends State<SidePanel> {
   }
 
   Future<void> _initRegisteredSensorsDBAsync() async {
+    if (_foundSensorsWithCallback.isNotEmpty) {
+      List<SensorInfo> allRegisteredAndDiscoveredSensors = [];
+
+      // Prepare a list of the registered and discovered sensors, to connect to them later.
+      for (var registeredSensor in _allRegisteredSensors) {
+        SensorInfo? registeredAndDiscoveredSensor =
+            _foundSensorsWithCallback.firstWhereOrNull(
+                (element) => element.address == registeredSensor.address);
+        if (registeredAndDiscoveredSensor != null) {
+          allRegisteredAndDiscoveredSensors.add(registeredAndDiscoveredSensor);
+        }
+      }
+
+      /// Connect to the registered and discovered sensors just to get the battery level of the sensors.
+      List<Sensor> allConnectedSensors = [];
+      for (var info in allRegisteredAndDiscoveredSensors) {
+        log('CONNECTING...');
+        var connectedSensor = await Sensor.create(info);
+        var connectedSensorBattery = await connectedSensor.battery.value;
+        String connectedSensorAddress = await connectedSensor.address.value;
+
+        var currentRegisteredSensor = _allRegisteredSensors.firstWhereOrNull(
+            (registeredSensor) =>
+                registeredSensor.address == connectedSensorAddress);
+        currentRegisteredSensor?.battery ??= (connectedSensorBattery);
+
+        if (currentRegisteredSensor != null) {
+          RegisteredSensorOperations().updateRegisteredSensorBatteryByAddress(
+              currentRegisteredSensor.address, currentRegisteredSensor);
+        }
+
+        allConnectedSensors.add(connectedSensor);
+      }
+
+      /// Disconnect from all `allConnectedSensors`
+      for (var connectedSensor in allConnectedSensors) {
+        log('DISCONNECTING...');
+        connectedSensor.disconnect();
+        // connectedSensor.dispose();
+      }
+      _foundSensorsWithCallback.clear();
+    }
     var registeredSensors =
         await RegisteredSensorOperations().getAllRegisteredSensors();
-    allRegisteredSensors = registeredSensors;
+    _allRegisteredSensors = registeredSensors;
+
     _isLoading = false;
     setState(() {});
-  }
-}
-
-class InformationTile extends StatelessWidget {
-  const InformationTile({
-    Key? key,
-    required String title,
-    required String description,
-  })  : _title = title,
-        _description = description,
-        super(key: key);
-
-  final String _title;
-  final String _description;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(2.0),
-      child: RichText(
-        text: TextSpan(
-          style: Get.isDarkMode
-              ? AppTheme.appDarkTheme.textTheme.overline
-                  ?.copyWith(color: Color(0xffbababa))
-              : AppTheme.appTheme.textTheme.overline,
-          children: <TextSpan>[
-            TextSpan(text: '$_title: '),
-            TextSpan(
-                text: _description,
-                style: Get.isDarkMode
-                    ? AppTheme.appDarkTheme.textTheme.overline?.copyWith(
-                        color: const Color(0xffeaeaea),
-                      )
-                    : AppTheme.appTheme.textTheme.overline?.copyWith(
-                        color: Colors.black,
-                      )),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ScrollViewContacts extends StatelessWidget {
-  final List<Client> clients;
-  const ScrollViewContacts({
-    Key? key,
-    required this.clients,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      //This widget allow to scroll its child.
-      //To horizontally scroll its child, make sure that the parent has shrinkWrap:false
-      scrollDirection: Axis.horizontal,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: null,
-            child: Padding(
-              padding:
-                  const EdgeInsets.only(top: 16, bottom: 16, left: 8, right: 8),
-              child: Row(
-                children: [
-                  for (Client client in clients)
-                    InkWell(
-                      child: ContactAvatar(
-                        client: client,
-                      ),
-                      // onTap: () => Get.to(() => ClientHistoryScreen(
-                      //       client: client,
-                      //     )),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class ContactAvatar extends StatelessWidget {
-  final Client client;
-  const ContactAvatar({Key? key, required this.client}) : super(key: key);
-
-  final double widgetWidth = 80;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // ignore: prefer_const_constructors
-          ContactCircleAvatar(
-            radius: 27,
-            padding: const EdgeInsets.only(left: 6, right: 6),
-            isFavorite: client.isFavorite != 1 ? false : true,
-          ),
-          const SizedBox(height: 2),
-          Container(
-            width: widgetWidth,
-            child: Text(
-              client.surname,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              style: Get.isDarkMode
-                  ? AppTheme.appDarkTheme.textTheme.caption
-                  : AppTheme.appTheme.textTheme.caption,
-            ),
-          ),
-          Container(
-            width: widgetWidth,
-            child: Text(
-              client.name,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              style: Get.isDarkMode
-                  ? AppTheme.appDarkTheme.textTheme.caption
-                      ?.copyWith(color: Color(0xff878787))
-                  : AppTheme.appTheme.textTheme.caption,
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class ContactCircleAvatar extends StatelessWidget {
-  final double? _radius;
-  final EdgeInsets? _padding;
-  final EdgeInsets? _margin;
-  final bool? _isFavorite;
-
-  const ContactCircleAvatar({
-    double? radius,
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-    bool? isFavorite,
-    Key? key,
-  })  : _radius = radius,
-        _padding = padding,
-        _margin = margin,
-        _isFavorite = isFavorite,
-        super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isFavorite != true) {
-      return Container(
-        padding: _padding,
-        margin: _margin,
-        child: CircleAvatar(
-          radius: _radius, //big 27, small 25
-          backgroundColor: Get.isDarkMode
-              ? Color.fromARGB(((10 + math.Random().nextInt(100 - 10))).toInt(),
-                  150, 150, 150)
-              : Color.fromARGB(
-                  45,
-                  80,
-                  120,
-                  180 + (math.Random().nextDouble() * 1.2).toInt(),
-                ),
-          child: Icon(Icons.person,
-              color: Get.isDarkMode ? const Color(0xff878787) : Colors.black),
-        ),
-      );
-    } else {
-      return Stack(
-        alignment: AlignmentDirectional.topEnd,
-        children: [
-          Container(
-            padding: _padding,
-            margin: _margin,
-            child: CircleAvatar(
-              radius: _radius, //big 27, small 25
-              backgroundColor: Get.isDarkMode
-                  ? Color.fromARGB(
-                      ((10 + math.Random().nextInt(100 - 10))).toInt(),
-                      150,
-                      150,
-                      150)
-                  : Color.fromARGB(
-                      80,
-                      80,
-                      120,
-                      180 + (math.Random().nextDouble() * 1.2).toInt(),
-                    ),
-              child: Icon(Icons.person,
-                  color:
-                      Get.isDarkMode ? const Color(0xff878787) : Colors.black),
-            ),
-          ),
-          Container(
-            width: 22,
-            height: 22,
-            decoration: BoxDecoration(
-              color: Get.isDarkMode
-                  ? Color.fromARGB(155, 255, 234, 171)
-                  : Color.fromARGB(255, 255, 234, 171),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Center(
-              child: SvgPicture.asset('assets/icons/ui/star.svg',
-                  width: 14, semanticsLabel: 'Star'),
-            ),
-          ),
-        ],
-      );
-    }
   }
 }
