@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
-import 'package:neuro_sdk_isolate_example/database/registered_sensor__operations.dart';
+import 'package:neuro_sdk_isolate_example/database/body_region_operations.dart';
+import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
+import 'package:neuro_sdk_isolate_example/database/placement_operations.dart';
+import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
+import 'package:neuro_sdk_isolate_example/database/workout_operations.dart';
 import 'package:neuro_sdk_isolate_example/screens/home/home_screen.dart';
-import 'package:neuro_sdk_isolate_example/screens/search/get_ready_screen.dart';
-import 'package:neuro_sdk_isolate_example/screens/search/search_screen.dart';
+import 'package:neuro_sdk_isolate_example/screens/search_for_registration/get_ready_screen.dart';
+import 'package:neuro_sdk_isolate_example/screens/search_for_registration/search_screen.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 
@@ -30,7 +34,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    initRegisteredSensors = initRegisteredSensorsAsync();
+    initRegisteredSensors = initApp();
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
@@ -64,9 +68,15 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  Future<List<RegisteredSensor>?> initRegisteredSensorsAsync() async {
+  Future<List<RegisteredSensor>?> initApp() async {
     var registeredSensors =
         await registeredSensorOperations.getAllRegisteredSensors();
+    // INIT THE TEST VALUES FOR DATABASE:
+    await ClientOperations().initTestClients();
+    await ExerciseOperations().initWorkouts();
+    await BodyRegionOperations().initBodyRegions();
+    await PlacementOperations().initPlacements();
+
     return registeredSensors;
   }
 }
