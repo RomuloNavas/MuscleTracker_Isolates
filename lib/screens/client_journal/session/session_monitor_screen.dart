@@ -9,6 +9,7 @@ import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/placement_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/workout_operations.dart';
+import 'package:neuro_sdk_isolate_example/screens/client_journal/session/session_results.dart';
 import 'package:neuro_sdk_isolate_example/screens/client_journal/session/session_setup_screen.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/utils/build_from_sensor.dart';
@@ -219,15 +220,15 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                     );
                                     usedSensors.add(sensorInfoForResults);
                                   }
-                                  // Get.off(() {
-                                  //   return SessionResultsScreen(
-                                  //     client: widget.client,
-                                  //     usedSensors: usedSensors,
-                                  //     completedWorkouts: _completedWorkouts,
-                                  //     sessionStartedAt: sessionStartedAt,
-                                  //     sessionEndedAt: sessionEndedAt,
-                                  //   );
-                                  // });
+                                  Get.off(() {
+                                    return SessionResultsScreen(
+                                      client: widget.client,
+                                      usedSensors: usedSensors,
+                                      completedWorkouts: _completedWorkouts,
+                                      sessionStartedAt: sessionStartedAt,
+                                      sessionEndedAt: sessionEndedAt,
+                                    );
+                                  });
                                 }),
                           ],
                         ),
@@ -260,7 +261,9 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                         Column(
                                           children: [
                                             Text(
-                                                isRecording ? 'Stop' : 'Record',
+                                                isRecording
+                                                    ? 'Stop'
+                                                    : 'Record',
                                                 style: Get.isDarkMode
                                                     ? AppTheme.appDarkTheme
                                                         .textTheme.overline
@@ -274,6 +277,12 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                     ? Icons.stop_circle_rounded
                                                     : Icons
                                                         .radio_button_checked_outlined,
+                                                iconColor: isRecording
+                                                    ? Theme.of(context)
+                                                        .shadowColor
+                                                    : Theme.of(context)
+                                                        .colorScheme
+                                                        .error,
                                                 onPressed: () {
                                                   setState(() {
                                                     isRecording = !isRecording;
@@ -353,6 +362,10 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                   iconData: isPaused
                                                       ? Icons.play_arrow
                                                       : Icons.pause,
+                                                  iconColor: isPaused
+                                                      ? Theme.of(context)
+                                                          .shadowColor
+                                                      : Color(0xff838997),
                                                   onPressed: () {
                                                     isPaused = !isPaused;
                                                     if (isPaused == true) {
@@ -380,6 +393,13 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                               fontSize: 13)),
                                               AppIconButton(
                                                 iconData: Icons.play_arrow,
+                                                iconColor: Get.isDarkMode
+                                                    ? AppTheme.appDarkTheme
+                                                        .colorScheme.primary
+                                                        .withAlpha(200)
+                                                    : AppTheme.appTheme
+                                                        .colorScheme.primary
+                                                        .withAlpha(200),
                                                 onPressed: () async {
                                                   if (envelopeStarted ==
                                                       false) {
