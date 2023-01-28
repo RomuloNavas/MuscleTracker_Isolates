@@ -15,7 +15,7 @@ class DatabaseRepository {
   static final DatabaseRepository instance =
       DatabaseRepository.privateConstructor();
 
-  final _databaseName = 'database4';
+  final _databaseName = 'database7';
   final _databaseVersion = 1;
 
   static Database? _database;
@@ -144,7 +144,8 @@ class DatabaseRepository {
             registeredSensorDataOffset TEXT,
             registeredSensorADCinput TEXT,
             registeredSensorHardwareFilters TEXT,
-            registeredSensorSamplingFrequency TEXT
+            registeredSensorSamplingFrequency TEXT,
+            registeredSensorBattery INTEGER
 
           )
           ''');
@@ -165,6 +166,7 @@ class DatabaseRepository {
             placementMuscleInsertions TEXT,
             placementLocationDescription TEXT,
             placementBehavioralTest TEXT,
+            placementSide TEXT,
 
             FK_Placement_bodyRegionId INT NOT NULL,
             FOREIGN KEY (FK_Placement_bodyRegionId) REFERENCES bodyRegion (bodyRegionId) 
