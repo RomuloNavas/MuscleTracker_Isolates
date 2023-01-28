@@ -80,3 +80,38 @@ String buildCallibriNameFromSensor({required String rawSensorNameAndColor}) {
       'callibri ${buildColorNameFromSensor(rawSensorNameAndColor: rawSensorNameAndColor)}';
   return callibriName;
 }
+
+LinearGradient buildGradientFromCallibriColor(String color) {
+  late List<Color> colors;
+
+  switch (color) {
+    case 'white':
+      colors = <Color>[Colors.grey[200]!, Colors.grey[400]!, Colors.grey[700]!];
+      break;
+    case 'red':
+      colors = <Color>[Colors.red[200]!, Colors.red[400]!, Colors.red[700]!];
+      break;
+    case 'blue':
+      colors = <Color>[Colors.blue[200]!, Colors.blue[400]!, Colors.blue[700]!];
+      break;
+    case 'yellow':
+      colors = <Color>[
+        Colors.yellow[200]!,
+        Colors.yellow[400]!,
+        Colors.yellow[700]!
+      ];
+      break;
+    default:
+      colors = <Color>[Colors.grey[200]!, Colors.grey[400]!, Colors.grey[700]!];
+  }
+  var linearGradient = LinearGradient(
+      begin: Alignment.bottomCenter,
+      end: Alignment.topCenter,
+      colors: colors,
+      stops: const <double>[
+        (0.0),
+        (0.5),
+        (1.0),
+      ]);
+  return linearGradient;
+}
