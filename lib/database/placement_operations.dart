@@ -85,6 +85,7 @@ class Placement {
   String? locationDescription;
   String? behavioralTest;
   late int bodyRegionId;
+  String? side;
 
   Placement( {
     this.id,
@@ -94,6 +95,7 @@ class Placement {
     this.locationDescription,
     this.behavioralTest,
     this.bodyRegionId = 0,
+    this.side,
   });
 
   factory Placement.fromMap(Map<String, dynamic> json) => Placement(
