@@ -12,7 +12,7 @@ import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
 import 'package:neuro_sdk_isolate_example/screens/home/widgets/tapper_registered_sensor_info.dart';
 import 'package:neuro_sdk_isolate_example/screens/client_journal/client_history_screen.dart';
-import 'package:neuro_sdk_isolate_example/screens/search_for_registration/controllers/search_controller.dart';
+import 'package:neuro_sdk_isolate_example/screens/sensor_registration/controllers/search_controller.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/sensor_screen.dart';
 import 'dart:async';
 import 'package:neuro_sdk_isolate_example/theme.dart';

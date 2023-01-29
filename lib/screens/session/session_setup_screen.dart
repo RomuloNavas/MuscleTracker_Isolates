@@ -14,8 +14,8 @@ import 'package:neuro_sdk_isolate_example/database/body_region_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/placement_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
-import 'package:neuro_sdk_isolate_example/screens/client_journal/session/session_monitor_screen.dart';
-import 'package:neuro_sdk_isolate_example/screens/search_for_registration/controllers/search_controller.dart';
+import 'package:neuro_sdk_isolate_example/screens/session/session_monitor_screen.dart';
+import 'package:neuro_sdk_isolate_example/screens/sensor_registration/controllers/search_controller.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/utils/build_from_sensor.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_battery_indicator.dart';
@@ -23,7 +23,14 @@ import 'package:neuro_sdk_isolate_example/widgets/app_bottom.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_client_avatart.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_muscle_side.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+
+class GetxControllerSessionSetup extends GetxController {
+  RxList<SensorUsedInSession> allConnectedSensorsUsedInSession =
+      <SensorUsedInSession>[].obs;
+  SensorUsedInSession? selectedSensor = null;
+}
 
 class SessionSetupScreen extends StatefulWidget {
   final Client client;
@@ -59,6 +66,9 @@ class _SessionSetupScreenState extends State<SessionSetupScreen> {
   }
 
   Widget build(BuildContext context) {
+    final GetxControllerSessionSetup _controllerWorkoutSetup =
+        Get.put(GetxControllerSessionSetup());
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: Get.isDarkMode
@@ -261,7 +271,7 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
 
   List<RegisteredSensor> _allRegisteredSensors = [];
   List<SensorInfo> _allRegisteredAndFoundSensors = [];
-  List<SensorUsedInSession> _allRegisteredAndConnectedSensors = [];
+  // List<SensorUsedInSession> _allRegisteredAndConnectedSensors = [];
   late Future<void> initRegisteredAndAvailableSensors;
 
   @override
@@ -310,13 +320,8 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
 
   @override
   Widget build(BuildContext context) {
-    for (var element in _allRegisteredAndConnectedSensors) {
-      if (element.isSelectedToAssignPlacement) {
-        setState(() {
-          element.placement = widget.selectedPlacement;
-        });
-      }
-    }
+    final GetxControllerSessionSetup _controllerWorkoutSetup = Get.find();
+
     return Container(
       height: MediaQuery.of(context).size.height,
       width: sidebarWidth,
@@ -347,9 +352,11 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                       AppIconButton(
                         size: ButtonSize.big,
                         iconData: Icons.arrow_back,
+                        iconColor: Theme.of(context).colorScheme.error,
                         onPressed: () {
                           for (var registeredAndConnectedSensor
-                              in _allRegisteredAndConnectedSensors) {
+                              in _controllerWorkoutSetup
+                                  .allConnectedSensorsUsedInSession.value) {
                             registeredAndConnectedSensor.sensor.disconnect();
                           }
 
@@ -398,11 +405,14 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                 const SizedBox(height: 12),
                 Builder(
                   builder: (context) {
-                    if (_allRegisteredAndConnectedSensors.isNotEmpty) {
+                    if (_controllerWorkoutSetup
+                        .allConnectedSensorsUsedInSession.value.isNotEmpty) {
                       return AppHeaderInfo(
-                        title: _allRegisteredAndConnectedSensors.length == 1
-                            ? 'Connected to ${_allRegisteredAndConnectedSensors.length} sensor'
-                            : 'Connected to ${_allRegisteredAndConnectedSensors.length} sensors',
+                        title: _controllerWorkoutSetup
+                                    .allConnectedSensorsUsedInSession.length ==
+                                1
+                            ? 'Connected to ${_controllerWorkoutSetup.allConnectedSensorsUsedInSession.length} sensor'
+                            : 'Connected to ${_controllerWorkoutSetup.allConnectedSensorsUsedInSession.length} sensors',
                       );
                     }
                     if (_allRegisteredAndFoundSensors.isNotEmpty) {
@@ -415,24 +425,28 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                     return AppHeaderInfo(
                         title: _allRegisteredAndFoundSensors.isEmpty
                             ? 'Connect to your Sensors'
-                            : 'Found ${_allRegisteredAndConnectedSensors.length} Sensors',
+                            : 'Found ${_allRegisteredAndFoundSensors.length} Sensors',
                         labelPrimary: 'Turn on the sensors you want to use');
                   },
                 ),
-                // if (_allRegisteredAndConnectedSensors.isNotEmpty)
-                SizedBox(height: 12),
+                if (_controllerWorkoutSetup
+                    .allConnectedSensorsUsedInSession.isNotEmpty)
+                  SizedBox(height: 12),
                 Container(
                   width: sidebarWidth,
                   child: Column(
                     children: [
                       for (int i = 0;
-                          i < _allRegisteredAndConnectedSensors.length;
+                          i <
+                              _controllerWorkoutSetup
+                                  .allConnectedSensorsUsedInSession.length;
                           i++)
                         Container(
                           height: 80,
                           width: sidebarWidth,
                           decoration: BoxDecoration(
-                            color: _allRegisteredAndConnectedSensors[i]
+                            color: _controllerWorkoutSetup
+                                    .allConnectedSensorsUsedInSession[i]
                                     .isSelectedToAssignPlacement
                                 ? Get.isDarkMode
                                     ? Colors.white.withOpacity(0.1)
@@ -443,13 +457,21 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                             color: Colors.transparent,
                             child: InkWell(
                               onTap: () {
-                                for (var registeredSensor
-                                    in _allRegisteredAndConnectedSensors) {
-                                  registeredSensor.isSelectedToAssignPlacement =
-                                      false;
+                                var listConnectedSensorsUsedInSession =
+                                    _controllerWorkoutSetup
+                                        .allConnectedSensorsUsedInSession;
+                                // Unselects all sensors
+                                for (var sensor
+                                    in listConnectedSensorsUsedInSession
+                                        .value) {
+                                  sensor.isSelectedToAssignPlacement = false;
                                 }
-                                _allRegisteredAndConnectedSensors[i]
+                                //selects the chosen sensor
+                                listConnectedSensorsUsedInSession[i]
                                     .isSelectedToAssignPlacement = true;
+
+                                _controllerWorkoutSetup.selectedSensor =
+                                    listConnectedSensorsUsedInSession[i];
                                 setState(() {});
                               },
                               child: Padding(
@@ -463,29 +485,29 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                                           MainAxisAlignment.spaceAround,
                                       children: [
                                         CircleAvatar(
-                                          backgroundColor:
-                                              _allRegisteredAndConnectedSensors[
-                                                          i]
-                                                      .isSelectedToAssignPlacement
-                                                  ? Colors.white
-                                                  : Colors.transparent,
+                                          backgroundColor: _controllerWorkoutSetup
+                                                  .allConnectedSensorsUsedInSession[
+                                                      i]
+                                                  .isSelectedToAssignPlacement
+                                              ? Colors.white
+                                              : Colors.transparent,
                                           radius: 22,
                                           child: CircleAvatar(
                                             backgroundColor: Get.isDarkMode
                                                 ? Colors.white.withOpacity(0.1)
                                                 : Colors.black.withOpacity(0.1),
                                             child: SvgPicture.asset(
-                                                'assets/icons/callibri_device-${_allRegisteredAndConnectedSensors[i].color}.svg',
+                                                'assets/icons/callibri_device-${_controllerWorkoutSetup.allConnectedSensorsUsedInSession[i].color}.svg',
                                                 width: 16,
                                                 semanticsLabel: 'Battery'),
                                           ),
                                         ),
                                         const SizedBox(height: 2),
                                         AppBatteryIndicator(
-                                            batteryLevel:
-                                                _allRegisteredAndConnectedSensors[
-                                                        i]
-                                                    .battery!,
+                                            batteryLevel: _controllerWorkoutSetup
+                                                .allConnectedSensorsUsedInSession[
+                                                    i]
+                                                .battery!,
                                             appBatteryIndicatorLabelPosition:
                                                 AppBatteryIndicatorLabelPosition
                                                     .inside)
@@ -500,13 +522,16 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                                             MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            _allRegisteredAndConnectedSensors[i]
+                                            _controllerWorkoutSetup
+                                                        .allConnectedSensorsUsedInSession[
+                                                            i]
                                                         .placement ==
                                                     null
                                                 ? 'Not assigned'
                                                 : idToBodyRegionString(
                                                     bodyRegionId:
-                                                        _allRegisteredAndConnectedSensors[
+                                                        _controllerWorkoutSetup
+                                                            .allConnectedSensorsUsedInSession[
                                                                 i]
                                                             .placement!
                                                             .bodyRegionId),
@@ -525,81 +550,43 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
-                                              _allRegisteredAndConnectedSensors[
+                                              _controllerWorkoutSetup
+                                                          .allConnectedSensorsUsedInSession[
                                                               i]
                                                           .placement ==
                                                       null
                                                   ? 'Not assigned'
-                                                  : _allRegisteredAndConnectedSensors[
+                                                  : _controllerWorkoutSetup
+                                                      .allConnectedSensorsUsedInSession[
                                                           i]
                                                       .placement!
                                                       .muscleName,
-                                              style:
-                                                  Get.isDarkMode
-                                                      ? AppTheme.appDarkTheme
-                                                          .textTheme.bodyText1
-                                                      : AppTheme.appTheme
-                                                          .textTheme.bodyText1),
+                                              style: Get.isDarkMode
+                                                  ? AppTheme.appDarkTheme
+                                                      .textTheme.bodyText1
+                                                  : AppTheme.appTheme.textTheme
+                                                      .bodyText1),
                                           const SizedBox(height: 2),
-                                          if (_allRegisteredAndConnectedSensors[
+                                          if (_controllerWorkoutSetup
+                                                  .allConnectedSensorsUsedInSession[
                                                       i]
                                                   .placement
                                                   ?.side !=
                                               null)
-                                            Container(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  8, 1, 8, 1),
-                                              decoration: BoxDecoration(
-                                                color:
-                                                    _allRegisteredAndConnectedSensors[
-                                                                    i]
-                                                                .placement!
-                                                                .side ==
-                                                            'left'
-                                                        ? Color(0xffebb63b)
-                                                            .withOpacity(0.3)
-                                                        : Color(0xff004457)
-                                                            .withOpacity(0.3),
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                border: Border.all(
-                                                  width: 1.0,
-                                                  color:
-                                                      _allRegisteredAndConnectedSensors[
-                                                                      i]
-                                                                  .placement!
-                                                                  .side ==
-                                                              'left'
-                                                          ? Color(0xffebb63b)
-                                                          : Color(0xff004457),
-                                                ),
-                                              ),
-                                              child: Text(
-                                                  _allRegisteredAndConnectedSensors[
-                                                          i]
-                                                      .placement!
-                                                      .side
-                                                      .toString(),
-                                                  style: AppTheme.appDarkTheme
-                                                      .textTheme.caption
-                                                      ?.copyWith(
-                                                    color:
-                                                        _allRegisteredAndConnectedSensors[
-                                                                        i]
-                                                                    .placement!
-                                                                    .side ==
-                                                                'left'
-                                                            ? Color(0xffebb63b)
-                                                            : Color(0xff004457),
-                                                  )),
-                                            )
+                                            AppMuscleSideIndicator(
+                                                side: _controllerWorkoutSetup
+                                                    .allConnectedSensorsUsedInSession[
+                                                        i]
+                                                    .placement!
+                                                    .side!)
                                         ],
                                       ),
                                     ),
                                     AppIconButton(
                                       iconData: Icons.delete,
                                       onPressed: () {
-                                        _allRegisteredAndConnectedSensors[i]
+                                        _controllerWorkoutSetup
+                                            .allConnectedSensorsUsedInSession[i]
                                             .placement = null;
 
                                         setState(() {});
@@ -619,7 +606,9 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                   Center(
                     child: CircularProgressIndicator(),
                   ),
-                if (!_isLoading && _allRegisteredAndConnectedSensors.isEmpty)
+                if (!_isLoading &&
+                    _controllerWorkoutSetup
+                        .allConnectedSensorsUsedInSession.isEmpty)
                   AppBottom(
                       onPressed: () async {
                         setState(() {
@@ -638,13 +627,15 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                         _initRegisteredSensorsDBAsync();
                       },
                       mainText: 'Start Searching'),
-                if (!_isLoading && _allRegisteredAndConnectedSensors.isNotEmpty)
+                if (!_isLoading &&
+                    _controllerWorkoutSetup
+                        .allConnectedSensorsUsedInSession.isNotEmpty)
                   AppBottom(
                     onPressed: () {
                       Get.off(() => SessionMonitorScreen(
                           client: widget.client,
-                          allSensorsUsedInSession:
-                              _allRegisteredAndConnectedSensors));
+                          allSensorsUsedInSession: _controllerWorkoutSetup
+                              .allConnectedSensorsUsedInSession.value));
                     },
                     // secondaryText: 'Repeat search',
                     // secondaryTextColor: Theme.of(context).colorScheme.error,
@@ -671,6 +662,8 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
   }
 
   Future<void> _initRegisteredSensorsDBAsync() async {
+    final GetxControllerSessionSetup _controllerWorkoutSetup = Get.find();
+
     /// Connect to the registered and discovered sensors:
     if (_allRegisteredAndFoundSensors.isNotEmpty) {
       _isLoading = true;
@@ -682,10 +675,11 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
         log('CONNECTING...');
         var connectedSensor = await Sensor.create(info);
 
-        int connectedSensorBattery = await connectedSensor.battery.value;
-        CallibriColorType connectedSensorColor =
+        final int connectedSensorBattery = await connectedSensor.battery.value;
+        final CallibriColorType connectedSensorColor =
             await connectedSensor.color.value;
-        String connectedSensorAddress = await connectedSensor.address.value;
+        final String connectedSensorAddress =
+            await connectedSensor.address.value;
 
         registeredAndConnectedSensors.add(
           SensorUsedInSession(
@@ -702,7 +696,8 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
               columnChartData: []),
         );
       }
-      _allRegisteredAndConnectedSensors = registeredAndConnectedSensors;
+      _controllerWorkoutSetup.allConnectedSensorsUsedInSession.value =
+          registeredAndConnectedSensors;
 
       _allRegisteredAndFoundSensors.clear();
       _searchController.dispose();
@@ -755,11 +750,21 @@ class CardSensorPlacementInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final GetxControllerSessionSetup _controllerWorkoutSetup = Get.find();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InkWell(
-          onTap: () => notifyParentPlacementSelected(cardPlacement),
+          onTap: () {
+            notifyParentPlacementSelected(cardPlacement);
+
+            if (_controllerWorkoutSetup.selectedSensor != null) {
+              _controllerWorkoutSetup.selectedSensor!.placement = cardPlacement;
+              _controllerWorkoutSetup.allConnectedSensorsUsedInSession
+                  .refresh(); //! Important
+            }
+          },
           child: Container(
             width: 180,
             height: 180,
@@ -853,8 +858,14 @@ class CardSensorPlacementInfo extends StatelessWidget {
                 action: () {
                   selectedPlacement.side = 'left';
                   notifyParentSideSelected(selectedPlacement);
+                  if (_controllerWorkoutSetup.selectedSensor != null) {
+                    _controllerWorkoutSetup.selectedSensor!.placement =
+                        selectedPlacement;
+                    _controllerWorkoutSetup.allConnectedSensorsUsedInSession
+                        .refresh(); //! Important
+                  }
                 },
-                color: Color(0xffebb63b),
+                color: Color(0xff1727B3),
                 buttonSize: ButtonSize.medium,
               ),
               const SizedBox(width: 24),
@@ -862,6 +873,12 @@ class CardSensorPlacementInfo extends StatelessWidget {
                 action: () {
                   selectedPlacement.side = 'right';
                   notifyParentSideSelected(selectedPlacement);
+                  if (_controllerWorkoutSetup.selectedSensor != null) {
+                    _controllerWorkoutSetup.selectedSensor!.placement =
+                        selectedPlacement;
+                    _controllerWorkoutSetup.allConnectedSensorsUsedInSession
+                        .refresh(); //! Important
+                  }
                 },
                 color: Color(0xff004457),
                 buttonSize: ButtonSize.medium,

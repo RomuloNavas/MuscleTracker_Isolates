@@ -9,8 +9,8 @@ import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/placement_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/workout_operations.dart';
-import 'package:neuro_sdk_isolate_example/screens/client_journal/session/session_results.dart';
-import 'package:neuro_sdk_isolate_example/screens/client_journal/session/session_setup_screen.dart';
+import 'package:neuro_sdk_isolate_example/screens/session/session_results.dart';
+import 'package:neuro_sdk_isolate_example/screens/session/session_setup_screen.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/utils/build_from_sensor.dart';
 import 'package:neuro_sdk_isolate_example/utils/global_utils.dart';
@@ -261,9 +261,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                         Column(
                                           children: [
                                             Text(
-                                                isRecording
-                                                    ? 'Stop'
-                                                    : 'Record',
+                                                isRecording ? 'Stop' : 'Record',
                                                 style: Get.isDarkMode
                                                     ? AppTheme.appDarkTheme
                                                         .textTheme.overline
@@ -1249,7 +1247,7 @@ Color buildPlotAreaBackgroundColorFromSensor(
 String buildTextForChart(SensorUsedInSession connectedSensorUsedInSession) {
   String sensorName = 'Callibri ${connectedSensorUsedInSession.color!}';
   String textForChart = connectedSensorUsedInSession.placement != null
-      ? '$sensorName - ${connectedSensorUsedInSession.placement!.muscleName}'
+      ? '$sensorName - ${connectedSensorUsedInSession.placement!.muscleName} ${connectedSensorUsedInSession.placement?.side != null ? '- ${connectedSensorUsedInSession.placement!.side}' : ""}'
       : sensorName;
 
 // REMOVED TO AVOID SET STATE
