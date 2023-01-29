@@ -1,11 +1,10 @@
-
 import 'package:neuro_sdk_isolate_example/database/database.dart';
 
 class RegisteredSensorOperations {
   RegisteredSensorOperations? registeredSensorOperations;
   final dbProvider = DatabaseRepository.instance;
 
-  registerNewSensor(RegisteredSensor registeredSensor) async {
+  insertNewSensor(RegisteredSensor registeredSensor) async {
     final db = await dbProvider.database;
     db.insert('registeredSensor', registeredSensor.toJson());
   }
@@ -29,6 +28,13 @@ class RegisteredSensorOperations {
     } else {
       return null;
     }
+  }
+  Future<void> updateRegisteredSensorBatteryByAddress(String address, RegisteredSensor registeredSensor  ) async {
+    final db = await dbProvider.database;
+         await db.update('registeredSensor',
+         registeredSensor.toJson(),
+        where: 'registeredSensorAddress=?', whereArgs: [address]);
+    
   }
 
   Future<RegisteredSensor?> getRegisteredSensorById(
@@ -63,6 +69,9 @@ class RegisteredSensor {
   String adcInput;
   String hardwareFilters;
   String samplingFrequency;
+  int? battery;
+
+  bool? isSelectedToAssignPlacement;
 
   RegisteredSensor({
     this.id,
@@ -74,6 +83,10 @@ class RegisteredSensor {
     required this.adcInput,
     required this.hardwareFilters,
     required this.samplingFrequency,
+    this.battery,
+
+    // This parameter doesn't go to database. It is used in SessionSetupScreen.
+    this.isSelectedToAssignPlacement,
   });
 
   factory RegisteredSensor.fromJson(Map<String, dynamic> json) =>
@@ -87,6 +100,7 @@ class RegisteredSensor {
         adcInput: json["registeredSensorADCinput"],
         hardwareFilters: json["registeredSensorHardwareFilters"],
         samplingFrequency: json["registeredSensorSamplingFrequency"],
+        battery: json["registeredSensorBattery"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -98,5 +112,6 @@ class RegisteredSensor {
         "registeredSensorADCinput": adcInput,
         "registeredSensorHardwareFilters": hardwareFilters,
         "registeredSensorSamplingFrequency": samplingFrequency,
+        "registeredSensorBattery": battery,
       };
 }
