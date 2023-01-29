@@ -9,10 +9,6 @@ class PlacementOperations {
 
   final dbProvider = DatabaseRepository.instance;
 
-  createMuscle(Placement placement) async {
-    final db = await dbProvider.database;
-    await db.insert("placement", placement.toJson());
-  }
 
   Future<Placement> getPlacementById(int? placementId) async {
     if(placementId == 0 ||  placementId == null){
@@ -90,7 +86,7 @@ class Placement {
   String? behavioralTest;
   late int bodyRegionId;
 
-  Placement({
+  Placement( {
     this.id,
     required this.muscleName,
     this.action,

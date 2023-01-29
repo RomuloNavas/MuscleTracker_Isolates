@@ -7,8 +7,7 @@ import 'package:neuro_sdk_isolate_example/database/placement_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/workout_operations.dart';
 import 'package:neuro_sdk_isolate_example/screens/home/home_screen.dart';
-import 'package:neuro_sdk_isolate_example/screens/search_for_registration/get_ready_screen.dart';
-import 'package:neuro_sdk_isolate_example/screens/search_for_registration/search_screen.dart';
+import 'package:neuro_sdk_isolate_example/screens/sensor_registration/search_screen.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 

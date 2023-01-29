@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
-import 'package:neuro_sdk_isolate_example/screens/client_journal/session/session_setup_screen.dart';
+import 'package:neuro_sdk_isolate_example/screens/session/session_setup_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/client_journal/widgets/percentage_box.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -23,19 +23,22 @@ import 'package:neuro_sdk_isolate_example/utils/extension_methods.dart';
 import 'package:neuro_sdk_isolate_example/utils/global_utils.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_bottom.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
-import 'package:neuro_sdk_isolate_example/widgets/app_client_avatart.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_client_avatar.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_muscle_side.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_text_field.dart';
 
 class UsedSensorResults {
   UsedSensorResults({
     required this.muscleName,
     required this.bodyRegion,
+    this.side,
     required this.color,
     required this.sensorId,
   });
   late String muscleName;
   late String bodyRegion;
+  String? side;
   late String color;
   late int sensorId;
 }
@@ -112,10 +115,12 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
     return listMuscleActivityComparison;
   }
 
-  Widget buildSensorPlacementCard(
-      {required String sensorColor,
-      required String muscleName,
-      required String bodyRegionName}) {
+  Widget buildSensorPlacementCard({
+    required String sensorColor,
+    required String muscleName,
+    required String bodyRegionName,
+    String? side,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
@@ -148,12 +153,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                       ? AppTheme.appDarkTheme.textTheme.bodyText1
                       : AppTheme.appTheme.textTheme.bodyText1,
                 ),
-                // Text(
-                //   'Left',
-                //   style: Get.isDarkMode
-                //       ? AppTheme.appDarkTheme.textTheme.overline?.copyWith(color: Color(0xff878787))
-                //       : AppTheme.appTheme.textTheme.overline,
-                // ),
+                if (side != null) AppMuscleSideIndicator(side: side!)
               ],
             )
           ],
@@ -316,12 +316,13 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                                   for (var sensor
                                                       in snapshot.data!)
                                                     buildSensorPlacementCard(
-                                                        sensorColor:
-                                                            sensor.color,
-                                                        muscleName:
-                                                            sensor.muscleName,
-                                                        bodyRegionName:
-                                                            sensor.bodyRegion)
+                                                      sensorColor: sensor.color,
+                                                      muscleName:
+                                                          sensor.muscleName,
+                                                      bodyRegionName:
+                                                          sensor.bodyRegion,
+                                                      side: sensor.side,
+                                                    )
                                                 ],
                                               );
                                             } else {
@@ -377,11 +378,12 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             buildSensorPlacementCard(
-                                                sensorColor: usedSensor.color,
-                                                muscleName:
-                                                    usedSensor.muscleName,
-                                                bodyRegionName:
-                                                    usedSensor.bodyRegion),
+                                              sensorColor: usedSensor.color,
+                                              muscleName: usedSensor.muscleName,
+                                              bodyRegionName:
+                                                  usedSensor.bodyRegion,
+                                              side: usedSensor.side,
+                                            ),
                                             FutureBuilder(
                                               future:
                                                   getAllSensorReportsFromSensorId(
@@ -656,6 +658,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
             bodyRegion: placement.bodyRegionId == 0
                 ? 'Not assigned'
                 : idToBodyRegionString(bodyRegionId: placement.bodyRegionId),
+            side: sensorReport.side,
             color: buildColorNameFromSensor(
                 rawSensorNameAndColor: usedSensor.color));
 

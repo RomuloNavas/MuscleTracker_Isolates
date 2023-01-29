@@ -54,6 +54,7 @@ class SensorReport {
   late double area;
   late int registeredSensorId;
   int? placementId;
+  String? side;
 
   late int workoutReportId;
 
@@ -66,6 +67,7 @@ class SensorReport {
     required this.registeredSensorId,
     this.placementId,
     required this.workoutReportId,
+    this.side,
   });
 
   factory SensorReport.fromJson(Map<String, dynamic> json) => SensorReport(
@@ -77,6 +79,7 @@ class SensorReport {
         registeredSensorId: json['registeredSensorId'],
         placementId: json['placementId'],
         workoutReportId: json['workoutReportId'],
+        side: json['workoutReportSide'],
       );
 
   Map<String, dynamic> toJson() {
@@ -88,6 +91,7 @@ class SensorReport {
       'registeredSensorId': registeredSensorId,
       'placementId': placementId,
       'workoutReportId': workoutReportId,
+      'workoutReportSide': side,
     };
 
     return map;

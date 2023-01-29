@@ -1,19 +1,9 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
-import 'package:neuro_sdk_isolate_example/database/body_region_operations.dart';
-import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
-import 'package:neuro_sdk_isolate_example/database/placement_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
-import 'package:neuro_sdk_isolate_example/database/workout_operations.dart';
 import 'package:neuro_sdk_isolate_example/screens/home/home_screen.dart';
-import 'package:neuro_sdk_isolate_example/screens/search_for_registration/search_screen.dart';
-import 'package:neuro_sdk_isolate_example/screens/sensor_registration/controllers/sensor_conroller.dart';
-import 'package:neuro_sdk_isolate_example/screens/sensor_registration/widgets/sensor_screen_body.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
-import 'package:neuro_sdk_isolate_example/utils/build_battery_indicator_icon.dart';
 import 'package:neuro_sdk_isolate_example/utils/build_from_sensor.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_battery_indicator.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
