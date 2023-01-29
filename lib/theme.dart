@@ -2,18 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// RADIUS: Buttons, textField container => 16
+
 class AppTheme {
   // 'appBarHeight' = 80,
   static ThemeData appTheme = ThemeData.light().copyWith(
     colorScheme: ColorScheme.fromSwatch().copyWith(
-      primary: const Color(0xff1f6afb),
-      // primary: const Color(0xff5181b8),
-      secondary: const Color(0xff508bff), // Color got the overflow glow effect
-      tertiary: const Color(0xffe2e3e5),
-      surface: const Color.fromRGBO(232, 233, 234, 1), // card color
-      error: const Color(0xffde270e),
-      outline: const Color(0xffd3d5d7),
-    ),
+        primary: const Color(0xff071eff),
+        // primary: const Color(0xff5181b8),
+        secondary:
+            const Color(0xff0058e4), // Color got the overflow glow effect
+        tertiary: const Color(0xffe2e3e5),
+        surface: const Color.fromRGBO(232, 233, 234, 1), // card color
+        error: const Color(0xffe40031),
+        outline: const Color(0xffd3d5d7),
+        shadow:
+            const Color(0xff838997) // Used for icons in buttonIcons and labels
+        ),
     scrollbarTheme: ScrollbarThemeData().copyWith(
       thumbColor: MaterialStateProperty.all(const Color(0xff1f5cff)),
       trackColor: MaterialStateProperty.all(const Color(0xff212224)),
@@ -53,13 +58,14 @@ class AppTheme {
 
   static ThemeData appDarkTheme = ThemeData.dark().copyWith(
     colorScheme: ColorScheme.fromSwatch().copyWith(
-      primary: const Color(0xff1f6afb),
-      secondary: const Color(0xff508bff), // Color got the overflow glow effect
-      tertiary: const Color(0xff282828),
-      surface: const Color(0xff212224),
-      error: const Color(0xffd85a53),
-      outline: const Color(0xff333333),
-    ),
+        primary: const Color(0xff071eff),
+        secondary:
+            const Color(0xff0058e4), // Color got the overflow glow effect
+        tertiary: const Color(0xff282828),
+        surface: const Color(0xff212224),
+        error: const Color(0xffe40031),
+        outline: const Color(0xff333333),
+        shadow: const Color(0xff838997)),
     scrollbarTheme: ScrollbarThemeData().copyWith(
       thumbColor: MaterialStateProperty.all(const Color(0xff54ff81)),
       trackColor: MaterialStateProperty.all(const Color(0xff212224)),
@@ -102,24 +108,36 @@ class AppTheme {
   );
 
   static TextTheme appTextTheme = TextTheme(
-    headline1: GoogleFonts.jost(
+    headline1: TextStyle(
+        fontFamily: 'inputmono',
         fontSize: 26,
         color: Colors.black,
         letterSpacing: 0.3,
         height: 0.9,
         fontWeight: FontWeight.w600),
-    headline2: GoogleFonts.jost(
-        fontSize: 24, color: Colors.black, fontWeight: FontWeight.w600),
-    headline3: GoogleFonts.jost(
-        fontSize: 22, color: Colors.black, fontWeight: FontWeight.w500),
-    headline4: GoogleFonts.jost(
-        fontSize: 20, color: Colors.black, fontWeight: FontWeight.w500),
-    headline5: GoogleFonts.jost(
+    headline2: TextStyle(
+        fontFamily: 'inputmono',
+        fontSize: 24,
+        color: Colors.black,
+        fontWeight: FontWeight.w600),
+    headline3: TextStyle(
+        fontFamily: 'inputmono',
+        fontSize: 22,
+        color: Colors.black,
+        fontWeight: FontWeight.w500),
+    headline4: TextStyle(
+        fontFamily: 'inputmono',
+        fontSize: 20,
+        color: Colors.black,
+        fontWeight: FontWeight.w500),
+    headline5: TextStyle(
+        fontFamily: 'inputmono',
         fontSize: 18,
         fontWeight: FontWeight.w500,
         letterSpacing: 0.4,
         color: Colors.black),
-    headline6: GoogleFonts.jost(
+    headline6: TextStyle(
+        fontFamily: 'inputmono',
         fontSize: 16,
         fontWeight: FontWeight.w500,
         letterSpacing: 0.4,
