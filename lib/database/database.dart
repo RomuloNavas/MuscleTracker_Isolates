@@ -15,7 +15,7 @@ class DatabaseRepository {
   static final DatabaseRepository instance =
       DatabaseRepository.privateConstructor();
 
-  final _databaseName = 'database7';
+  final _databaseName = 'database9';
   final _databaseVersion = 1;
 
   static Database? _database;
@@ -127,6 +127,7 @@ class DatabaseRepository {
             sensorReportArea REAL NOT NULL,
             registeredSensorId INTEGER NOT NULL,
             placementId INTEGER,
+            workoutReportSide TEXT,
 
             workoutReportId INTEGER NOT NULL,
             FOREIGN KEY (workoutReportId) REFERENCES workoutReport (workoutReportId)
