@@ -1,11 +1,8 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
 import 'package:neuro_sdk_isolate_example/controllers/services_manager.dart';
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
@@ -13,14 +10,12 @@ import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.
 import 'package:neuro_sdk_isolate_example/screens/home/widgets/tapper_registered_sensor_info.dart';
 import 'package:neuro_sdk_isolate_example/screens/client_journal/client_history_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/controllers/search_controller.dart';
-import 'package:neuro_sdk_isolate_example/screens/sensor_registration/sensor_screen.dart';
 import 'dart:async';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/utils/global_utils.dart';
-import 'package:neuro_sdk_isolate_example/utils/utils.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_battery_indicator.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
-import 'package:neuro_sdk_isolate_example/widgets/app_client_avatart.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_client_avatar.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_pop_menu_item_child.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_text_field.dart';
 import 'package:timeago/timeago.dart' as timeago;

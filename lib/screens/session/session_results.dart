@@ -19,7 +19,7 @@ import 'package:neuro_sdk_isolate_example/utils/build_battery_indicator_icon.dar
 import 'package:neuro_sdk_isolate_example/utils/build_from_sensor.dart';
 import 'package:neuro_sdk_isolate_example/utils/global_utils.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
-import 'package:neuro_sdk_isolate_example/widgets/app_client_avatart.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_client_avatar.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_muscle_side.dart';
 import 'package:path_provider/path_provider.dart';
