@@ -23,19 +23,24 @@ dependencies:
     path: ../
 
   cupertino_icons: ^1.0.2
-  permission_handler: ^10.2.0
-  flutter_bluetooth_serial: ^0.4.0
+  # UI
+  flutter_svg: ^1.1.5
+  carousel_slider: ^4.2.1
   google_fonts: ^2.3.2
   syncfusion_flutter_charts: ^20.1.51
+
+  permission_handler: ^10.2.0
+  flutter_bluetooth_serial: ^0.4.0
   intl: ^0.17.0
   timeago: ^3.3.0
   get: ^4.6.5
   geolocator: ^9.0.1
   location: ^4.4.0
-  flutter_svg: ^1.1.5
-  # Dependencies required for the backend: 
+  
+  # Local Storage 
   sqflite: ^2.1.0
   path_provider: ^2.0.11
+  
   # Read and write contacts
   # contacts_service: ^0.6.3
   collection: ^1.16.0
