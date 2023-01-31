@@ -45,7 +45,7 @@ class DatabaseRepository {
           CREATE TABLE user (
             user_id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_name TEXT NOT NULL,
-            user_login TEXT NOT NULL UNIQUE,
+            user_email TEXT NOT NULL UNIQUE,
             user_password VARCHAR(25) NOT NULL
 
           )
