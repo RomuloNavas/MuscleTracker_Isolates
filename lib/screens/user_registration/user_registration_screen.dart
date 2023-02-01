@@ -177,21 +177,27 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
                                     backgroundColor: Color(0xff5181b8),
                                     text: 'Log in',
                                     onPressed: () {
-                                      // if (_textEditingControllerEmail
-                                      //         .text.isNotEmpty &&
-                                      //     _textEditingControllerPassword
-                                      //         .text.isNotEmpty)
-                                      //   {getRegisteredUser()}
-                                      Fluttertoast.showToast(
-                                        
-                                        msg: "This is a Toast message",
-                                        toastLength: Toast.LENGTH_LONG,
-                                        gravity: ToastGravity.BOTTOM,
-                                        timeInSecForIosWeb: 3,
-                                        textColor: Colors.white,
-                                        backgroundColor: Color(0xffB85951),
-                                        fontSize: 16.0,
-                                      );
+                                      if (_textEditingControllerEmail
+                                              .text.isNotEmpty &&
+                                          _textEditingControllerPassword
+                                              .text.isNotEmpty) {
+                                        getRegisteredUser(
+                                            email: _textEditingControllerEmail
+                                                .text,
+                                            password:
+                                                _textEditingControllerPassword
+                                                    .text);
+                                      } else {
+                                        Fluttertoast.showToast(
+                                          msg: "Please fill out the empty fields.",
+                                          toastLength: Toast.LENGTH_LONG,
+                                          gravity: ToastGravity.BOTTOM,
+                                          timeInSecForIosWeb: 3,
+                                          textColor: Colors.white,
+                                          backgroundColor: Color(0xffB85951),
+                                          fontSize: 16.0,
+                                        );
+                                      }
                                     },
                                   )),
                               Text('Forgot Password?',
@@ -424,10 +430,10 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
     );
   }
 
-  Future<void> getRegisteredUser() async {
-    _registeredUser = await userOperations.getUser(
-        email: _textEditingControllerEmail.text,
-        password: _textEditingControllerPassword.text);
+  Future<void> getRegisteredUser(
+      {required String email, required String password}) async {
+    _registeredUser =
+        await userOperations.getUser(email: email, password: password);
   }
 
   Widget buildImage(List<String> urlImage, int index) {

@@ -19,7 +19,8 @@ class UserOperations {
     } catch (e) {
       log('❌Error while adding user. $e');
       Fluttertoast.showToast(
-        msg: "Email already exists",
+        msg:
+            "This account already exists. Sign in to your account or create a new one.",
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 3,
@@ -63,15 +64,55 @@ class UserOperations {
   Future<User?> getUser(
       {required String email, required String password}) async {
     final db = await dbProvider.database;
-    List<Map<String, dynamic>> allRows = await db.rawQuery('''
-    SELECT * FROM user 
-    WHERE user.user_email = $email AND WHERE user.user_password = $password
-    ''');
-    List<User> users = allRows.map((user) => User.fromJson(user)).toList();
-    if (users.isNotEmpty) {
-      return users.first;
-    } else {
-      return null;
+    try {
+      List<Map<String, dynamic>> allRows =
+          await db.query('user', where: 'user_email = ?', whereArgs: [email]);
+      List<User> users = allRows.map((user) => User.fromJson(user)).toList();
+      if (users.isNotEmpty) {
+        try {
+          List<Map<String, dynamic>> allRows = await db
+              .query('user', where: 'user_password = ?', whereArgs: [password]);
+          List<User> users =
+              allRows.map((user) => User.fromJson(user)).toList();
+          if (users.isEmpty) {
+            Fluttertoast.showToast(
+              msg: "Your password was incorrect. Please verify your password.",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 3,
+              textColor: Colors.white,
+              backgroundColor: Color(0xffB85951),
+              fontSize: 16.0,
+            );
+          } else {
+            return users.first;
+          }
+        } catch (e) {
+          log(e.toString());
+        }
+      } else {
+        Fluttertoast.showToast(
+          msg:
+              "That account doesn't exist. \nEnter a different account or create a new one",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 3,
+          textColor: Colors.white,
+          backgroundColor: Color(0xffB85951),
+          fontSize: 16.0,
+        );
+        return null;
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: e.toString(),
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 3,
+        textColor: Colors.white,
+        backgroundColor: Color(0xffB85951),
+        fontSize: 16.0,
+      );
     }
   }
 }
