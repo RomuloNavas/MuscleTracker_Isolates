@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class AppTextField extends StatelessWidget {
-  const AppTextField({
+class AppTextFieldSearch extends StatelessWidget {
+  const AppTextFieldSearch({
     required this.textEditingController,
     required this.hintText,
     required this.onCancelButtonPressed,

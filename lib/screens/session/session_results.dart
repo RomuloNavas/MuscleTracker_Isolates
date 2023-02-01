@@ -566,94 +566,88 @@ class SessionResultsScreenState extends State<SessionResultsScreen>
                         child: SizedBox(
                           width: MediaQuery.of(context).size.width * 0.7,
                           child: AppFilledButton(
-                              onPressed: () async {
-                                var clientOperations = ClientOperations();
-                                var sessionOperations = SessionOperations();
-                                var workoutReportOperations =
-                                    WorkoutReportOperations();
+                            onPressed: () async {
+                              var clientOperations = ClientOperations();
+                              var sessionOperations = SessionOperations();
+                              var workoutReportOperations =
+                                  WorkoutReportOperations();
 
-                                /// Save Session to DB and get the added session (row) ID
-                                var completedSession = Session(
-                                  startedAt: widget.sessionStartedAt,
-                                  endedAt: widget.sessionEndedAt,
-                                  name: _textEditingControllerTitle.text,
-                                  description:
-                                      _textEditingControllerDescription.text,
-                                  clientId: widget.client.id,
-                                  bodyRegionId: widget.usedSensors.first
-                                      .sensorPlacement.bodyRegionId,
+                              /// Save Session to DB and get the added session (row) ID
+                              var completedSession = Session(
+                                startedAt: widget.sessionStartedAt,
+                                endedAt: widget.sessionEndedAt,
+                                name: _textEditingControllerTitle.text,
+                                description:
+                                    _textEditingControllerDescription.text,
+                                clientId: widget.client.id,
+                                bodyRegionId: widget.usedSensors.first
+                                    .sensorPlacement.bodyRegionId,
+                              );
+
+                              var idOfLastAddedSession = await sessionOperations
+                                  .createSession(completedSession);
+
+                              /// Inserts a WorkoutReport to the DB and gets it ID.
+                              for (var workout in widget.completedWorkouts) {
+                                var workoutReport = WorkoutReport(
+                                  startedAt:
+                                      workout.startedAt!.toIso8601String(),
+                                  endedAt:
+                                      workout.finishedAt!.toIso8601String(),
+                                  sessionId: idOfLastAddedSession,
+                                  workoutId: workout.exercise.id ??= 0,
                                 );
+                                var idOfLastAddedWorkoutReport =
+                                    await workoutReportOperations
+                                        .createWorkoutReport(workoutReport);
 
-                                var idOfLastAddedSession =
-                                    await sessionOperations
-                                        .createSession(completedSession);
+                                ///  Inserts a SensorReport for each used sensor
+                                for (var sensor in widget.usedSensors) {
+                                  var registeredUsedSensor =
+                                      await RegisteredSensorOperations()
+                                          .getRegisteredSensorByAddress(
+                                              sensor.address);
 
-                                /// Inserts a WorkoutReport to the DB and gets it ID.
-                                for (var workout in widget.completedWorkouts) {
-                                  var workoutReport = WorkoutReport(
-                                    startedAt:
-                                        workout.startedAt!.toIso8601String(),
-                                    endedAt:
-                                        workout.finishedAt!.toIso8601String(),
-                                    sessionId: idOfLastAddedSession,
-                                    workoutId: workout.exercise.id ??= 0,
+                                  int?
+                                      sensorPlacementOfRegisteredAndUsedSensor =
+                                      widget.usedSensors
+                                          .firstWhere((s) =>
+                                              s.address ==
+                                              registeredUsedSensor!.address)
+                                          .sensorPlacement
+                                          .id;
+
+                                  final sensorReport = SensorReport(
+                                    maxAmp: workout.getMaxAmpInVFromSensor(
+                                        sensorAddress: sensor.address),
+                                    minAmp: workout.getMinAmpInVFromSensor(
+                                        sensorAddress: sensor.address),
+                                    avrAmp: workout.getAvrAmpInVFromSensor(
+                                        sensorAddress: sensor.address),
+                                    area: workout.getAreaFromSensor(
+                                        sensorAddress: sensor.address),
+                                    registeredSensorId:
+                                        registeredUsedSensor!.id!,
+                                    workoutReportId: idOfLastAddedWorkoutReport,
+                                    placementId:
+                                        sensorPlacementOfRegisteredAndUsedSensor,
+                                    side: sensor.sensorPlacement.side,
                                   );
-                                  var idOfLastAddedWorkoutReport =
-                                      await workoutReportOperations
-                                          .createWorkoutReport(workoutReport);
 
-                                  ///  Inserts a SensorReport for each used sensor
-                                  for (var sensor in widget.usedSensors) {
-                                    var registeredUsedSensor =
-                                        await RegisteredSensorOperations()
-                                            .getRegisteredSensorByAddress(
-                                                sensor.address);
-
-                                    int?
-                                        sensorPlacementOfRegisteredAndUsedSensor =
-                                        widget.usedSensors
-                                            .firstWhere((s) =>
-                                                s.address ==
-                                                registeredUsedSensor!.address)
-                                            .sensorPlacement
-                                            .id;
-
-                                    final sensorReport = SensorReport(
-                                      maxAmp: workout.getMaxAmpInVFromSensor(
-                                          sensorAddress: sensor.address),
-                                      minAmp: workout.getMinAmpInVFromSensor(
-                                          sensorAddress: sensor.address),
-                                      avrAmp: workout.getAvrAmpInVFromSensor(
-                                          sensorAddress: sensor.address),
-                                      area: workout.getAreaFromSensor(
-                                          sensorAddress: sensor.address),
-                                      registeredSensorId:
-                                          registeredUsedSensor!.id!,
-                                      workoutReportId:
-                                          idOfLastAddedWorkoutReport,
-                                      placementId:
-                                          sensorPlacementOfRegisteredAndUsedSensor,
-                                      side: sensor.sensorPlacement.side,
-                                    );
-
-                                    await SensorReportOperations()
-                                        .createSensorReport(sensorReport);
-                                  }
+                                  await SensorReportOperations()
+                                      .createSensorReport(sensorReport);
                                 }
+                              }
 
-                                Get.off(
-                                  () => const HomeScreen(),
-                                );
-                              },
-                              backgroundColor: Get.isDarkMode
-                                  ? AppTheme.appDarkTheme.colorScheme.primary
-                                  : AppTheme.appTheme.colorScheme.primary,
-                              child: Text(
-                                'Save and close',
-                                style: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.textTheme.button
-                                    : AppTheme.appTheme.textTheme.button,
-                              )),
+                              Get.off(
+                                () => const HomeScreen(),
+                              );
+                            },
+                            backgroundColor: Get.isDarkMode
+                                ? AppTheme.appDarkTheme.colorScheme.primary
+                                : AppTheme.appTheme.colorScheme.primary,
+                            text: 'Save and close',
+                          ),
                         ),
                       ),
                       Padding(

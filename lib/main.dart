@@ -11,6 +11,8 @@ import 'package:neuro_sdk_isolate_example/screens/sensor_registration/search_scr
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 
+import 'screens/user_registration/user_registration_screen.dart';
+
 void main() async {
   await SDKIsolate.init();
   runApp(const MyApp());
@@ -42,29 +44,30 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      // showPerformanceOverlay: true,
-      debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.system,
-      theme: AppTheme.appTheme,
-      darkTheme: AppTheme.appDarkTheme,
-      home: FutureBuilder<List<RegisteredSensor>?>(
-        future: initRegisteredSensors,
-        builder: (context, AsyncSnapshot<List<RegisteredSensor>?> snapshot) {
-          if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.hasData) {
-            if (snapshot.data!.isEmpty) {
-              return const SearchScreen();
-            } else {
-              return HomeScreen();
-            }
-          } else {
-            return Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-        },
-      ),
-    );
+        // showPerformanceOverlay: true,
+        debugShowCheckedModeBanner: false,
+        themeMode: ThemeMode.system,
+        theme: AppTheme.appTheme,
+        darkTheme: AppTheme.appDarkTheme,
+        home: UserRegistrationScreen()
+        // home: FutureBuilder<List<RegisteredSensor>?>(
+        //   future: initRegisteredSensors,
+        //   builder: (context, AsyncSnapshot<List<RegisteredSensor>?> snapshot) {
+        //     if (snapshot.connectionState == ConnectionState.done &&
+        //         snapshot.hasData) {
+        //       if (snapshot.data!.isEmpty) {
+        //         return const SearchScreen();
+        //       } else {
+        //         return HomeScreen();
+        //       }
+        //     } else {
+        //       return Scaffold(
+        //         body: Center(child: CircularProgressIndicator()),
+        //       );
+        //     }
+        //   },
+        // ),
+        );
   }
 
   Future<List<RegisteredSensor>?> initApp() async {

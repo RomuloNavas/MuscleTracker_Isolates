@@ -941,7 +941,7 @@ class _SidePanelState extends State<SidePanel>
                         ]),
                 Flexible(
                   flex: 1,
-                  child: AppTextField(
+                  child: AppTextFieldSearch(
                     textEditingController: _textEditingController,
                     hintText: 'Search session',
                     onCancelButtonPressed: () {

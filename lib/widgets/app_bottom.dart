@@ -30,14 +30,7 @@ class AppBottom extends StatelessWidget {
             width: MediaQuery.of(context).size.width > 600
                 ? MediaQuery.of(context).size.width * 0.65
                 : double.infinity,
-            child: AppFilledButton(
-                onPressed: onPressed,
-                child: Text(
-                  mainText,
-                  style: Get.isDarkMode
-                      ? AppTheme.appDarkTheme.textTheme.button
-                      : AppTheme.appTheme.textTheme.button,
-                )),
+            child: AppFilledButton(onPressed: onPressed, text: mainText),
           ),
           if (secondaryText != null)
             Padding(

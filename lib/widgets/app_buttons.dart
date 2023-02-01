@@ -10,13 +10,13 @@ enum ButtonSize {
 }
 
 class AppFilledButton extends StatelessWidget {
-  final Widget child;
+  final String text;
   final VoidCallback onPressed;
   final Color? backgroundColor;
 
   const AppFilledButton({
     Key? key,
-    required this.child,
+    required this.text,
     required this.onPressed,
     this.backgroundColor,
   }) : super(key: key);
@@ -60,7 +60,12 @@ class AppFilledButton extends StatelessWidget {
         surfaceTintColor:
             MaterialStateProperty.all(AppTheme.appTheme.highlightColor),
       ),
-      child: child,
+      child: Text(
+        text,
+        style: Get.isDarkMode
+            ? AppTheme.appDarkTheme.textTheme.button
+            : AppTheme.appTheme.textTheme.button,
+      ),
     );
   }
 }
@@ -81,29 +86,30 @@ class AppOutlinedButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return OutlinedButton(
-        onPressed: action,
-        style: ButtonStyle(
-          // Border Color
-          side: MaterialStateProperty.all(BorderSide(width: 1, color: color)),
-          overlayColor: MaterialStateProperty.all(color.withOpacity(0.3)),
-          minimumSize: MaterialStateProperty.all(buttonSize == ButtonSize.medium
-              ? const Size(0, 32)
-              : buttonSize == ButtonSize.big
-                  ? const Size(0, 48)
-                  : const Size(0, 16)),
-          shadowColor: MaterialStateProperty.all(
-              darkerColorFrom(color: color, amount: 0.5)),
-          //Color when button is pressed
-          // splashFactory: NoSplash.splashFactory,
-          // Text color
-          foregroundColor: MaterialStateProperty.all(color),
-          surfaceTintColor:
-              MaterialStateProperty.all(AppTheme.appTheme.primaryColorDark),
-          backgroundColor: MaterialStateProperty.all(color.withOpacity(0.3)),
-          shape: MaterialStateProperty.all(RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.0))),
-        ),
-        child: child);
+      onPressed: action,
+      style: ButtonStyle(
+        // Border Color
+        side: MaterialStateProperty.all(BorderSide(width: 1, color: color)),
+        overlayColor: MaterialStateProperty.all(color.withOpacity(0.3)),
+        minimumSize: MaterialStateProperty.all(buttonSize == ButtonSize.medium
+            ? const Size(0, 32)
+            : buttonSize == ButtonSize.big
+                ? const Size(0, 48)
+                : const Size(0, 16)),
+        shadowColor: MaterialStateProperty.all(
+            darkerColorFrom(color: color, amount: 0.5)),
+        //Color when button is pressed
+        // splashFactory: NoSplash.splashFactory,
+        // Text color
+        foregroundColor: MaterialStateProperty.all(color),
+        surfaceTintColor:
+            MaterialStateProperty.all(AppTheme.appTheme.primaryColorDark),
+        backgroundColor: MaterialStateProperty.all(color.withOpacity(0.3)),
+        shape: MaterialStateProperty.all(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0))),
+      ),
+      child: child,
+    );
   }
 }
 

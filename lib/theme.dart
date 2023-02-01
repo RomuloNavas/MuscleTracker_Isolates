@@ -111,24 +111,24 @@ class AppTheme {
     headline1: TextStyle(
         fontFamily: 'inputmono',
         fontSize: 26,
-        color: Colors.black,
+        color: Color(0xff242a2f),
         letterSpacing: 0.3,
         height: 0.9,
         fontWeight: FontWeight.w600),
     headline2: TextStyle(
         fontFamily: 'inputmono',
         fontSize: 24,
-        color: Colors.black,
+        color: Color(0xff242a2f),
         fontWeight: FontWeight.w600),
     headline3: TextStyle(
         fontFamily: 'inputmono',
         fontSize: 22,
-        color: Colors.black,
+        color: Color(0xff242a2f),
         fontWeight: FontWeight.w500),
     headline4: TextStyle(
         fontFamily: 'inputmono',
         fontSize: 20,
-        color: Colors.black,
+        color: Color(0xff242a2f),
         fontWeight: FontWeight.w500),
     headline5: TextStyle(
         fontFamily: 'inputmono',
@@ -143,7 +143,7 @@ class AppTheme {
         letterSpacing: 0.4,
         color: Colors.black),
     bodyText1: GoogleFonts.roboto(
-      color: Colors.black,
+      color: Color(0xff242a2f),
       fontSize: 17,
     ),
     bodyText2: GoogleFonts.roboto(
@@ -160,7 +160,7 @@ class AppTheme {
       fontSize: 14,
       fontWeight: FontWeight.w400,
       letterSpacing: 0.4,
-      color: Colors.black,
+      color: Color(0xff242a2f),
     ),
     overline: GoogleFonts.roboto(
         fontSize: 14,

@@ -275,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Flexible(
                                 flex: 1,
-                                child: AppTextField(
+                                child: AppTextFieldSearch(
                                   textEditingController: _textEditingController,
                                   hintText: 'Search client',
                                   onCancelButtonPressed: () {
