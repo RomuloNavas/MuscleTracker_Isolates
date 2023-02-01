@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
@@ -15,25 +18,81 @@ class UserRegistrationScreen extends StatefulWidget {
   State<UserRegistrationScreen> createState() => _UserRegistrationScreenState();
 }
 
-class _UserRegistrationScreenState extends State<UserRegistrationScreen> {
-  late TextEditingController _textEditingControllerTitle;
-  final _carouselSliderImages = [
-    'assets/images/callibri_blue.png',
-    'assets/images/callibri_red.png',
-    'assets/images/callibri_yellow.png',
-    'assets/images/callibri_white.png',
-  ];
+class _UserRegistrationScreenState extends State<UserRegistrationScreen>
+    with TickerProviderStateMixin {
+  final Set<List<String>> _carouselSliderImages = {
+    [
+      'assets/images/login/login_1.png',
+      'We have created a wireless system to minimize signal interference and ensure the most accurate results so you can analyze your workout process in finest details.'
+    ],
+    [
+      'assets/images/login/login_2.png',
+      'Myographic system enables you to assess and compare how different muscles get engaged in the moving pattern.'
+    ],
+    [
+      'assets/images/login/login_3.png',
+      'A Bluetooth powered system that connects the sensor to your tablet or mobile'
+    ],
+    [
+      'assets/images/login/login_4.png',
+      'Registering muscles myoelectrical activity while exercising'
+    ],
+  };
 
-  List<User> _allUsers = [];
-  late Future<void> _initRegisteredUsers;
+  final userOperations = UserOperations();
+  User? _registeredUser;
+  bool _isPasswordVisible = false;
+  bool _isCreatingAnAccount = false;
+
+  late TextEditingController _textEditingControllerName;
+  late TextEditingController _textEditingControllerEmail;
+  late TextEditingController _textEditingControllerPassword;
+
+  // Animations
+  late AnimationController _animationControllerLogin;
+  late Animation<double> _animationLogin;
+  late AnimationController _animationControllerSignup;
+  late Animation<double> _animationSignup;
 
   @override
   void initState() {
-    _textEditingControllerTitle = TextEditingController();
-
-    _initRegisteredUsers = getRegisteredUsers();
-
     super.initState();
+    _textEditingControllerName = TextEditingController();
+    _textEditingControllerEmail = TextEditingController();
+    _textEditingControllerPassword = TextEditingController();
+
+    // Animations
+    _animationControllerLogin = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+    _animationLogin = CurvedAnimation(
+      parent: _animationControllerLogin,
+      curve: Curves.fastLinearToSlowEaseIn,
+    );
+
+    _animationControllerSignup = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+    _animationSignup = CurvedAnimation(
+      parent: _animationControllerSignup,
+      curve: Curves.fastLinearToSlowEaseIn,
+    );
+    _toggleContainerLogin();
+  }
+
+  _toggleContainerLogin() async {
+    _animationControllerSignup.animateBack(0,
+        duration: const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 600));
+    _animationControllerLogin.forward();
+  }
+
+  _toggleContainerSignup() async {
+    _animationControllerLogin.animateBack(0);
+    await Future.delayed(const Duration(milliseconds: 600));
+    _animationControllerSignup.forward();
   }
 
   @override
@@ -43,144 +102,402 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> {
         backgroundColor: Get.isDarkMode
             ? Colors.black.withAlpha(250)
             : Colors.white.withAlpha(250),
-        body: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.only(
-                      left: 32, right: 32, bottom: 20, top: 24),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                        width: 1.0,
-                        color: Get.isDarkMode
-                            ? AppTheme.appDarkTheme.dividerColor
-                            : Color(0xffe7e8ec)),
-                    color: Get.isDarkMode
-                        ? AppTheme.appDarkTheme.scaffoldBackgroundColor
-                        : AppTheme.appTheme.scaffoldBackgroundColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  width: 350,
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
-                    runSpacing: 16,
-                    children: [
-                      Text('Log into an existing account',
-                          style: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.textTheme.titleLarge
-                              : AppTheme.appTheme.textTheme.headline5),
-                      SizedBox(height: 24),
-                      AppTextFieldSmall(
-                          textEditingControllerTitle: _textEditingControllerTitle,
-                              hint: 'email',
-                              hintIcon: Icons.email,
-                              ),
-                      AppTextFieldSmall(
-                          textEditingControllerTitle:
-                              _textEditingControllerTitle,
-                              hint: 'password',
-                              hintIcon: Icons.password,
-
-                              ),
-                      Container(
-                          padding: const EdgeInsets.only(bottom: 12, top: 8),
-                          width: double.infinity,
-                          child: AppFilledButton(
-                            backgroundColor: Color(0xff5181b8),
-                            text: 'Log in',
-                            onPressed: () => null,
-                          )),
-                      Text('Forgot Password?',
-                          style: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.textTheme.caption
-                                  ?.copyWith(
-                                      color: Color(0xffaeb7c4),
-                                      fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.underline)
-                              : AppTheme.appTheme.textTheme.caption?.copyWith(
-                                  color: Color(0xffaeb7c4),
-                                  fontWeight: FontWeight.w600,
-                                  decoration: TextDecoration.underline)),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 12),
-                Text('or',
-                    style: Get.isDarkMode
-                        ? AppTheme.appDarkTheme.textTheme.caption?.copyWith(
-                            color: Color(0xff626d7a),
-                            fontWeight: FontWeight.w600,
-                          )
-                        : AppTheme.appTheme.textTheme.caption?.copyWith(
-                            color: Color(0xff626d7a),
-                            fontWeight: FontWeight.w600,
-                          )),
-                SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.only(
-                      left: 32, right: 32, bottom: 20, top: 24),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                        width: 1.0,
-                        color: Get.isDarkMode
-                            ? AppTheme.appDarkTheme.dividerColor
-                            : Color(0xffe7e8ec)),
-                    color: Get.isDarkMode
-                        ? AppTheme.appDarkTheme.scaffoldBackgroundColor
-                        : AppTheme.appTheme.scaffoldBackgroundColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  width: 350,
-                  child: Column(
-                    children: [
-                      Container(
-                          padding: const EdgeInsets.only(bottom: 20, top: 8),
-                          width: double.infinity,
-                          child: AppFilledButton(
-                            backgroundColor: Color(0xff148dc6),
-                            text: 'Create new account',
-                            onPressed: () => null,
-                          )),
-                      Text(
-                          'After signing up, you’ll get access to all of NeuroMD & Callibri features',
-                          textAlign: TextAlign.center,
-                          style: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.textTheme.caption
-                                  ?.copyWith(
-                                  color: Color(0xffaeb7c4),
-                                )
-                              : AppTheme.appTheme.textTheme.caption?.copyWith(
-                                  color: Color(0xffaeb7c4),
-                                )),
-                      SizedBox(height: 4),
-                      Text('Learn more',
-                          style: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.textTheme.caption
-                                  ?.copyWith(
-                                      color: Color(0xff626d7a),
-                                      fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.underline)
-                              : AppTheme.appTheme.textTheme.caption?.copyWith(
-                                  color: Color(0xff626d7a),
-                                  fontWeight: FontWeight.w600,
-                                  decoration: TextDecoration.underline)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            Container(
-              width: 320,
-              height: 530,
-              color: Colors.white,
-              child: Column(
+        body: Center(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // CarouselSlider.builder(itemCount: _carouselSliderImages, itemBuilder: (context, index, realIndex){
-                  //   final sliderImage = 
-                  // }, options: options)
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (_isCreatingAnAccount == false)
+                        Container(
+                          padding: const EdgeInsets.only(
+                              left: 32, right: 32, bottom: 20, top: 24),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                                width: 1.0,
+                                color: Get.isDarkMode
+                                    ? AppTheme.appDarkTheme.dividerColor
+                                    : Color(0xffe7e8ec)),
+                            color: Get.isDarkMode
+                                ? AppTheme.appDarkTheme.scaffoldBackgroundColor
+                                : AppTheme.appTheme.scaffoldBackgroundColor,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          width: 350,
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            runSpacing: 12,
+                            children: [
+                              Text('Log into an existing account',
+                                  style: Get.isDarkMode
+                                      ? AppTheme
+                                          .appDarkTheme.textTheme.headline5
+                                      : AppTheme.appTheme.textTheme.headline5),
+                              SizeTransition(
+                                sizeFactor: _animationLogin,
+                                axis: Axis.vertical,
+                                child: Column(
+                                  children: [
+                                    SizedBox(height: 20),
+                                    AppTextFieldSmall(
+                                      textEditingController:
+                                          _textEditingControllerEmail,
+                                      hint: 'Email',
+                                      hintIcon: Icons.email,
+                                    ),
+                                    SizedBox(height: 16),
+                                    AppTextFieldSmall(
+                                      textEditingController:
+                                          _textEditingControllerPassword,
+                                      hint: 'Password',
+                                      hintIcon: Icons.password,
+                                      obscureText: _isPasswordVisible,
+                                      suffixIcon: _isPasswordVisible
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                      onSuffixIconPressed: () {
+                                        setState(() {
+                                          _isPasswordVisible =
+                                              !_isPasswordVisible;
+                                        });
+                                      },
+                                    ),
+                                    SizedBox(height: 8)
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  width: double.infinity,
+                                  child: AppFilledButton(
+                                    backgroundColor: Color(0xff5181b8),
+                                    text: 'Log in',
+                                    onPressed: () {
+                                      // if (_textEditingControllerEmail
+                                      //         .text.isNotEmpty &&
+                                      //     _textEditingControllerPassword
+                                      //         .text.isNotEmpty)
+                                      //   {getRegisteredUser()}
+                                      Fluttertoast.showToast(
+                                        
+                                        msg: "This is a Toast message",
+                                        toastLength: Toast.LENGTH_LONG,
+                                        gravity: ToastGravity.BOTTOM,
+                                        timeInSecForIosWeb: 3,
+                                        textColor: Colors.white,
+                                        backgroundColor: Color(0xffB85951),
+                                        fontSize: 16.0,
+                                      );
+                                    },
+                                  )),
+                              Text('Forgot Password?',
+                                  style: Get.isDarkMode
+                                      ? AppTheme.appDarkTheme.textTheme.caption
+                                          ?.copyWith(
+                                              color: Color(0xffaeb7c4),
+                                              fontWeight: FontWeight.w600,
+                                              decoration:
+                                                  TextDecoration.underline)
+                                      : AppTheme.appTheme.textTheme.caption
+                                          ?.copyWith(
+                                              color: Color(0xffaeb7c4),
+                                              fontWeight: FontWeight.w600,
+                                              decoration:
+                                                  TextDecoration.underline)),
+                            ],
+                          ),
+                        ),
+                      if (_isCreatingAnAccount == false)
+                        Container(
+                          width: 350,
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  height: 1,
+                                  color: darkerColorFrom(
+                                      color: Color(0xff626d7a), amount: 0.1),
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 12),
+                                child: Text('or',
+                                    style: Get.isDarkMode
+                                        ? AppTheme
+                                            .appDarkTheme.textTheme.caption
+                                            ?.copyWith(
+                                            color: Color(0xff626d7a),
+                                            fontWeight: FontWeight.w600,
+                                          )
+                                        : AppTheme.appTheme.textTheme.caption
+                                            ?.copyWith(
+                                            color: Color(0xff626d7a),
+                                            fontWeight: FontWeight.w600,
+                                          )),
+                              ),
+                              Expanded(
+                                child: Container(
+                                  height: 1,
+                                  color: darkerColorFrom(
+                                      color: Color(0xff626d7a), amount: 0.1),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      Container(
+                        padding: const EdgeInsets.only(
+                            left: 32, right: 32, bottom: 20, top: 24),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              width: 1.0,
+                              color: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.dividerColor
+                                  : Color(0xffe7e8ec)),
+                          color: Get.isDarkMode
+                              ? AppTheme.appDarkTheme.scaffoldBackgroundColor
+                              : AppTheme.appTheme.scaffoldBackgroundColor,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        width: 350,
+                        child: Wrap(
+                          runSpacing: 12,
+                          children: [
+                            if (_isCreatingAnAccount == true)
+                              Text('Create a new account',
+                                  style: Get.isDarkMode
+                                      ? AppTheme
+                                          .appDarkTheme.textTheme.headline5
+                                      : AppTheme.appTheme.textTheme.headline5),
+                            if (_isCreatingAnAccount == true)
+                              SizeTransition(
+                                sizeFactor: _animationSignup,
+                                axis: Axis.vertical,
+                                child: Column(
+                                  children: [
+                                    SizedBox(height: 20),
+                                    AppTextFieldSmall(
+                                      textEditingController:
+                                          _textEditingControllerName,
+                                      hint: 'Name',
+                                      hintIcon: Icons.person,
+                                    ),
+                                    SizedBox(height: 16),
+                                    AppTextFieldSmall(
+                                      textEditingController:
+                                          _textEditingControllerEmail,
+                                      hint: 'Email',
+                                      hintIcon: Icons.email,
+                                    ),
+                                    SizedBox(height: 16),
+                                    AppTextFieldSmall(
+                                      textEditingController:
+                                          _textEditingControllerPassword,
+                                      hint: 'Password',
+                                      hintIcon: Icons.password,
+                                      obscureText: _isPasswordVisible,
+                                      suffixIcon: _isPasswordVisible
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                      onSuffixIconPressed: () {
+                                        setState(() {
+                                          _isPasswordVisible =
+                                              !_isPasswordVisible;
+                                        });
+                                      },
+                                    ),
+                                    SizedBox(height: 8)
+                                  ],
+                                ),
+                              ),
+                            Container(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                width: double.infinity,
+                                child: AppFilledButton(
+                                  backgroundColor: Color(0xff148dc6),
+                                  text: 'Create new account',
+                                  onPressed: () {
+                                    if (_isCreatingAnAccount == true &&
+                                        _textEditingControllerName
+                                            .text.isNotEmpty &&
+                                        _textEditingControllerEmail
+                                            .text.isNotEmpty &&
+                                        _textEditingControllerPassword
+                                            .text.isNotEmpty) {
+                                      final user = User(
+                                          name: _textEditingControllerName.text,
+                                          email:
+                                              _textEditingControllerEmail.text,
+                                          password:
+                                              _textEditingControllerPassword
+                                                  .text);
+                                      userOperations.createUser(user);
+                                    } else {
+                                      setState(() {
+                                        _isCreatingAnAccount = true;
+                                        _toggleContainerSignup();
+                                      });
+                                    }
+                                  },
+                                )),
+                            Text(
+                                'After signing up, you’ll get access to all of NeuroMD & Callibri features',
+                                textAlign: TextAlign.center,
+                                style: AppTheme.appDarkTheme.textTheme.caption
+                                    ?.copyWith(
+                                  color: const Color(0xffaeb7c4),
+                                )),
+                            Center(
+                              child: Text('Learn more',
+                                  style: AppTheme.appTheme.textTheme.caption
+                                      ?.copyWith(
+                                          color: const Color(0xff626d7a),
+                                          fontWeight: FontWeight.w600,
+                                          decoration:
+                                              TextDecoration.underline)),
+                            ),
+                            if (_isCreatingAnAccount == true)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 24),
+                                child: Row(
+                                  children: [
+                                    Text('Already have an account? ',
+                                        style: AppTheme
+                                            .appTheme.textTheme.caption
+                                            ?.copyWith(
+                                          color: const Color(0xffaeb7c4),
+                                        )),
+                                    InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          _isCreatingAnAccount = false;
+                                          _toggleContainerLogin();
+                                        });
+                                      },
+                                      child: Text('Log in',
+                                          style: AppTheme
+                                              .appTheme.textTheme.caption
+                                              ?.copyWith(
+                                                  color: Color(0xff5181b8),
+                                                  fontWeight: FontWeight.w600,
+                                                  decoration: TextDecoration
+                                                      .underline)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    // (- logIn card width, - left margin - (left and right margin of 48 each one))
+                    width: Get.size.width - 350 - 24 - 96,
+                    margin: const EdgeInsets.only(left: 24),
+                    height: Get.size.height - 48,
+                    child: CarouselSlider.builder(
+                        options: CarouselOptions(
+                          autoPlayInterval: const Duration(seconds: 6),
+                          viewportFraction: 1,
+                          autoPlay: true,
+                        ),
+                        itemCount: _carouselSliderImages.length,
+                        itemBuilder: (context, index, realIndex) {
+                          final sliderImage =
+                              _carouselSliderImages.toList()[index];
+                          return buildImage(sliderImage, index);
+                        }),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> getRegisteredUser() async {
+    _registeredUser = await userOperations.getUser(
+        email: _textEditingControllerEmail.text,
+        password: _textEditingControllerPassword.text);
+  }
+
+  Widget buildImage(List<String> urlImage, int index) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        image: DecorationImage(
+            fit: BoxFit.cover,
+            image: AssetImage(
+              urlImage.first,
+            )),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                begin: FractionalOffset.bottomCenter,
+                end: FractionalOffset.topCenter,
+                colors: Get.isDarkMode
+                    ? [
+                        Colors.black.withOpacity(.8),
+                        Colors.black.withOpacity(.3)
+                      ]
+                    : [
+                        Colors.black.withOpacity(.7),
+                        Colors.black.withOpacity(.0)
+                      ])),
+        child: Stack(
+          children: [
+            Positioned(
+              right: 12,
+              top: 12,
+              child: SvgPicture.asset(
+                'assets/icons/callibri_logo.svg',
+                height: 32,
+                semanticsLabel: 'Callibri Logo',
+                color: Colors.white,
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              child: Container(
+                  height: 8,
+                  width: (Get.size.width -
+                      350 -
+                      24 -
+                      96), //carousel width - margins
+                  color: Get.isDarkMode
+                      ? Colors.white.withOpacity(0.3)
+                      : Colors.white.withOpacity(0.5)),
+            ),
+            Positioned(
+              bottom: 16,
+              child: Row(
+                children: [
+                  Container(
+                      height: 64,
+                      width: 8,
+                      color: Get.isDarkMode
+                          ? Colors.white.withOpacity(0.4)
+                          : Colors.white.withOpacity(0.7)),
+                  Container(
+                      margin: const EdgeInsets.only(left: 12, right: 12),
+                      width: (Get.size.width - 350 - 24 - 96) -
+                          24 -
+                          24, //carousel width - margins
+                      child: Text(
+                        urlImage.last,
+                        style: AppTheme.appTheme.textTheme.bodyText1?.copyWith(
+                            color: const Color(0xffeeeeee), height: 1.4),
+                      )),
                 ],
               ),
             ),
@@ -189,28 +506,31 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> {
       ),
     );
   }
-
-  Future<void> getRegisteredUsers() async {
-    var registeredUsers = await UserOperations().getAllUsers();
-  }
 }
 
 class AppTextFieldSmall extends StatelessWidget {
-  const AppTextFieldSmall({
+  AppTextFieldSmall({
     Key? key,
     required this.hint,
     required this.hintIcon,
-    required this.textEditingControllerTitle,
+    required this.textEditingController,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.onSuffixIconPressed,
   }) : super(key: key);
 
-  final TextEditingController textEditingControllerTitle;
+  final TextEditingController textEditingController;
   final String hint;
   final IconData hintIcon;
+  final IconData? suffixIcon;
+  final Function()? onSuffixIconPressed;
+  bool obscureText;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: textEditingControllerTitle,
+      obscureText: obscureText,
+      controller: textEditingController,
       style: TextStyle(color: Get.isDarkMode ? Colors.white : Colors.black),
       cursorColor: Colors.grey,
       decoration: InputDecoration(
@@ -245,11 +565,20 @@ class AppTextFieldSmall extends StatelessWidget {
           padding: const EdgeInsets.all(15),
           width: 18,
           child: Icon(
-           hintIcon
+            hintIcon,
             size: 26,
             color: Theme.of(context).colorScheme.shadow,
           ),
         ),
+        suffixIcon: suffixIcon != null
+            ? GestureDetector(
+                onTap: onSuffixIconPressed,
+                child: Icon(
+                  suffixIcon,
+                  size: 26,
+                  color: Theme.of(context).colorScheme.shadow,
+                ))
+            : null,
       ),
     );
   }
