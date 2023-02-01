@@ -28,6 +28,7 @@ dependencies:
   carousel_slider: ^4.2.1
   google_fonts: ^2.3.2
   syncfusion_flutter_charts: ^20.1.51
+  fluttertoast: ^8.1.2
 
   permission_handler: ^10.2.0
   flutter_bluetooth_serial: ^0.4.0
@@ -78,6 +79,7 @@ flutter:
     - assets/icons/
     - assets/icons/ui/
     - assets/images/
+    - assets/images/login/
     - assets/images/sensor_placements/
     - assets/images/sensor_placements/Back/
     - assets/images/sensor_placements/Upper Limb/
