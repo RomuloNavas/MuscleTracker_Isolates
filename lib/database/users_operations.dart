@@ -11,11 +11,21 @@ class UserOperations {
 
   final dbProvider = DatabaseRepository.instance;
 
-  createUser(User user) async {
+  Future<int?> createUser(User user) async {
     final db = await dbProvider.database;
     try {
-      await db.insert('user', user.toJson());
+      int idOfInsertedUser = await db.insert('user', user.toJson());
       log('✅User added', name: 'user_operations');
+      Fluttertoast.showToast(
+        msg: "Account successfully created",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 3,
+        textColor: Colors.white,
+        backgroundColor: Color(0xff0BD4A6),
+        fontSize: 16.0,
+      );
+      return idOfInsertedUser;
     } catch (e) {
       log('❌Error while adding user. $e');
       Fluttertoast.showToast(
@@ -28,10 +38,39 @@ class UserOperations {
         backgroundColor: Color(0xffB85951),
         fontSize: 16.0,
       );
+      return null;
     }
   }
 
-  updateUser(User user) async {
+  Future<User?> getLoggedInUser() async {
+    final db = await dbProvider.database;
+    try {
+      List<Map<String, dynamic>> allRows =
+          await db.query('user', where: "user_is_logged_in = 1");
+      List<User> users = allRows.map((user) => User.fromJson(user)).toList();
+
+      log('✅Logged user returned', name: 'user_operations');
+      if (users.isNotEmpty) {
+        return users.first;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      log('❌ Error while updating user. $e');
+      Fluttertoast.showToast(
+        msg: "Error by getting registered client",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 3,
+        textColor: Colors.white,
+        backgroundColor: Color(0xffB85951),
+        fontSize: 16.0,
+      );
+      return null;
+    }
+  }
+
+  Future<void>updateUser(User user) async {
     final db = await dbProvider.database;
     try {
       db.update('user', user.toJson(),
@@ -84,6 +123,7 @@ class UserOperations {
               backgroundColor: Color(0xffB85951),
               fontSize: 16.0,
             );
+            return null;
           } else {
             return users.first;
           }
@@ -123,12 +163,14 @@ class User {
   late String name;
   late String email;
   late String password;
+  late int isLoggedIn;
 
   User({
     this.id,
     required this.name,
     required this.email,
     required this.password,
+    required this.isLoggedIn,
   });
 
   User.fromJson(Map<String, dynamic> json) {
@@ -136,11 +178,13 @@ class User {
     name = json['user_name'];
     email = json['user_email'];
     password = json['user_password'];
+    isLoggedIn = json['user_is_logged_in'];
   }
 
   Map<String, dynamic> toJson() => {
         "user_name": name,
         "user_email": email,
         "user_password": password,
+        "user_is_logged_in": isLoggedIn,
       };
 }
