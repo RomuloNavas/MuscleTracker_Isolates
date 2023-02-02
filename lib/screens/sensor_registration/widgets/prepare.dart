@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/controllers/services_manager.dart';
+import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
+import 'package:neuro_sdk_isolate_example/screens/home/home_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/search_screen.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
@@ -25,10 +27,20 @@ class GetReadyScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const AppHeaderInfo(
-              title: "Let's connect to your Callibri sensors",
-              labelPrimary:
-                  'Make sure that they are near, turned on and charged',
+            FutureBuilder(
+              future: UserOperations().getLoggedInUser(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done &&
+                    snapshot.hasData) {
+                  return AppHeaderInfo(
+                    title:
+                        "Welcome ${snapshot.data!.name}! Let's add your Callibri sensors",
+                    labelPrimary: 'Please, turn on your sensors.',
+                  );
+                } else {
+                  return SizedBox();
+                }
+              },
             ),
             Expanded(
               child: Container(
@@ -53,6 +65,9 @@ class GetReadyScreen extends StatelessWidget {
                 });
               },
               mainText: 'Start scanning',
+              secondaryText: 'Add sensors later',
+              secondaryTextColor: Theme.of(context).errorColor,
+              onSecondaryButtonPressed: () => Get.off(() => HomeScreen()),
             )
           ],
         ),
