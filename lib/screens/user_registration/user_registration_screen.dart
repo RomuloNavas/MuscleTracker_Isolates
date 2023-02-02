@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
+import 'package:neuro_sdk_isolate_example/screens/home/home_screen.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/utils/global_utils.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
@@ -176,29 +177,7 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
                                   child: AppFilledButton(
                                     backgroundColor: Color(0xff5181b8),
                                     text: 'Log in',
-                                    onPressed: () {
-                                      if (_textEditingControllerEmail
-                                              .text.isNotEmpty &&
-                                          _textEditingControllerPassword
-                                              .text.isNotEmpty) {
-                                        getRegisteredUser(
-                                            email: _textEditingControllerEmail
-                                                .text,
-                                            password:
-                                                _textEditingControllerPassword
-                                                    .text);
-                                      } else {
-                                        Fluttertoast.showToast(
-                                          msg: "Please fill out the empty fields.",
-                                          toastLength: Toast.LENGTH_LONG,
-                                          gravity: ToastGravity.BOTTOM,
-                                          timeInSecForIosWeb: 3,
-                                          textColor: Colors.white,
-                                          backgroundColor: Color(0xffB85951),
-                                          fontSize: 16.0,
-                                        );
-                                      }
-                                    },
+                                    onPressed: login,
                                   )),
                               Text('Forgot Password?',
                                   style: Get.isDarkMode
@@ -225,10 +204,14 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
                             children: [
                               Expanded(
                                 child: Container(
-                                  height: 1,
-                                  color: darkerColorFrom(
-                                      color: Color(0xff626d7a), amount: 0.1),
-                                ),
+                                    height: 1,
+                                    color: Get.isDarkMode
+                                        ? darkerColorFrom(
+                                            color: Color(0xffaeb7c4),
+                                            amount: 0.2)
+                                        : darkerColorFrom(
+                                            color: Color(0xffe7e8ec),
+                                            amount: 0.1)),
                               ),
                               Padding(
                                 padding:
@@ -238,21 +221,29 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
                                         ? AppTheme
                                             .appDarkTheme.textTheme.caption
                                             ?.copyWith(
-                                            color: Color(0xff626d7a),
+                                            color: darkerColorFrom(
+                                                color: Color(0xffaeb7c4),
+                                                amount: 0.2),
                                             fontWeight: FontWeight.w600,
                                           )
                                         : AppTheme.appTheme.textTheme.caption
                                             ?.copyWith(
-                                            color: Color(0xff626d7a),
+                                            color: darkerColorFrom(
+                                                color: Color(0xffe7e8ec),
+                                                amount: 0.2),
                                             fontWeight: FontWeight.w600,
                                           )),
                               ),
                               Expanded(
                                 child: Container(
-                                  height: 1,
-                                  color: darkerColorFrom(
-                                      color: Color(0xff626d7a), amount: 0.1),
-                                ),
+                                    height: 1,
+                                    color: Get.isDarkMode
+                                        ? darkerColorFrom(
+                                            color: Color(0xffaeb7c4),
+                                            amount: 0.2)
+                                        : darkerColorFrom(
+                                            color: Color(0xffe7e8ec),
+                                            amount: 0.1)),
                               ),
                             ],
                           ),
@@ -276,7 +267,7 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
                           runSpacing: 12,
                           children: [
                             if (_isCreatingAnAccount == true)
-                              Text('Create a new account',
+                              Text('Create and Log in to a new account',
                                   style: Get.isDarkMode
                                       ? AppTheme
                                           .appDarkTheme.textTheme.headline5
@@ -311,12 +302,8 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
                                       suffixIcon: _isPasswordVisible
                                           ? Icons.visibility
                                           : Icons.visibility_off,
-                                      onSuffixIconPressed: () {
-                                        setState(() {
-                                          _isPasswordVisible =
-                                              !_isPasswordVisible;
-                                        });
-                                      },
+                                      onSuffixIconPressed:
+                                          togglePasswordVisibility,
                                     ),
                                     SizedBox(height: 8)
                                   ],
@@ -328,29 +315,7 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
                                 child: AppFilledButton(
                                   backgroundColor: Color(0xff148dc6),
                                   text: 'Create new account',
-                                  onPressed: () {
-                                    if (_isCreatingAnAccount == true &&
-                                        _textEditingControllerName
-                                            .text.isNotEmpty &&
-                                        _textEditingControllerEmail
-                                            .text.isNotEmpty &&
-                                        _textEditingControllerPassword
-                                            .text.isNotEmpty) {
-                                      final user = User(
-                                          name: _textEditingControllerName.text,
-                                          email:
-                                              _textEditingControllerEmail.text,
-                                          password:
-                                              _textEditingControllerPassword
-                                                  .text);
-                                      userOperations.createUser(user);
-                                    } else {
-                                      setState(() {
-                                        _isCreatingAnAccount = true;
-                                        _toggleContainerSignup();
-                                      });
-                                    }
-                                  },
+                                  onPressed: createNewAccount,
                                 )),
                             Text(
                                 'After signing up, you’ll get access to all of NeuroMD & Callibri features',
@@ -430,10 +395,80 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
     );
   }
 
-  Future<void> getRegisteredUser(
-      {required String email, required String password}) async {
-    _registeredUser =
-        await userOperations.getUser(email: email, password: password);
+  void togglePasswordVisibility() {
+    setState(() {
+      _isPasswordVisible = !_isPasswordVisible;
+    });
+  }
+
+  Future<void> createNewAccount() async {
+    if (_isCreatingAnAccount == true) {
+      if (_textEditingControllerName.text.isEmpty ||
+          _textEditingControllerEmail.text.isEmpty ||
+          _textEditingControllerPassword.text.isEmpty) {
+        Fluttertoast.showToast(
+          msg: "Please fill out the empty fields.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 3,
+          textColor: Colors.white,
+          backgroundColor: Color(0xffB85951),
+          fontSize: 16.0,
+        );
+      } else {
+        final user = User(
+          name: _textEditingControllerName.text,
+          email: _textEditingControllerEmail.text,
+          password: _textEditingControllerPassword.text,
+          isLoggedIn: 0,
+        );
+        int? idOfInsertedUser = await userOperations.createUser(user);
+        if (idOfInsertedUser != null) {
+          user.id = idOfInsertedUser;
+          user.isLoggedIn = 1;
+          await userOperations.updateUser(user);
+
+          Get.to(() => Scaffold(
+                body: Container(
+                  color: Colors.blue,
+                ),
+              ));
+        }
+      }
+    } else {
+      setState(() {
+        _isCreatingAnAccount = true;
+        _toggleContainerSignup();
+      });
+    }
+  }
+
+  Future<void> login() async {
+    if (_textEditingControllerEmail.text.isEmpty ||
+        _textEditingControllerPassword.text.isEmpty) {
+      Fluttertoast.showToast(
+        msg: "Please fill out the empty fields.",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 3,
+        textColor: Colors.white,
+        backgroundColor: Color(0xffB85951),
+        fontSize: 16.0,
+      );
+    } else {
+      var logInUser = await userOperations.getUser(
+        email: _textEditingControllerEmail.text,
+        password: _textEditingControllerPassword.text,
+      );
+
+      if (logInUser != null) {
+        // If the account exists, then log in and set loggedIn to true, in order to remember the account and step this screen the next time
+        logInUser.isLoggedIn = 1;
+        await userOperations.updateUser(logInUser);
+
+        Get.to(() => HomeScreen());
+      }
+    }
   }
 
   Widget buildImage(List<String> urlImage, int index) {
