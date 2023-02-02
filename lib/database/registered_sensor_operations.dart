@@ -1,4 +1,5 @@
 import 'package:neuro_sdk_isolate_example/database/database.dart';
+import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
 
 class RegisteredSensorOperations {
   RegisteredSensorOperations? registeredSensorOperations;
@@ -29,12 +30,24 @@ class RegisteredSensorOperations {
       return null;
     }
   }
-  Future<void> updateRegisteredSensorBatteryByAddress(String address, RegisteredSensor registeredSensor  ) async {
+
+  Future<List<RegisteredSensor>> getRegisteredSensorsByUser(User user) async {
     final db = await dbProvider.database;
-         await db.update('registeredSensor',
-         registeredSensor.toJson(),
+    List<Map<String, dynamic>> allRows = await db.rawQuery('''
+    SELECT * FROM registeredSensor 
+    WHERE registeredSensor.user_id = ${user.id}
+    ''');
+    List<RegisteredSensor> registeredSensors =
+        allRows.map((rsJson) => RegisteredSensor.fromJson(rsJson)).toList();
+
+    return registeredSensors;
+  }
+
+  Future<void> updateRegisteredSensorBatteryByAddress(
+      String address, RegisteredSensor registeredSensor) async {
+    final db = await dbProvider.database;
+    await db.update('registeredSensor', registeredSensor.toJson(),
         where: 'registeredSensorAddress=?', whereArgs: [address]);
-    
   }
 
   Future<RegisteredSensor?> getRegisteredSensorById(
