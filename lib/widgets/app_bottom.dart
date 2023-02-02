@@ -5,12 +5,14 @@ import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
 
 class AppBottom extends StatelessWidget {
   final Function() onPressed;
+  final Function()? onSecondaryButtonPressed;
   final String mainText;
   final String? secondaryText;
   final Color? secondaryTextColor;
   const AppBottom({
     Key? key,
     required this.onPressed,
+    this.onSecondaryButtonPressed,
     required this.mainText,
     this.secondaryText,
     this.secondaryTextColor,
@@ -32,7 +34,7 @@ class AppBottom extends StatelessWidget {
                 : double.infinity,
             child: AppFilledButton(onPressed: onPressed, text: mainText),
           ),
-          if (secondaryText != null)
+          if (secondaryText != null && onSecondaryButtonPressed != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: SizedBox(
@@ -40,7 +42,7 @@ class AppBottom extends StatelessWidget {
                     ? MediaQuery.of(context).size.width * 0.65
                     : double.infinity,
                 child: AppTextButton(
-                  onPressed: onPressed,
+                  onPressed: onSecondaryButtonPressed!,
                   text: secondaryText!,
                   colorText: secondaryTextColor,
                 ),
