@@ -15,7 +15,7 @@ class DatabaseRepository {
   static final DatabaseRepository instance =
       DatabaseRepository.privateConstructor();
 
-  final _databaseName = 'database10';
+  final _databaseName = 'database12';
   final _databaseVersion = 1;
 
   static Database? _database;
@@ -46,8 +46,25 @@ class DatabaseRepository {
             user_id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_name TEXT NOT NULL,
             user_email TEXT NOT NULL UNIQUE,
-            user_password VARCHAR(25) NOT NULL
+            user_password TEXT NOT NULL,
+            user_is_logged_in BOOLEAN NOT NULL
+          )
+          ''');
+    await db.execute('''
+          CREATE TABLE registeredSensor (
+            registeredSensorId INTEGER PRIMARY KEY AUTOINCREMENT,
+            registeredSensorSerialNumber TEXT,
+            registeredSensorAddress TEXT,
+            registeredSensorColor TEXT,
+            registeredSensorGain TEXT,
+            registeredSensorDataOffset TEXT,
+            registeredSensorADCinput TEXT,
+            registeredSensorHardwareFilters TEXT,
+            registeredSensorSamplingFrequency TEXT,
+            registeredSensorBattery INTEGER,
 
+            user_id INT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES user (user_id)
           )
           ''');
 
@@ -131,22 +148,6 @@ class DatabaseRepository {
 
             workoutReportId INTEGER NOT NULL,
             FOREIGN KEY (workoutReportId) REFERENCES workoutReport (workoutReportId)
-
-          )
-          ''');
-
-    await db.execute('''
-          CREATE TABLE registeredSensor (
-            registeredSensorId INTEGER PRIMARY KEY AUTOINCREMENT,
-            registeredSensorSerialNumber TEXT,
-            registeredSensorAddress TEXT,
-            registeredSensorColor TEXT,
-            registeredSensorGain TEXT,
-            registeredSensorDataOffset TEXT,
-            registeredSensorADCinput TEXT,
-            registeredSensorHardwareFilters TEXT,
-            registeredSensorSamplingFrequency TEXT,
-            registeredSensorBattery INTEGER
 
           )
           ''');
