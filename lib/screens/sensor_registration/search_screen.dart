@@ -63,7 +63,6 @@ class _SearchScreenState extends State<SearchScreen> {
     super.dispose();
     _subscription.cancel();
     _searchController.dispose();
-    _getxServicesManager.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
   }
