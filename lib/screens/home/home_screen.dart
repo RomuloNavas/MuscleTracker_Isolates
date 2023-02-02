@@ -7,15 +7,21 @@ import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
 import 'package:neuro_sdk_isolate_example/controllers/services_manager.dart';
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
+import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
+import 'package:neuro_sdk_isolate_example/screens/home/widgets/apppopupmenubutton.dart';
+import 'package:neuro_sdk_isolate_example/screens/home/widgets/popupmenubutton_clients.dart';
 import 'package:neuro_sdk_isolate_example/screens/home/widgets/tapper_registered_sensor_info.dart';
 import 'package:neuro_sdk_isolate_example/screens/client_journal/client_history_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/controllers/search_controller.dart';
+import 'package:neuro_sdk_isolate_example/screens/sensor_registration/search_screen.dart';
+import 'package:neuro_sdk_isolate_example/screens/user_registration/user_registration_screen.dart';
 import 'dart:async';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/utils/global_utils.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_battery_indicator.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_client_avatar.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_pop_menu_item_child.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_text_field.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -40,15 +46,20 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Client> searchedClients = [];
 
   // Async load data on init:
+  final clientOperations = ClientOperations();
+  final userOperations = UserOperations();
+  late User _loggedInUser;
   List<Client> allRegisteredClients = [];
   List<Client> favoriteClients = [];
   List<Client> lastAddedClients = [];
   late Future initRegisteredClients;
   late Future initFavoriteClients;
   late Future initLastAddedClients;
+  late Future initUserAccount;
 
   @override
   void initState() {
+    initUserAccount = _getLoggedInUserDBAsync();
     initRegisteredClients = _getRegisteredClientsDBAsync();
     initFavoriteClients = _getFavoriteClientsDBAsync();
     initLastAddedClients = _getLastAddedClientsDBAsync();
@@ -118,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   DataCell(
                     Row(
                       children: [
-                        AppPopMenuButton(
+                        PopMenuButtonClients(
                           client: c,
                           // Get again the clients from DB to update the rendered information:
                           notifyParentClientDeleted: () async {
@@ -243,27 +254,100 @@ class _HomeScreenState extends State<HomeScreen> {
                             Wrap(
                               spacing: 12,
                               children: [
-                                AppIconButton(
-                                  onPressed: () => null,
-                                  iconData: Icons.settings,
-                                ),
-                                AppIconButton(
-                                  onPressed: () {
-                                    Get.isDarkMode
-                                        ? Get.changeTheme(AppTheme.appTheme)
-                                        : Get.changeTheme(
-                                            AppTheme.appDarkTheme);
-                                  },
-                                  iconData: Get.isDarkMode
-                                      ? Icons.light_mode
-                                      : Icons.dark_mode,
-                                ),
-                                AppIconButton(
-                                  onPressed: () => null,
-                                  iconData: Icons.logout,
-                                  iconColor:
-                                      Theme.of(context).colorScheme.error,
-                                ),
+                                AppPopupMenuButton(
+                                    iconData: Icons.settings,
+                                    itemBuilder: [
+                                      PopupMenuItem(
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 12, horizontal: 24),
+                                        onTap: () {
+                                          Get.isDarkMode
+                                              ? Get.changeTheme(
+                                                  AppTheme.appTheme)
+                                              : Get.changeTheme(
+                                                  AppTheme.appDarkTheme);
+                                        },
+                                        child: AppPopMenuItemChild(
+                                          title: Get.isDarkMode
+                                              ? 'Set light theme'
+                                              : 'Set dark theme',
+                                          iconData: Get.isDarkMode
+                                              ? Icons.light_mode
+                                              : Icons.dark_mode,
+                                        ),
+                                      ),
+                                      PopupMenuDivider(),
+                                      PopupMenuItem(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 12, horizontal: 24),
+                                          child: Column(
+                                            children: [
+                                              Text('Muscles language',
+                                                  style: Get.isDarkMode
+                                                      ? AppTheme.appDarkTheme
+                                                          .textTheme.bodyText1
+                                                      : AppTheme.appTheme
+                                                          .textTheme.bodyText1),
+                                              const SizedBox(height: 8),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: [
+                                                  AppIconButton(
+                                                    size: ButtonSize.medium,
+                                                    onPressed: () => null,
+                                                    iconData: Icons.language,
+                                                  )
+                                                ],
+                                              )
+                                            ],
+                                          )),
+                                      PopupMenuDivider(),
+                                      PopupMenuItem(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 12, horizontal: 24),
+                                          child: Column(
+                                            children: [
+                                              Text('App language',
+                                                  style: Get.isDarkMode
+                                                      ? AppTheme.appDarkTheme
+                                                          .textTheme.bodyText1
+                                                      : AppTheme.appTheme
+                                                          .textTheme.bodyText1),
+                                              const SizedBox(height: 8),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: [
+                                                  AppIconButton(
+                                                    size: ButtonSize.medium,
+                                                    onPressed: () => null,
+                                                    iconData: Icons.language,
+                                                  )
+                                                ],
+                                              )
+                                            ],
+                                          )),
+                                      PopupMenuDivider(),
+                                      PopupMenuItem(
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 12, horizontal: 24),
+                                        onTap: () async {
+                                          _loggedInUser.isLoggedIn = 0;
+                                          await userOperations
+                                              .updateUser(_loggedInUser);
+                                          Get.off(
+                                              () => UserRegistrationScreen());
+                                        },
+                                        child: AppPopMenuItemChild(
+                                          title: 'Log out',
+                                          iconData: Icons.logout,
+                                          iconColor: Theme.of(context)
+                                              .colorScheme
+                                              .error,
+                                        ),
+                                      ),
+                                    ])
                               ],
                             ),
                           ],
@@ -368,100 +452,33 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _getLoggedInUserDBAsync() async {
+    var user = await userOperations.getLoggedInUser();
+    if (user != null) {
+      _loggedInUser = user;
+    } else {
+      Get.off(() => UserRegistrationScreen());
+    }
+  }
+
   Future<void> _getRegisteredClientsDBAsync() async {
-    var receivedData = await ClientOperations().getAllClients();
+    var receivedData = await clientOperations.getAllClients();
     allRegisteredClients = List.from(receivedData.toList());
     allRegisteredClients.sort((a, b) => a.surname.compareTo(b.surname));
     setState(() {});
   }
 
   Future<void> _getFavoriteClientsDBAsync() async {
-    var receivedData = await ClientOperations().getAllFavoriteClients();
+    var receivedData = await clientOperations.getAllFavoriteClients();
     favoriteClients = List.from(receivedData.toList());
     favoriteClients.sort((a, b) => a.surname.compareTo(b.surname));
     setState(() {});
   }
 
   Future<void> _getLastAddedClientsDBAsync() async {
-    var receivedData = await ClientOperations().getLastAddedClients();
+    var receivedData = await clientOperations.getLastAddedClients();
     lastAddedClients = List.from(receivedData.toList());
     setState(() {});
-  }
-}
-
-class AppPopMenuButton extends StatelessWidget {
-  final Function() notifyParentClientDeleted;
-  final Function() notifyParentClientAddedToFavorites;
-  final Client client;
-  const AppPopMenuButton({
-    Key? key,
-    required this.client,
-    required this.notifyParentClientDeleted,
-    required this.notifyParentClientAddedToFavorites,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton(
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(16.0),
-          ),
-        ),
-        elevation: 0.2,
-        color: Get.isDarkMode
-            ? AppTheme.appDarkTheme.colorScheme.surface
-            : AppTheme.appTheme.colorScheme.surface,
-        position: PopupMenuPosition.under,
-        offset: Offset(0, 12),
-        splashRadius: 26,
-        icon: Icon(
-          Icons.more_vert,
-          color: Get.isDarkMode ? Color(0xffdcdcdc) : Colors.black,
-        ),
-        itemBuilder: (context) => [
-              const PopupMenuItem(
-                child: AppPopMenuItemChild(
-                  title: 'Edit client',
-                  iconData: Icons.edit,
-                ),
-              ),
-              PopupMenuItem(
-                onTap: () async {
-                  client.isFavorite == 0
-                      ? client.isFavorite = 1
-                      : client.isFavorite = 0;
-                  await ClientOperations().updateClient(client);
-                  notifyParentClientAddedToFavorites();
-                },
-                child: AppPopMenuItemChild(
-                  title: client.isFavorite == 0
-                      ? 'Add to favorites'
-                      : 'Remove from favorites',
-                  iconData:
-                      client.isFavorite == 0 ? Icons.star_outline : Icons.star,
-                ),
-              ),
-              const PopupMenuItem(
-                child: AppPopMenuItemChild(
-                  title: 'Start new session',
-                  iconData: Icons.sports_gymnastics_outlined,
-                ),
-              ),
-              PopupMenuItem(
-                onTap: () async {
-                  await ClientOperations().deleteClient(client);
-                  notifyParentClientDeleted();
-                },
-                child: AppPopMenuItemChild(
-                  title: 'Delete client',
-                  iconData: Icons.delete_outlined,
-                  iconColor: Get.isDarkMode
-                      ? AppTheme.appDarkTheme.colorScheme.error
-                      : AppTheme.appTheme.colorScheme.error,
-                ),
-              ),
-            ]);
   }
 }
 
@@ -589,108 +606,124 @@ class _SidePanelState extends State<SidePanel> {
                                 ],
                               ),
                             ),
-                            AppIconButton(
-                              onPressed: () async {
-                                setState(() {
-                                  _isLoading = true;
-                                });
-                                _searchController.startScanner();
-                                await Future.delayed(Duration(seconds: 2));
-                                _searchController.stopScanner();
-                                _searchController.startScanner();
-                                await Future.delayed(Duration(seconds: 2));
-                                _searchController.stopScanner();
+                            if (_allRegisteredSensors.isNotEmpty)
+                              AppIconButton(
+                                onPressed: () async {
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
+                                  _searchController.startScanner();
+                                  await Future.delayed(Duration(seconds: 2));
+                                  _searchController.stopScanner();
+                                  _searchController.startScanner();
+                                  await Future.delayed(Duration(seconds: 2));
+                                  _searchController.stopScanner();
 
-                                _initRegisteredSensorsDBAsync();
-                              },
-                              iconData: Icons.refresh,
-                              iconColor: Color(0xff107c10),
-                            )
+                                  _initRegisteredSensorsDBAsync();
+                                },
+                                iconData: Icons.refresh,
+                                iconColor: Color(0xff107c10),
+                              )
                           ],
                         ),
-                        Container(
+                        if (_allRegisteredSensors.isEmpty)
+                          Container(
                             margin: const EdgeInsets.only(top: 8),
-                            height: 100,
-                            width: sidePanelWidth - (12 * 2),
-                            decoration: BoxDecoration(
-                                color: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.colorScheme.surface
-                                    : AppTheme.appTheme.colorScheme.surface,
-                                borderRadius:
-                                    _tappedRegisteredSensorInfo == null
-                                        ? const BorderRadius.all(
-                                            Radius.circular(16))
-                                        : const BorderRadius.only(
-                                            topLeft: Radius.circular(16),
-                                            topRight: Radius.circular(16))),
-                            child: Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                                child: Builder(
-                                  builder: (context) {
-                                    if (_isLoading == true) {
-                                      return const Center(
-                                        child: CircularProgressIndicator(),
-                                      );
-                                    }
-                                    return Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
-                                      children: [
-                                        for (var registeredSensor
-                                            in _allRegisteredSensors)
-                                          Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              const SizedBox(height: 2),
-                                              InkWell(
-                                                onTap: () => setState(() {
-                                                  _tappedRegisteredSensorInfo =
-                                                      (_tappedRegisteredSensorInfo ==
-                                                              registeredSensor)
-                                                          ? null
-                                                          : registeredSensor;
-                                                }),
-                                                child: CircleAvatar(
-                                                  backgroundColor:
-                                                      _tappedRegisteredSensorInfo ==
-                                                              registeredSensor
-                                                          ? Colors.white
-                                                          : Colors.transparent,
-                                                  radius: 26,
+                            width: double.infinity,
+                            child: AppFilledButton(
+                              text: 'Add sensors now',
+                              backgroundColor: Theme.of(context).hintColor,
+                              onPressed: () => Get.to(() => SearchScreen()),
+                            ),
+                          ),
+                        if (_allRegisteredSensors.isNotEmpty)
+                          Container(
+                              margin: const EdgeInsets.only(top: 8),
+                              height: 120,
+                              width: sidePanelWidth - (12 * 2),
+                              decoration: BoxDecoration(
+                                  color: Get.isDarkMode
+                                      ? AppTheme
+                                          .appDarkTheme.colorScheme.surface
+                                      : AppTheme.appTheme.colorScheme.surface,
+                                  borderRadius:
+                                      _tappedRegisteredSensorInfo == null
+                                          ? const BorderRadius.all(
+                                              Radius.circular(16))
+                                          : const BorderRadius.only(
+                                              topLeft: Radius.circular(16),
+                                              topRight: Radius.circular(16))),
+                              child: Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                                  child: Builder(
+                                    builder: (context) {
+                                      if (_isLoading == true) {
+                                        return const Center(
+                                          child: CircularProgressIndicator(),
+                                        );
+                                      }
+
+                                      return Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          for (var registeredSensor
+                                              in _allRegisteredSensors)
+                                            Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                const SizedBox(height: 2),
+                                                InkWell(
+                                                  onTap: () => setState(() {
+                                                    _tappedRegisteredSensorInfo =
+                                                        (_tappedRegisteredSensorInfo ==
+                                                                registeredSensor)
+                                                            ? null
+                                                            : registeredSensor;
+                                                  }),
                                                   child: CircleAvatar(
-                                                    backgroundColor: Get
-                                                            .isDarkMode
-                                                        ? Colors.white
-                                                            .withOpacity(0.05)
-                                                        : Colors.black
-                                                            .withOpacity(0.05),
-                                                    radius: 24,
-                                                    child: SvgPicture.asset(
-                                                        'assets/icons/callibri_device-${registeredSensor.color}.svg',
-                                                        width: 16,
-                                                        semanticsLabel:
-                                                            'Callibri icon'),
+                                                    backgroundColor:
+                                                        _tappedRegisteredSensorInfo ==
+                                                                registeredSensor
+                                                            ? Colors.white
+                                                            : Colors
+                                                                .transparent,
+                                                    radius: 26,
+                                                    child: CircleAvatar(
+                                                      backgroundColor: Get
+                                                              .isDarkMode
+                                                          ? Colors.white
+                                                              .withOpacity(0.05)
+                                                          : Colors.black
+                                                              .withOpacity(
+                                                                  0.05),
+                                                      radius: 24,
+                                                      child: SvgPicture.asset(
+                                                          'assets/icons/callibri_device-${registeredSensor.color}.svg',
+                                                          width: 16,
+                                                          semanticsLabel:
+                                                              'Callibri icon'),
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                              const SizedBox(height: 2),
-                                              if (registeredSensor.battery !=
-                                                  null)
-                                                AppBatteryIndicator(
-                                                    appBatteryIndicatorLabelPosition:
-                                                        AppBatteryIndicatorLabelPosition
-                                                            .inside,
-                                                    batteryLevel:
-                                                        registeredSensor
-                                                            .battery!)
-                                            ],
-                                          ),
-                                      ],
-                                    );
-                                  },
-                                ))),
+                                                const SizedBox(height: 2),
+                                                if (registeredSensor.battery !=
+                                                    null)
+                                                  AppBatteryIndicator(
+                                                      appBatteryIndicatorLabelPosition:
+                                                          AppBatteryIndicatorLabelPosition
+                                                              .inside,
+                                                      batteryLevel:
+                                                          registeredSensor
+                                                              .battery!)
+                                              ],
+                                            ),
+                                        ],
+                                      );
+                                    },
+                                  ))),
                         if (_tappedRegisteredSensorInfo != null)
                           TapperRegisteredSensorInfo(
                               tappedRegisteredSensorInfo:
