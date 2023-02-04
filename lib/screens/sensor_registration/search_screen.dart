@@ -209,8 +209,8 @@ class _SearchScreenState extends State<SearchScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   color: Get.isDarkMode
-                      ? AppTheme.appDarkTheme.cardColor
-                      : AppTheme.appTheme.cardColor,
+                      ? AppTheme.appDarkTheme.colorScheme.surface
+                      : AppTheme.appTheme.colorScheme.surface,
                 ),
                 child: Material(
                   color: Colors.transparent,
@@ -268,7 +268,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                     ? AppTheme.appDarkTheme.colorScheme.primary
                                     : AppTheme.appTheme.colorScheme.primary,
                                 overlayColor: MaterialStateProperty.all(
-                                  Theme.of(context).primaryColor,
+                                  Theme.of(context).colorScheme.primary,
                                 ),
                                 checkColor: Colors.white,
                                 value: sensorForCheckbox.value,

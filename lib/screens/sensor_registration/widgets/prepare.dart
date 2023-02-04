@@ -66,7 +66,7 @@ class GetReadyScreen extends StatelessWidget {
               },
               mainText: 'Start scanning',
               secondaryText: 'Add sensors later',
-              secondaryTextColor: Theme.of(context).errorColor,
+              secondaryTextColor: Theme.of(context).colorScheme.error,
               onSecondaryButtonPressed: () => Get.off(() => HomeScreen()),
             )
           ],

@@ -244,8 +244,8 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                         const SizedBox(height: 2),
                         Container(
                           color: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.cardColor
-                              : AppTheme.appTheme.cardColor,
+                              ? AppTheme.appDarkTheme.colorScheme.surface
+                              : AppTheme.appTheme.colorScheme.surface,
                           child: Column(
                             // crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -696,8 +696,8 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                         Container(
                           padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
                           color: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.cardColor
-                              : AppTheme.appTheme.cardColor,
+                              ? AppTheme.appDarkTheme.colorScheme.surface
+                              : AppTheme.appTheme.colorScheme.surface,
                           child: Column(
                             children: [
                               SizedBox(
@@ -745,8 +745,8 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                         const SizedBox(height: 2),
                         Container(
                           color: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.cardColor
-                              : AppTheme.appTheme.cardColor,
+                              ? AppTheme.appDarkTheme.colorScheme.surface
+                              : AppTheme.appTheme.colorScheme.surface,
                           child: Column(
                             children: [
                               Container(
@@ -866,8 +866,8 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                         const EdgeInsets.fromLTRB(0, 4, 0, 0),
                                     decoration: BoxDecoration(
                                       color: Get.isDarkMode
-                                          ? AppTheme.appDarkTheme.cardColor
-                                          : AppTheme.appTheme.cardColor,
+                                          ? AppTheme.appDarkTheme.colorScheme.surface
+                                          : AppTheme.appTheme.colorScheme.surface,
                                     ),
                                     child: Row(
                                       mainAxisAlignment:
@@ -1235,10 +1235,10 @@ Color buildPlotAreaBackgroundColorFromSensor(
       : AppTheme.appTheme.scaffoldBackgroundColor;
   if (connectedSensorUsedInSession.electrodeState !=
       CallibriElectrodeState.elStNormal) {
-    plotAreaBackgroundColor = AppTheme.appTheme.errorColor.withOpacity(0.5);
+    plotAreaBackgroundColor = AppTheme.appTheme.colorScheme.error.withOpacity(0.5);
   }
   if (connectedSensorUsedInSession.isConnected == false) {
-    plotAreaBackgroundColor = AppTheme.appTheme.errorColor.withOpacity(0.7);
+    plotAreaBackgroundColor = AppTheme.appTheme.colorScheme.error.withOpacity(0.7);
   }
 
   return plotAreaBackgroundColor;

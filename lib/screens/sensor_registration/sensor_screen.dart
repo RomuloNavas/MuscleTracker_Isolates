@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
+import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
 import 'package:neuro_sdk_isolate_example/screens/home/home_screen.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/utils/build_from_sensor.dart';
@@ -71,8 +72,8 @@ class _SensorScreenState extends State<SensorScreen> {
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
                             color: Get.isDarkMode
-                                ? AppTheme.appDarkTheme.cardColor
-                                : AppTheme.appTheme.cardColor),
+                                ? AppTheme.appDarkTheme.colorScheme.surface
+                                : AppTheme.appTheme.colorScheme.surface),
                         child: Material(
                           color: Colors.transparent,
                           borderRadius: BorderRadius.circular(16),
@@ -239,8 +240,9 @@ class _SensorScreenState extends State<SensorScreen> {
                   connectedSensor.disconnect();
                 }
 
-                Get.off(() => HomeScreen(),
-              );
+                Get.off(
+                  () => HomeScreen(),
+                );
               },
               mainText: 'Save ${widget.listConnectedSensor.length} sensors',
               secondaryText: 'Repeat search of sensors',
@@ -271,6 +273,9 @@ class _SensorScreenState extends State<SensorScreen> {
       var adcInput = await sensor.adcInput.value;
       var hardwareFilters = await sensor.hardwareFilters.value;
       var samplingFrequency = await sensor.samplingFrequency.value;
+
+      var user = await UserOperations().getLoggedInUser();
+      var userId = user!.id;
       var battery = await sensor.battery.value;
       var registeredSensor = RegisteredSensor(
         serialNumber: serialNumber,
@@ -281,6 +286,7 @@ class _SensorScreenState extends State<SensorScreen> {
         adcInput: '$adcInput',
         hardwareFilters: '$hardwareFilters',
         samplingFrequency: '$samplingFrequency',
+        userId: userId!,
         battery: battery,
       );
       allConnectedSensorToRegister.add(registeredSensor);

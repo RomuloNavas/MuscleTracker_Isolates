@@ -100,9 +100,7 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Get.isDarkMode
-            ? Colors.black.withAlpha(250)
-            : Colors.white.withAlpha(250),
+        backgroundColor: Get.isDarkMode ? Colors.black : Colors.white,
         body: Center(
           child: ListView(
             shrinkWrap: true,
@@ -121,8 +119,8 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
                             border: Border.all(
                                 width: 1.0,
                                 color: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.dividerColor
-                                    : Color(0xffe7e8ec)),
+                                    ? AppTheme.appDarkTheme.colorScheme.outline
+                                    : AppTheme.appTheme.colorScheme.outline),
                             color: Get.isDarkMode
                                 ? AppTheme.appDarkTheme.scaffoldBackgroundColor
                                 : AppTheme.appTheme.scaffoldBackgroundColor,
@@ -577,8 +575,8 @@ class AppTextFieldSmall extends StatelessWidget {
       decoration: InputDecoration(
         counterStyle: TextStyle(color: Colors.transparent),
         fillColor: Get.isDarkMode
-            ? AppTheme.appDarkTheme.highlightColor
-            : Color(0xfff2f3f5),
+            ? AppTheme.appDarkTheme.colorScheme.surfaceVariant
+            : AppTheme.appTheme.colorScheme.surfaceVariant,
         filled: true,
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(
@@ -590,7 +588,8 @@ class AppTextFieldSmall extends StatelessWidget {
           borderSide: BorderSide(
             color: Get.isDarkMode
                 ? lighterColorFrom(
-                    color: AppTheme.appDarkTheme.highlightColor, amount: 0.3)
+                    color: AppTheme.appDarkTheme.colorScheme.surfaceVariant,
+                    amount: 0.3)
                 : Color(0xffd3d5d7),
           ),
           borderRadius: BorderRadius.circular(12),

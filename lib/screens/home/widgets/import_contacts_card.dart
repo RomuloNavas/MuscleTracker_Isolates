@@ -16,8 +16,8 @@ class ImportContactsCard extends StatelessWidget {
           height: 70,
           width: MediaQuery.of(context).size.width - 372,
           color: Get.isDarkMode
-              ? AppTheme.appDarkTheme.cardColor
-              : AppTheme.appTheme.cardColor,
+              ? AppTheme.appDarkTheme.colorScheme.surface
+              : AppTheme.appTheme.colorScheme.surface,
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),

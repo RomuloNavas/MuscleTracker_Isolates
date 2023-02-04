@@ -55,10 +55,10 @@ class AppFilledButton extends StatelessWidget {
             width: 0,
             color: Colors.transparent)), // Button's border width and color
 
-        shadowColor:
-            MaterialStateProperty.all(AppTheme.appTheme.highlightColor),
-        surfaceTintColor:
-            MaterialStateProperty.all(AppTheme.appTheme.highlightColor),
+        shadowColor: MaterialStateProperty.all(
+            AppTheme.appTheme.colorScheme.surfaceVariant),
+        surfaceTintColor: MaterialStateProperty.all(
+            AppTheme.appTheme.colorScheme.surfaceVariant),
       ),
       child: Text(
         text,

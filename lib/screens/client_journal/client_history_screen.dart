@@ -765,8 +765,8 @@ class _SidePanelState extends State<SidePanel>
                 (states) {
                   if (states.isNotEmpty) {
                     return Get.isDarkMode
-                        ? AppTheme.appDarkTheme.highlightColor
-                        : AppTheme.appTheme.highlightColor;
+                        ? AppTheme.appDarkTheme.colorScheme.surfaceVariant
+                        : AppTheme.appTheme.colorScheme.surfaceVariant;
                   } else {
                     return Get.isDarkMode
                         ? AppTheme.appDarkTheme.scaffoldBackgroundColor

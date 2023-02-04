@@ -371,8 +371,10 @@ class SessionResultsScreenState extends State<SessionResultsScreen>
                                       const SizedBox(width: 12),
                                       CircleAvatar(
                                         backgroundColor: Get.isDarkMode
-                                            ? AppTheme.appDarkTheme.cardColor
-                                            : AppTheme.appTheme.cardColor,
+                                            ? AppTheme.appDarkTheme.colorScheme
+                                                .surface
+                                            : AppTheme
+                                                .appTheme.colorScheme.surface,
                                         radius: 22,
                                         child: SvgPicture.asset(
                                             'assets/icons/callibri_device-${widget.usedSensors[i].color}.svg',
@@ -464,8 +466,8 @@ class SessionResultsScreenState extends State<SessionResultsScreen>
                         decoration: InputDecoration(
                           counterStyle: TextStyle(color: Colors.transparent),
                           fillColor: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.highlightColor
-                              : AppTheme.appTheme.highlightColor,
+                              ? AppTheme.appDarkTheme.colorScheme.surfaceVariant
+                              : AppTheme.appTheme.colorScheme.surfaceVariant,
                           filled: true,
                           enabledBorder: OutlineInputBorder(
                             borderSide: BorderSide(
@@ -477,11 +479,12 @@ class SessionResultsScreenState extends State<SessionResultsScreen>
                             borderSide: BorderSide(
                               color: Get.isDarkMode
                                   ? lighterColorFrom(
-                                      color:
-                                          AppTheme.appDarkTheme.highlightColor,
+                                      color: AppTheme.appDarkTheme.colorScheme
+                                          .surfaceVariant,
                                       amount: 0.3)
                                   : darkerColorFrom(
-                                      color: AppTheme.appTheme.highlightColor,
+                                      color: AppTheme
+                                          .appTheme.colorScheme.surfaceVariant,
                                       amount: 0.3),
                             ),
                             borderRadius: BorderRadius.circular(12),
@@ -515,8 +518,8 @@ class SessionResultsScreenState extends State<SessionResultsScreen>
                         decoration: InputDecoration(
                           counterStyle: TextStyle(color: Colors.transparent),
                           fillColor: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.highlightColor
-                              : AppTheme.appTheme.highlightColor,
+                              ? AppTheme.appDarkTheme.colorScheme.surfaceVariant
+                              : AppTheme.appTheme.colorScheme.surfaceVariant,
                           filled: true,
                           enabledBorder: OutlineInputBorder(
                             borderSide: BorderSide(
@@ -528,11 +531,12 @@ class SessionResultsScreenState extends State<SessionResultsScreen>
                             borderSide: BorderSide(
                               color: Get.isDarkMode
                                   ? lighterColorFrom(
-                                      color:
-                                          AppTheme.appDarkTheme.highlightColor,
+                                      color: AppTheme.appDarkTheme.colorScheme
+                                          .surfaceVariant,
                                       amount: 0.3)
                                   : darkerColorFrom(
-                                      color: AppTheme.appTheme.highlightColor,
+                                      color: AppTheme
+                                          .appTheme.colorScheme.surfaceVariant,
                                       amount: 0.3),
                             ),
                             borderRadius: BorderRadius.circular(12),

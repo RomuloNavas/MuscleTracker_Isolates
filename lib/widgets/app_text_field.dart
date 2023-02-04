@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:neuro_sdk_isolate_example/theme.dart';
 
 class AppTextFieldSearch extends StatelessWidget {
   const AppTextFieldSearch({
@@ -20,8 +21,8 @@ class AppTextFieldSearch extends StatelessWidget {
       cursorColor: Colors.grey,
       decoration: InputDecoration(
         fillColor: Get.isDarkMode
-            ? Colors.white.withOpacity(0.05)
-            : Colors.black.withOpacity(0.05),
+            ? AppTheme.appDarkTheme.colorScheme.surfaceVariant
+            : AppTheme.appTheme.colorScheme.surfaceVariant,
         filled: true,
         contentPadding: const EdgeInsets.all(0),
         border: OutlineInputBorder(
