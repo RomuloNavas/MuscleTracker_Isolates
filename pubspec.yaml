@@ -29,6 +29,8 @@ dependencies:
   google_fonts: ^2.3.2
   syncfusion_flutter_charts: ^20.1.51
   fluttertoast: ^8.1.2
+  zoom_tap_animation: ^1.1.0
+  flutter_scale_tap: ^1.0.5
 
   permission_handler: ^10.2.0
   flutter_bluetooth_serial: ^0.4.0
@@ -111,4 +113,14 @@ flutter:
         - asset: assets/fonts/InputMonoCompressed-Regular.ttf
           weight: 400
         - asset: assets/fonts/InputMonoCompressed-Light.ttf
+          weight: 300
+    - family: gotham
+      fonts:
+        - asset: assets/fonts/GothamBold.ttf
+          weight: 600
+        - asset: assets/fonts/GothamMedium.ttf
+          weight: 500
+        - asset: assets/fonts/GothamBook.ttf
+          weight: 400
+        - asset: assets/fonts/GothamLight.ttf
           weight: 300

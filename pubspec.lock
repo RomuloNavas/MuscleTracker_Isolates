@@ -139,6 +139,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
+  flutter_scale_tap:
+    dependency: "direct main"
+    description:
+      name: flutter_scale_tap
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.5"
   flutter_svg:
     dependency: "direct main"
     description:
@@ -623,6 +630,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.1.1"
+  zoom_tap_animation:
+    dependency: "direct main"
+    description:
+      name: zoom_tap_animation
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.0"
 sdks:
   dart: ">=2.18.4 <3.0.0"
   flutter: ">=3.3.0"
