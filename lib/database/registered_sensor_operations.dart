@@ -5,7 +5,7 @@ class RegisteredSensorOperations {
   RegisteredSensorOperations? registeredSensorOperations;
   final dbProvider = DatabaseRepository.instance;
 
-  insertNewSensor(RegisteredSensor registeredSensor) async {
+  Future<void>insertNewSensor(RegisteredSensor registeredSensor) async {
     final db = await dbProvider.database;
     db.insert('registeredSensor', registeredSensor.toJson());
   }
@@ -82,6 +82,7 @@ class RegisteredSensor {
   String adcInput;
   String hardwareFilters;
   String samplingFrequency;
+  int userId;
   int? battery;
 
   bool? isSelectedToAssignPlacement;
@@ -96,7 +97,9 @@ class RegisteredSensor {
     required this.adcInput,
     required this.hardwareFilters,
     required this.samplingFrequency,
+    required this.userId,
     this.battery,
+    
 
     // This parameter doesn't go to database. It is used in SessionSetupScreen.
     this.isSelectedToAssignPlacement,
@@ -114,6 +117,7 @@ class RegisteredSensor {
         hardwareFilters: json["registeredSensorHardwareFilters"],
         samplingFrequency: json["registeredSensorSamplingFrequency"],
         battery: json["registeredSensorBattery"],
+        userId: json["user_id"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -126,5 +130,6 @@ class RegisteredSensor {
         "registeredSensorHardwareFilters": hardwareFilters,
         "registeredSensorSamplingFrequency": samplingFrequency,
         "registeredSensorBattery": battery,
+        "user_id": userId,
       };
 }
