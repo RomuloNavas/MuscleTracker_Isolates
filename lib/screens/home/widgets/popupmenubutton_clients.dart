@@ -1,5 +1,6 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter_scale_tap/flutter_scale_tap.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
@@ -32,10 +33,18 @@ class PopMenuButtonClients extends StatelessWidget {
             : AppTheme.appTheme.colorScheme.surface,
         position: PopupMenuPosition.under,
         offset: Offset(0, 12),
-        splashRadius: 26,
-        icon: Icon(
-          Icons.more_vert,
-          color: Get.isDarkMode ? Color(0xffdcdcdc) : Colors.black,
+        icon: ScaleTap(
+          scaleMinValue: 0.9,
+          opacityMinValue: 0.4,
+          scaleCurve: Curves.decelerate,
+          opacityCurve: Curves.fastOutSlowIn,
+          child: SvgPicture.asset(
+            'assets/icons/ui/more-vert.svg',
+            width: 32,
+            color: Get.isDarkMode
+                ? AppTheme.appDarkTheme.colorScheme.tertiary
+                : AppTheme.appTheme.colorScheme.tertiary,
+          ),
         ),
         itemBuilder: (context) => [
               const PopupMenuItem(

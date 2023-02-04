@@ -1,9 +1,14 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_pop_menu_item_child.dart';
+import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import 'package:flutter_scale_tap/flutter_scale_tap.dart';
 
 class AppPopupMenuButton extends StatelessWidget {
   final List<PopupMenuEntry<dynamic>> itemBuilder;
@@ -31,29 +36,14 @@ class AppPopupMenuButton extends StatelessWidget {
           : AppTheme.appTheme.colorScheme.surface,
       position: PopupMenuPosition.under,
       offset: Offset(0, 12),
-      splashRadius: 22,
-      icon: Container(
-        decoration: BoxDecoration(
-          color: Get.isDarkMode
-              ? Colors.white.withOpacity(0.05)
-              : Colors.black.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(30),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(30),
-            child: SizedBox(
-              width: 50,
-              height: 50,
-              child: Icon(
-                iconData,
-                size: 25,
-                color: Color(0xff838997),
-              ),
-            ),
-          ),
-        ),
+      splashRadius: 0.1,
+      icon: ScaleTap(
+        scaleMinValue: 0.9,
+        opacityMinValue: 0.4,
+        scaleCurve: Curves.decelerate,
+        opacityCurve: Curves.fastOutSlowIn,
+        child: SvgPicture.asset('assets/icons/ui/settings.svg',
+            width: 32, semanticsLabel: 'Callibri icon'),
       ),
       itemBuilder: (context) => itemBuilder,
     );
