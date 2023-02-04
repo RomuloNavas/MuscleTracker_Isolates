@@ -120,67 +120,23 @@ class ContactCircleAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (_isFavorite != true) {
-      return Container(
-        padding: _padding,
-        margin: _margin,
-        child: CircleAvatar(
-          radius: _radius, //big 27, small 25
-          backgroundColor: Get.isDarkMode
-              ? Color.fromARGB(((10 + math.Random().nextInt(100 - 10))).toInt(),
-                  150, 150, 150)
-              : Color.fromARGB(
-                  45,
-                  80,
-                  120,
-                  180 + (math.Random().nextDouble() * 1.2).toInt(),
-                ),
-          child: Icon(Icons.person,
-              color: Get.isDarkMode ? const Color(0xff878787) : Colors.black),
-        ),
-      );
-    } else {
-      return Stack(
-        alignment: AlignmentDirectional.topEnd,
-        children: [
-          Container(
-            padding: _padding,
-            margin: _margin,
-            child: CircleAvatar(
-              radius: _radius, //big 27, small 25
-              backgroundColor: Get.isDarkMode
-                  ? Color.fromARGB(
-                      ((10 + math.Random().nextInt(100 - 10))).toInt(),
-                      150,
-                      150,
-                      150)
-                  : Color.fromARGB(
-                      80,
-                      80,
-                      120,
-                      180 + (math.Random().nextDouble() * 1.2).toInt(),
-                    ),
-              child: Icon(Icons.person,
-                  color:
-                      Get.isDarkMode ? const Color(0xff878787) : Colors.black),
-            ),
-          ),
-          Container(
-            width: 22,
-            height: 22,
-            decoration: BoxDecoration(
-              color: Get.isDarkMode
-                  ? Color.fromARGB(155, 255, 234, 171)
-                  : Color.fromARGB(255, 255, 234, 171),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Center(
-              child: SvgPicture.asset('assets/icons/ui/star.svg',
-                  width: 14, semanticsLabel: 'Star'),
-            ),
-          ),
-        ],
-      );
-    }
+    return Container(
+      padding: _padding,
+      margin: _margin,
+      child: CircleAvatar(
+        radius: _radius, //big 27, small 25
+        backgroundColor: Get.isDarkMode
+            ? Color.fromARGB(
+                ((10 + math.Random().nextInt(100 - 10))).toInt(), 150, 150, 150)
+            : Color.fromARGB(
+                45,
+                80,
+                120,
+                180 + (math.Random().nextDouble() * 1.2).toInt(),
+              ),
+        child: Icon(Icons.person,
+            color: Get.isDarkMode ? const Color(0xff878787) : Colors.black),
+      ),
+    );
   }
 }
