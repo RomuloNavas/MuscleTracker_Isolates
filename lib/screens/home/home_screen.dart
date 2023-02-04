@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_scale_tap/flutter_scale_tap.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
@@ -25,6 +26,7 @@ import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_pop_menu_item_child.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_text_field.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -63,6 +65,9 @@ class _HomeScreenState extends State<HomeScreen> {
     initRegisteredClients = _getRegisteredClientsDBAsync();
     initFavoriteClients = _getFavoriteClientsDBAsync();
     initLastAddedClients = _getLastAddedClientsDBAsync();
+
+    initController();
+    initRegisteredSensors = _initRegisteredSensorsDBAsync();
 
     _textEditingController = TextEditingController();
     _textEditingController.addListener(() {
@@ -103,7 +108,13 @@ class _HomeScreenState extends State<HomeScreen> {
           compareString(ascending, value1.birthday, value2.birthday));
     } else if (columnIndex == 2) {
       allRegisteredClients.sort((value1, value2) => compareString(
+          ascending, '${value1.isFavorite}', '${value2.isFavorite}'));
+    } else if (columnIndex == 3) {
+      allRegisteredClients.sort((value1, value2) => compareString(
           ascending, value1.lastVisit ?? '', value2.lastVisit ?? ''));
+    } else if (columnIndex == 4) {
+      allRegisteredClients.sort((value1, value2) => compareString(
+          ascending, value1.registrationDate, value2.registrationDate));
     }
     setState(() {
       sortColumnIndex = columnIndex;
@@ -179,6 +190,21 @@ class _HomeScreenState extends State<HomeScreen> {
                             ? AppTheme.appDarkTheme.textTheme.bodyText2
                             : AppTheme.appTheme.textTheme.bodyText2),
                   ),
+                  DataCell(
+                    ZoomTapAnimation(
+                      onTap: () async {
+                        c.isFavorite == 0 ? c.isFavorite = 1 : c.isFavorite = 0;
+                        await clientOperations.updateClient(c);
+                        setState(() {});
+                      },
+                      end: 0.9,
+                      child: SvgPicture.asset('assets/icons/ui/star.svg',
+                          color: c.isFavorite == 1
+                              ? Color(0xffffc933)
+                              : Color(0xffffc933).withOpacity(0.2),
+                          semanticsLabel: 'Client marked as favorite'),
+                    ),
+                  ),
                   DataCell(Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -189,13 +215,56 @@ class _HomeScreenState extends State<HomeScreen> {
                               : AppTheme.appTheme.textTheme.bodyText2),
                       if (c.lastVisit != null)
                         Text(timeago.format(DateTime.parse(c.lastVisit!)),
-                            style: Get.isDarkMode
-                                ? AppTheme.appDarkTheme.textTheme.caption
-                                : AppTheme.appTheme.textTheme.caption),
+                            style: AppTheme.appDarkTheme.textTheme.caption),
+                    ],
+                  )),
+                  DataCell(Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(c.registrationDate,
+                          style: Get.isDarkMode
+                              ? AppTheme.appDarkTheme.textTheme.bodyText2
+                              : AppTheme.appTheme.textTheme.bodyText2),
+                      Text(timeago.format(DateTime.parse(c.registrationDate)),
+                          style: AppTheme.appDarkTheme.textTheme.caption),
                     ],
                   ))
                 ]))
         .toList();
+  }
+
+  bool _isLoading = true;
+
+  final SearchController _searchController = SearchController();
+  late StreamSubscription _subscription;
+  final List<SensorInfo> _foundSensorsWithCallback = [];
+
+  RegisteredSensor? _tappedRegisteredSensorInfo;
+  List<RegisteredSensor> _allRegisteredSensors = [];
+  late Future<void> initRegisteredSensors;
+
+  void initController() async {
+    await _searchController.init();
+    _subscription = _searchController.foundSensorsStream.listen((sensors) {
+      setState(() {
+        _foundSensorsWithCallback.clear();
+        _foundSensorsWithCallback.addAll(sensors);
+      });
+    });
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _subscription.cancel();
+    _searchController.dispose();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: [SystemUiOverlay.bottom]);
   }
 
   @override
@@ -205,251 +274,468 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Get.isDarkMode
             ? AppTheme.appDarkTheme.scaffoldBackgroundColor
             : AppTheme.appTheme.scaffoldBackgroundColor,
-        body: Row(
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SidePanel(
-              favoriteClients: favoriteClients,
-              lastAddedClients: lastAddedClients,
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            Container(
+              padding: EdgeInsets.only(right: 20, bottom: 12),
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
+                stops: [
+                  0.1,
+                  0.6,
+                ],
+                colors: [
+                  Color(0xff1b1b1b),
+                  Get.isDarkMode
+                      ? AppTheme.appDarkTheme.scaffoldBackgroundColor
+                      : AppTheme.appTheme.scaffoldBackgroundColor,
+                ],
+              )),
+              child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.only(
-                        left: 24, right: 24, bottom: 12, top: 20),
+                  Align(
+                    alignment: Alignment.topCenter,
                     child: Column(
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            RichText(
-                              text: TextSpan(
-                                style: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.textTheme.headline1
-                                        ?.copyWith(color: Colors.white)
-                                    : AppTheme.appTheme.textTheme.headline1,
-                                children: <TextSpan>[
-                                  const TextSpan(text: 'Your Clients '),
-                                  TextSpan(
-                                      text: '${allRegisteredClients.length}',
-                                      style: AppTheme
-                                          .appDarkTheme.textTheme.headline1
-                                          ?.copyWith(
-                                        shadows: [
-                                          Shadow(
-                                              color: Get.isDarkMode
-                                                  ? Colors.white
-                                                  : Colors.black,
-                                              offset: Offset(0, -2))
-                                        ],
-                                        color: Colors.transparent,
-                                        decorationThickness: 2,
-                                        decoration: TextDecoration.underline,
-                                        decorationColor: Color(0xffe40031),
-                                      )),
+                        Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                          width: 240,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.only(
+                                  bottomRight: Radius.circular(16)),
+                              gradient: LinearGradient(
+                                begin: Alignment.topRight,
+                                end: Alignment.bottomLeft,
+                                stops: [
+                                  0.1,
+                                  0.6,
                                 ],
-                              ),
-                            ),
-                            Wrap(
-                              spacing: 12,
-                              children: [
-                                AppPopupMenuButton(
-                                    iconData: Icons.settings,
-                                    itemBuilder: [
-                                      PopupMenuItem(
-                                        padding: EdgeInsets.symmetric(
-                                            vertical: 12, horizontal: 24),
-                                        onTap: () {
-                                          Get.isDarkMode
-                                              ? Get.changeTheme(
-                                                  AppTheme.appTheme)
-                                              : Get.changeTheme(
-                                                  AppTheme.appDarkTheme);
-                                        },
-                                        child: AppPopMenuItemChild(
-                                          title: Get.isDarkMode
-                                              ? 'Set light theme'
-                                              : 'Set dark theme',
-                                          iconData: Get.isDarkMode
-                                              ? Icons.light_mode
-                                              : Icons.dark_mode,
-                                        ),
-                                      ),
-                                      PopupMenuDivider(),
-                                      PopupMenuItem(
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 12, horizontal: 24),
-                                          child: Column(
-                                            children: [
-                                              Text('Muscles language',
-                                                  style: Get.isDarkMode
-                                                      ? AppTheme.appDarkTheme
-                                                          .textTheme.bodyText1
-                                                      : AppTheme.appTheme
-                                                          .textTheme.bodyText1),
-                                              const SizedBox(height: 8),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  AppIconButton(
-                                                    size: ButtonSize.medium,
-                                                    onPressed: () => null,
-                                                    iconData: Icons.language,
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          )),
-                                      PopupMenuDivider(),
-                                      PopupMenuItem(
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 12, horizontal: 24),
-                                          child: Column(
-                                            children: [
-                                              Text('App language',
-                                                  style: Get.isDarkMode
-                                                      ? AppTheme.appDarkTheme
-                                                          .textTheme.bodyText1
-                                                      : AppTheme.appTheme
-                                                          .textTheme.bodyText1),
-                                              const SizedBox(height: 8),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  AppIconButton(
-                                                    size: ButtonSize.medium,
-                                                    onPressed: () => null,
-                                                    iconData: Icons.language,
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          )),
-                                      PopupMenuDivider(),
-                                      PopupMenuItem(
-                                        padding: EdgeInsets.symmetric(
-                                            vertical: 12, horizontal: 24),
-                                        onTap: () async {
-                                          _loggedInUser.isLoggedIn = 0;
-                                          await userOperations
-                                              .updateUser(_loggedInUser);
-                                          Get.off(
-                                              () => UserRegistrationScreen());
-                                        },
-                                        child: AppPopMenuItemChild(
-                                          title: 'Log out',
-                                          iconData: Icons.logout,
-                                          iconColor: Theme.of(context)
-                                              .colorScheme
-                                              .error,
-                                        ),
-                                      ),
-                                    ])
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        // - Text Field
-                        SizedBox(
-                          child: Row(
+                                colors: [
+                                  Get.isDarkMode
+                                      ? AppTheme
+                                          .appDarkTheme.colorScheme.surface
+                                      : AppTheme.appTheme.colorScheme.surface,
+                                  Get.isDarkMode
+                                      ? AppTheme.appDarkTheme.colorScheme
+                                          .surfaceVariant
+                                      : AppTheme
+                                          .appTheme.colorScheme.surfaceVariant,
+                                ],
+                              )),
+                          child: Column(
                             children: [
-                              Flexible(
-                                flex: 1,
-                                child: AppTextFieldSearch(
-                                  textEditingController: _textEditingController,
-                                  hintText: 'Search client',
-                                  onCancelButtonPressed: () {
-                                    if (_textEditingController.text != '') {
-                                      searchedClients.clear();
-                                      _textEditingController.text = '';
-                                    } else {
-                                      FocusManager.instance.primaryFocus
-                                          ?.unfocus();
+                              // if (_allRegisteredSensors.isEmpty)
+
+                              if (_allRegisteredSensors.isNotEmpty)
+                                Builder(
+                                  builder: (context) {
+                                    if (_isLoading == true) {
+                                      return const Center(
+                                        child: CircularProgressIndicator(),
+                                      );
                                     }
-                                    setState(() {});
+
+                                    return ZoomTapAnimation(
+                                      onTap: () async {
+                                        setState(() {
+                                          _isLoading = true;
+                                        });
+                                        _searchController.startScanner();
+                                        await Future.delayed(
+                                            Duration(seconds: 2));
+                                        _searchController.stopScanner();
+                                        _searchController.startScanner();
+                                        await Future.delayed(
+                                            Duration(seconds: 2));
+                                        _searchController.stopScanner();
+
+                                        _initRegisteredSensorsDBAsync();
+                                      },
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          for (var registeredSensor
+                                              in _allRegisteredSensors)
+                                            Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                CircleAvatar(
+                                                  backgroundColor:
+                                                      Get.isDarkMode
+                                                          ? AppTheme
+                                                              .appDarkTheme
+                                                              .colorScheme
+                                                              .surface
+                                                          : AppTheme
+                                                              .appTheme
+                                                              .colorScheme
+                                                              .surface,
+                                                  child: SvgPicture.asset(
+                                                      'assets/icons/callibri_device-${registeredSensor.color}.svg',
+                                                      width: 16,
+                                                      semanticsLabel:
+                                                          'Callibri icon'),
+                                                ),
+                                                const SizedBox(height: 6),
+                                                if (registeredSensor.battery !=
+                                                    null)
+                                                  AppBatteryIndicator(
+                                                      appBatteryIndicatorLabelPosition:
+                                                          AppBatteryIndicatorLabelPosition
+                                                              .inside,
+                                                      batteryLevel:
+                                                          registeredSensor
+                                                              .battery!)
+                                              ],
+                                            ),
+                                        ],
+                                      ),
+                                    );
                                   },
                                 ),
-                              ),
-                              SizedBox(width: 12),
-                              AppIconButton(
-                                iconData: Icons.person_add,
-                                size: ButtonSize.big,
-                                backgroundColor: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.colorScheme.primary
-                                        .withAlpha(200)
-                                    : AppTheme.appTheme.colorScheme.primary
-                                        .withAlpha(200),
-                                iconColor: Colors.white,
-                                onPressed: () => null,
-                              ),
                             ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.only(top: 12, left: 12, right: 12),
-                      child: SizedBox(
-                          child: ListView(
-                        scrollDirection: Axis.vertical,
-                        children: [
-                          DataTable(
-                            showCheckboxColumn: false,
-                            horizontalMargin: 4,
-                            dataRowHeight: 72,
-                            sortColumnIndex: sortColumnIndex,
-                            sortAscending: isAscending,
-                            columns: [
-                              DataColumn(
-                                  tooltip: "Client's full name",
-                                  label: Text('         Full name',
-                                      style: Get.isDarkMode
-                                          ? AppTheme
-                                              .appDarkTheme.textTheme.headline5
-                                          : AppTheme
-                                              .appTheme.textTheme.headline5),
-                                  onSort: onSort),
-                              DataColumn(
-                                  tooltip: "Client's age",
-                                  label: Text('Age',
-                                      style: Get.isDarkMode
-                                          ? AppTheme
-                                              .appDarkTheme.textTheme.headline5
-                                          : AppTheme
-                                              .appTheme.textTheme.headline5),
-                                  onSort: onSort),
-                              DataColumn(
-                                  tooltip: 'Date when client was registered',
-                                  label: Text('Last session',
-                                      style: Get.isDarkMode
-                                          ? AppTheme
-                                              .appDarkTheme.textTheme.headline5
-                                          : AppTheme
-                                              .appTheme.textTheme.headline5),
-                                  onSort: onSort),
-                            ],
-                            rows: _textEditingController.text.isNotEmpty
-                                ? getRowsAllClients(searchedClients)
-                                : getRowsAllClients(allRegisteredClients),
-                          ),
-                        ],
-                      )),
+                  SizedBox(width: 16),
+                  ScaleTap(
+                    onPressed: showAccountSettings,
+                    scaleMinValue: 0.9,
+                    opacityMinValue: 0.4,
+                    scaleCurve: Curves.decelerate,
+                    opacityCurve: Curves.fastOutSlowIn,
+                    child: SvgPicture.asset('assets/icons/ui/settings.svg',
+                        color: Get.isDarkMode
+                            ? AppTheme.appDarkTheme.colorScheme.tertiary
+                            : Colors.black,
+                        width: 32),
+                  ),
+                  SizedBox(width: 64),
+                  Flexible(
+                    flex: 1,
+                    child: AppTextFieldSearch(
+                      textEditingController: _textEditingController,
+                      hintText:
+                          'Search from ${allRegisteredClients.length} clients...',
+                      onCancelButtonPressed: () {
+                        if (_textEditingController.text != '') {
+                          searchedClients.clear();
+                          _textEditingController.text = '';
+                        } else {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        }
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  ScaleTap(
+                    onPressed: showAccountSettings,
+                    scaleMinValue: 0.9,
+                    opacityMinValue: 0.4,
+                    scaleCurve: Curves.decelerate,
+                    opacityCurve: Curves.fastOutSlowIn,
+                    child: SvgPicture.asset(
+                      'assets/icons/ui/user-plus.svg',
+                      width: 32,
+                      color: Get.isDarkMode
+                          ? AppTheme.appDarkTheme.colorScheme.tertiary
+                          : AppTheme.appTheme.colorScheme.tertiary,
                     ),
                   ),
                 ],
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 12, right: 12),
+                child: SizedBox(
+                    child: ListView(
+                  scrollDirection: Axis.vertical,
+                  children: [
+                    DataTable(
+                      showCheckboxColumn: false,
+                      horizontalMargin: 4,
+                      dataRowHeight: 72,
+                      sortColumnIndex: sortColumnIndex,
+                      sortAscending: isAscending,
+                      columns: [
+                        DataColumn(
+                            tooltip: "Client's full name",
+                            label: Text('         Full name',
+                                style: Get.isDarkMode
+                                    ? AppTheme.appDarkTheme.textTheme.headline5
+                                    : AppTheme.appTheme.textTheme.headline5),
+                            onSort: onSort),
+                        DataColumn(
+                            tooltip: "Client's age",
+                            label: Text('Age',
+                                style: Get.isDarkMode
+                                    ? AppTheme.appDarkTheme.textTheme.headline5
+                                    : AppTheme.appTheme.textTheme.headline5),
+                            onSort: onSort),
+                        DataColumn(
+                            tooltip: "Favorite clients",
+                            label: SvgPicture.asset(
+                              'assets/icons/ui/star.svg',
+                              semanticsLabel: 'Favorite Client',
+                              color: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.colorScheme.tertiary
+                                  : Colors.black,
+                            ),
+                            onSort: onSort),
+                        DataColumn(
+                            tooltip: "Registered date",
+                            label: Text('Registered',
+                                style: Get.isDarkMode
+                                    ? AppTheme.appDarkTheme.textTheme.headline5
+                                    : AppTheme.appTheme.textTheme.headline5),
+                            onSort: onSort),
+                        DataColumn(
+                            tooltip: "Client's last session",
+                            label: Text('Last session',
+                                style: Get.isDarkMode
+                                    ? AppTheme.appDarkTheme.textTheme.headline5
+                                    : AppTheme.appTheme.textTheme.headline5),
+                            onSort: onSort),
+                      ],
+                      rows: _textEditingController.text.isNotEmpty
+                          ? getRowsAllClients(searchedClients)
+                          : getRowsAllClients(allRegisteredClients),
+                    ),
+                  ],
+                )),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  showAccountSettings() {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              Container(
+                  color: Color(0xff242424),
+                  child: Column(
+                    children: <Widget>[
+                      ListView(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        children: <Widget>[
+                          Container(
+                            height: 80,
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  width: 1,
+                                  color: Color(0xff292929),
+                                ),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                SizedBox(height: 12),
+                                Container(
+                                  width: 48,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                      color: Color(0xff727272),
+                                      borderRadius: BorderRadius.circular(8)),
+                                ),
+                                SizedBox(height: 20),
+                                Text(
+                                  "Settings",
+                                  style: AppTheme.appTheme.textTheme.headline5
+                                      ?.copyWith(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Row(
+                              children: [
+                                SvgPicture.asset(
+                                  Get.isDarkMode
+                                      ? 'assets/icons/ui/moon.svg'
+                                      : 'assets/icons/ui/sun.svg',
+                                  width: 24,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(
+                                  width: 32,
+                                ),
+                                SizedBox(
+                                  width: 180,
+                                  child: Text(
+                                    "App Theme:",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                                Wrap(
+                                  spacing: 32,
+                                  children: [
+                                    ZoomTapAnimation(
+                                      onTap: () async {
+                                        Get.changeTheme(AppTheme.appDarkTheme);
+                                        await Future.delayed(
+                                            Duration(milliseconds: 700));
+                                        setState(() {});
+                                      },
+                                      child: Text(
+                                        "Dark",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                    ZoomTapAnimation(
+                                      onTap: () async {
+                                        Get.changeTheme(AppTheme.appTheme);
+                                        await Future.delayed(
+                                            Duration(milliseconds: 700));
+                                        setState(() {});
+                                      },
+                                      child: const Text(
+                                        "Light",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Row(
+                              children: [
+                                SvgPicture.asset(
+                                  'assets/icons/ui/planet.svg',
+                                  width: 24,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(
+                                  width: 32,
+                                ),
+                                SizedBox(
+                                  width: 180,
+                                  child: Text(
+                                    "App Language:",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                                Wrap(
+                                  spacing: 32,
+                                  children: [
+                                    Text(
+                                      "Russian",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    Text(
+                                      "English",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    Text(
+                                      "French",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Row(
+                              children: [
+                                SvgPicture.asset(
+                                  'assets/icons/ui/globe.svg',
+                                  width: 24,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(
+                                  width: 32,
+                                ),
+                                SizedBox(
+                                  width: 180,
+                                  child: Text(
+                                    "Muscles Language:",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                                Wrap(
+                                  spacing: 32,
+                                  children: [
+                                    Text(
+                                      "Russian",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    Text(
+                                      "Latin",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          ListTile(
+                            title: Text(
+                              "Edit account",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            leading: SvgPicture.asset(
+                              'assets/icons/ui/edit.svg',
+                              width: 24,
+                              color: Colors.white,
+                            ),
+                            onTap: () {},
+                          ),
+                          ZoomTapAnimation(
+                            end: 0.98,
+                            onTap: () async {
+                              _loggedInUser.isLoggedIn = 0;
+                              await userOperations.updateUser(_loggedInUser);
+                              Get.off(() => UserRegistrationScreen());
+                            },
+                            child: ListTile(
+                              title: Text(
+                                "Log out",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              leading: SvgPicture.asset(
+                                'assets/icons/ui/log-out.svg',
+                                width: 24,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  )),
+            ],
+          );
+        });
   }
 
   Future<void> _getLoggedInUserDBAsync() async {
@@ -479,293 +765,6 @@ class _HomeScreenState extends State<HomeScreen> {
     var receivedData = await clientOperations.getLastAddedClients();
     lastAddedClients = List.from(receivedData.toList());
     setState(() {});
-  }
-}
-
-class SidePanel extends StatefulWidget {
-  final List<Client> favoriteClients;
-  final List<Client> lastAddedClients;
-  const SidePanel({
-    Key? key,
-    required this.favoriteClients,
-    required this.lastAddedClients,
-  }) : super(key: key);
-
-  @override
-  State<SidePanel> createState() => _SidePanelState();
-}
-
-class _SidePanelState extends State<SidePanel> {
-  final sidePanelWidth = 270.0;
-  bool _isLoading = true;
-
-  final SearchController _searchController = SearchController();
-  late StreamSubscription _subscription;
-  final List<SensorInfo> _foundSensorsWithCallback = [];
-
-  RegisteredSensor? _tappedRegisteredSensorInfo;
-  List<RegisteredSensor> _allRegisteredSensors = [];
-  late Future<void> initRegisteredSensors;
-
-  @override
-  void initState() {
-    super.initState();
-    initController();
-    initRegisteredSensors = _initRegisteredSensorsDBAsync();
-  }
-
-  void initController() async {
-    await _searchController.init();
-    _subscription = _searchController.foundSensorsStream.listen((sensors) {
-      setState(() {
-        _foundSensorsWithCallback.clear();
-        _foundSensorsWithCallback.addAll(sensors);
-      });
-    });
-
-    setState(() {
-      _isLoading = false;
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _subscription.cancel();
-    _searchController.dispose();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-        overlays: [SystemUiOverlay.bottom]);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height,
-      width: sidePanelWidth,
-      decoration: BoxDecoration(
-        color: Get.isDarkMode
-            ? AppTheme.appDarkTheme.scaffoldBackgroundColor
-            : AppTheme.appTheme.scaffoldBackgroundColor,
-        border: Border(
-          right: BorderSide(
-              width: 1.0,
-              color: Get.isDarkMode
-                  ? AppTheme.appDarkTheme.dividerColor
-                  : AppTheme.appTheme.dividerColor),
-        ),
-      ),
-      child: ListView(
-        children: [
-          SizedBox(
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                      width: 1.0,
-                      color: Get.isDarkMode
-                          ? AppTheme.appDarkTheme.dividerColor
-                          : AppTheme.appTheme.dividerColor),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    margin: const EdgeInsets.only(
-                        top: 20, left: 12, right: 12, bottom: 12),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            RichText(
-                              text: TextSpan(
-                                style: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.textTheme.headline3
-                                        ?.copyWith(color: Colors.white)
-                                    : AppTheme.appTheme.textTheme.headline3,
-                                children: <TextSpan>[
-                                  const TextSpan(text: 'Your Sensors: '),
-                                  TextSpan(
-                                      text: '${_allRegisteredSensors.length}',
-                                      style: AppTheme
-                                          .appDarkTheme.textTheme.headline3
-                                          ?.copyWith(
-                                        shadows: [
-                                          Shadow(
-                                              color: Get.isDarkMode
-                                                  ? Colors.white
-                                                  : Colors.black,
-                                              offset: Offset(0, -2))
-                                        ],
-                                        color: Colors.transparent,
-                                        decorationThickness: 2,
-                                        decoration: TextDecoration.underline,
-                                        decorationColor: Color(0xffe40031),
-                                      )),
-                                ],
-                              ),
-                            ),
-                            if (_allRegisteredSensors.isNotEmpty)
-                              AppIconButton(
-                                onPressed: () async {
-                                  setState(() {
-                                    _isLoading = true;
-                                  });
-                                  _searchController.startScanner();
-                                  await Future.delayed(Duration(seconds: 2));
-                                  _searchController.stopScanner();
-                                  _searchController.startScanner();
-                                  await Future.delayed(Duration(seconds: 2));
-                                  _searchController.stopScanner();
-
-                                  _initRegisteredSensorsDBAsync();
-                                },
-                                iconData: Icons.refresh,
-                                iconColor: Color(0xff107c10),
-                              )
-                          ],
-                        ),
-                        if (_allRegisteredSensors.isEmpty)
-                          Container(
-                            margin: const EdgeInsets.only(top: 8),
-                            width: double.infinity,
-                            child: AppFilledButton(
-                              text: 'Add sensors now',
-                              backgroundColor: Theme.of(context).hintColor,
-                              onPressed: () => Get.to(() => SearchScreen()),
-                            ),
-                          ),
-                        if (_allRegisteredSensors.isNotEmpty)
-                          Container(
-                              margin: const EdgeInsets.only(top: 8),
-                              height: 120,
-                              width: sidePanelWidth - (12 * 2),
-                              decoration: BoxDecoration(
-                                  color: Get.isDarkMode
-                                      ? AppTheme
-                                          .appDarkTheme.colorScheme.surface
-                                      : AppTheme.appTheme.colorScheme.surface,
-                                  borderRadius:
-                                      _tappedRegisteredSensorInfo == null
-                                          ? const BorderRadius.all(
-                                              Radius.circular(16))
-                                          : const BorderRadius.only(
-                                              topLeft: Radius.circular(16),
-                                              topRight: Radius.circular(16))),
-                              child: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                                  child: Builder(
-                                    builder: (context) {
-                                      if (_isLoading == true) {
-                                        return const Center(
-                                          child: CircularProgressIndicator(),
-                                        );
-                                      }
-
-                                      return Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        children: [
-                                          for (var registeredSensor
-                                              in _allRegisteredSensors)
-                                            Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                const SizedBox(height: 2),
-                                                InkWell(
-                                                  onTap: () => setState(() {
-                                                    _tappedRegisteredSensorInfo =
-                                                        (_tappedRegisteredSensorInfo ==
-                                                                registeredSensor)
-                                                            ? null
-                                                            : registeredSensor;
-                                                  }),
-                                                  child: CircleAvatar(
-                                                    backgroundColor:
-                                                        _tappedRegisteredSensorInfo ==
-                                                                registeredSensor
-                                                            ? Colors.white
-                                                            : Colors
-                                                                .transparent,
-                                                    radius: 26,
-                                                    child: CircleAvatar(
-                                                      backgroundColor: Get
-                                                              .isDarkMode
-                                                          ? Colors.white
-                                                              .withOpacity(0.05)
-                                                          : Colors.black
-                                                              .withOpacity(
-                                                                  0.05),
-                                                      radius: 24,
-                                                      child: SvgPicture.asset(
-                                                          'assets/icons/callibri_device-${registeredSensor.color}.svg',
-                                                          width: 16,
-                                                          semanticsLabel:
-                                                              'Callibri icon'),
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 2),
-                                                if (registeredSensor.battery !=
-                                                    null)
-                                                  AppBatteryIndicator(
-                                                      appBatteryIndicatorLabelPosition:
-                                                          AppBatteryIndicatorLabelPosition
-                                                              .inside,
-                                                      batteryLevel:
-                                                          registeredSensor
-                                                              .battery!)
-                                              ],
-                                            ),
-                                        ],
-                                      );
-                                    },
-                                  ))),
-                        if (_tappedRegisteredSensorInfo != null)
-                          TapperRegisteredSensorInfo(
-                              tappedRegisteredSensorInfo:
-                                  _tappedRegisteredSensorInfo!),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.only(
-              top: 24,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 20.0),
-                  child: Text('Favorites',
-                      style: Get.isDarkMode
-                          ? AppTheme.appDarkTheme.textTheme.headline4
-                          : AppTheme.appTheme.textTheme.headline4),
-                ),
-                ScrollViewContacts(clients: widget.favoriteClients),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20.0),
-                  child: Text('Last added',
-                      style: Get.isDarkMode
-                          ? AppTheme.appDarkTheme.textTheme.headline4
-                          : AppTheme.appTheme.textTheme.headline4),
-                ),
-                ScrollViewContacts(clients: widget.lastAddedClients),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _initRegisteredSensorsDBAsync() async {
