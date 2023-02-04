@@ -5,6 +5,7 @@ import 'package:neuro_sdk_isolate_example/database/body_region_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/placement_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
+import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/workout_operations.dart';
 import 'package:neuro_sdk_isolate_example/screens/home/home_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/search_screen.dart';
@@ -31,7 +32,11 @@ class _MyAppState extends State<MyApp> {
   RegisteredSensorOperations registeredSensorOperations =
       RegisteredSensorOperations();
 
-  late Future<List<RegisteredSensor>?> initRegisteredSensors;
+  bool _isLoading = true;
+  User? _loggedUser;
+  List<RegisteredSensor> _registeredSensors = [];
+
+  late Future<void> initRegisteredSensors;
 
   @override
   void initState() {
@@ -44,41 +49,46 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-        // showPerformanceOverlay: true,
-        debugShowCheckedModeBanner: false,
-        themeMode: ThemeMode.system,
-        theme: AppTheme.appTheme,
-        darkTheme: AppTheme.appDarkTheme,
-        home: UserRegistrationScreen()
-        // home: FutureBuilder<List<RegisteredSensor>?>(
-        //   future: initRegisteredSensors,
-        //   builder: (context, AsyncSnapshot<List<RegisteredSensor>?> snapshot) {
-        //     if (snapshot.connectionState == ConnectionState.done &&
-        //         snapshot.hasData) {
-        //       if (snapshot.data!.isEmpty) {
-        //         return const SearchScreen();
-        //       } else {
-        //         return HomeScreen();
-        //       }
-        //     } else {
-        //       return Scaffold(
-        //         body: Center(child: CircularProgressIndicator()),
-        //       );
-        //     }
-        //   },
-        // ),
-        );
+      // showPerformanceOverlay: true,
+      debugShowCheckedModeBanner: false,
+      // themeMode: ThemeMode.system,
+      theme: AppTheme.appTheme,
+      darkTheme: AppTheme.appDarkTheme,
+      home: Builder(
+        builder: (context) {
+          if (_isLoading)
+            return Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          else {
+            if (_loggedUser == null) {
+              return UserRegistrationScreen();
+            } else if (_registeredSensors.isEmpty) {
+              return const SearchScreen();
+            } else {
+              return HomeScreen();
+            }
+          }
+        },
+      ),
+    );
   }
 
-  Future<List<RegisteredSensor>?> initApp() async {
-    var registeredSensors =
-        await registeredSensorOperations.getAllRegisteredSensors();
+  Future<void> initApp() async {
+    final allUsers = await UserOperations().getAllUsers();
+    if (allUsers.isNotEmpty) {
+      _loggedUser = allUsers.first;
+      _registeredSensors = await registeredSensorOperations
+          .getRegisteredSensorsByUser(_loggedUser!);
+    }
+
     // INIT THE TEST VALUES FOR DATABASE:
     await ClientOperations().initTestClients();
     await ExerciseOperations().initWorkouts();
     await BodyRegionOperations().initBodyRegions();
     await PlacementOperations().initPlacements();
-
-    return registeredSensors;
+    setState(() {
+      _isLoading = false;
+    });
   }
 }
