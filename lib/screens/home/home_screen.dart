@@ -10,6 +10,7 @@ import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
 import 'package:neuro_sdk_isolate_example/screens/client_journal/client_history_screen.dart';
+import 'package:neuro_sdk_isolate_example/screens/home/add_client_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/controllers/search_controller.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/widgets/modal_bottom_sheet.dart';
 import 'package:neuro_sdk_isolate_example/screens/session/session_setup_screen.dart';
@@ -287,7 +288,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: EdgeInsets.only(right: 20, bottom: 8),
+              padding: EdgeInsets.only(right: 20),
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
@@ -304,12 +305,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       children: [
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          width: 240,
-                          height: 86,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          width: 250,
+                          height: 80,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                                bottomRight: Radius.circular(16)),
                             color: Get.isDarkMode
                                 ? AppTheme.appDarkTheme.colorScheme.surface
                                 : AppTheme.appTheme.colorScheme.surface,
@@ -425,7 +424,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   SizedBox(width: 16),
                   ScaleTap(
-                    onPressed: showAccountSettings,
+                    onPressed: () => Get.to(() => AddClientScreen()),
                     scaleMinValue: 0.9,
                     opacityMinValue: 0.4,
                     scaleCurve: Curves.decelerate,
