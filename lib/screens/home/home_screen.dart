@@ -9,18 +9,15 @@ import 'package:neuro_sdk_isolate_example/controllers/services_manager.dart';
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
-import 'package:neuro_sdk_isolate_example/screens/home/widgets/apppopupmenubutton.dart';
-import 'package:neuro_sdk_isolate_example/screens/home/widgets/popupmenubutton_clients.dart';
-import 'package:neuro_sdk_isolate_example/screens/home/widgets/tapper_registered_sensor_info.dart';
 import 'package:neuro_sdk_isolate_example/screens/client_journal/client_history_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/controllers/search_controller.dart';
-import 'package:neuro_sdk_isolate_example/screens/sensor_registration/search_screen.dart';
+import 'package:neuro_sdk_isolate_example/screens/sensor_registration/widgets/modal_bottom_sheet.dart';
+import 'package:neuro_sdk_isolate_example/screens/session/session_setup_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/user_registration/user_registration_screen.dart';
 import 'dart:async';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/utils/global_utils.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_battery_indicator.dart';
-import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_client_avatar.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_pop_menu_item_child.dart';
@@ -63,11 +60,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     initUserAccount = _getLoggedInUserDBAsync();
     initRegisteredClients = _getRegisteredClientsDBAsync();
-    initFavoriteClients = _getFavoriteClientsDBAsync();
-    initLastAddedClients = _getLastAddedClientsDBAsync();
-
-    initController();
     initRegisteredSensors = _initRegisteredSensorsDBAsync();
+    initController();
 
     _textEditingController = TextEditingController();
     _textEditingController.addListener(() {
@@ -140,17 +134,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   DataCell(
                     Row(
                       children: [
-                        PopMenuButtonClients(
-                          client: c,
-                          // Get again the clients from DB to update the rendered information:
-                          notifyParentClientDeleted: () async {
-                            await _getRegisteredClientsDBAsync();
-                            await _getFavoriteClientsDBAsync();
-                            await _getLastAddedClientsDBAsync();
-                          },
-                          notifyParentClientAddedToFavorites: () async {
-                            await _getFavoriteClientsDBAsync();
-                          },
+                        ScaleTap(
+                          onPressed: () => showClientSettings(client: c),
+                          scaleMinValue: 0.9,
+                          opacityMinValue: 0.4,
+                          scaleCurve: Curves.decelerate,
+                          opacityCurve: Curves.fastOutSlowIn,
+                          child: SvgPicture.asset(
+                            'assets/icons/ui/more-vert.svg',
+                            width: 24,
+                            color: Get.isDarkMode
+                                ? AppTheme.appDarkTheme.colorScheme.tertiary
+                                : AppTheme.appTheme.colorScheme.tertiary,
+                          ),
                         ),
                         ContactCircleAvatar(
                           radius: 25,
@@ -240,7 +236,6 @@ class _HomeScreenState extends State<HomeScreen> {
   late StreamSubscription _subscription;
   final List<SensorInfo> _foundSensorsWithCallback = [];
 
-  RegisteredSensor? _tappedRegisteredSensorInfo;
   List<RegisteredSensor> _allRegisteredSensors = [];
   late Future<void> initRegisteredSensors;
 
@@ -269,6 +264,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading == true) {
+      return Scaffold(
+          body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Center(
+              child: AppHeaderInfo(
+            title: 'Welcome back!',
+            labelPrimary: 'Loading ...',
+          )),
+        ],
+      ));
+    }
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: Get.isDarkMode
@@ -278,22 +287,16 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: EdgeInsets.only(right: 20, bottom: 12),
+              padding: EdgeInsets.only(right: 20, bottom: 8),
               decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-                stops: [
-                  0.1,
-                  0.6,
-                ],
-                colors: [
-                  Color(0xff1b1b1b),
-                  Get.isDarkMode
-                      ? AppTheme.appDarkTheme.scaffoldBackgroundColor
-                      : AppTheme.appTheme.scaffoldBackgroundColor,
-                ],
-              )),
+                border: Border(
+                  bottom: BorderSide(
+                      width: 1,
+                      color: Get.isDarkMode
+                          ? AppTheme.appDarkTheme.colorScheme.outline
+                          : AppTheme.appTheme.colorScheme.outline),
+                ),
+              ),
               child: Row(
                 children: [
                   Align(
@@ -301,44 +304,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       children: [
                         Container(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                          padding: EdgeInsets.symmetric(horizontal: 8),
                           width: 240,
+                          height: 86,
                           decoration: BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                  bottomRight: Radius.circular(16)),
-                              gradient: LinearGradient(
-                                begin: Alignment.topRight,
-                                end: Alignment.bottomLeft,
-                                stops: [
-                                  0.1,
-                                  0.6,
-                                ],
-                                colors: [
-                                  Get.isDarkMode
-                                      ? AppTheme
-                                          .appDarkTheme.colorScheme.surface
-                                      : AppTheme.appTheme.colorScheme.surface,
-                                  Get.isDarkMode
-                                      ? AppTheme.appDarkTheme.colorScheme
-                                          .surfaceVariant
-                                      : AppTheme
-                                          .appTheme.colorScheme.surfaceVariant,
-                                ],
-                              )),
+                            borderRadius: BorderRadius.only(
+                                bottomRight: Radius.circular(16)),
+                            color: Get.isDarkMode
+                                ? AppTheme.appDarkTheme.colorScheme.surface
+                                : AppTheme.appTheme.colorScheme.surface,
+                          ),
                           child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               // if (_allRegisteredSensors.isEmpty)
 
                               if (_allRegisteredSensors.isNotEmpty)
                                 Builder(
                                   builder: (context) {
-                                    if (_isLoading == true) {
-                                      return const Center(
-                                        child: CircularProgressIndicator(),
-                                      );
-                                    }
-
                                     return ZoomTapAnimation(
                                       onTap: () async {
                                         setState(() {
@@ -368,14 +351,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 CircleAvatar(
                                                   backgroundColor:
                                                       Get.isDarkMode
-                                                          ? AppTheme
-                                                              .appDarkTheme
-                                                              .colorScheme
-                                                              .surface
-                                                          : AppTheme
-                                                              .appTheme
-                                                              .colorScheme
-                                                              .surface,
+                                                          ? lighterColorFrom(
+                                                              color: AppTheme
+                                                                  .appDarkTheme
+                                                                  .colorScheme
+                                                                  .surface,
+                                                              amount: 0.05)
+                                                          : lighterColorFrom(
+                                                              color: AppTheme
+                                                                  .appTheme
+                                                                  .colorScheme
+                                                                  .surface,
+                                                              amount: 0.05),
                                                   child: SvgPicture.asset(
                                                       'assets/icons/callibri_device-${registeredSensor.color}.svg',
                                                       width: 16,
@@ -455,70 +442,133 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 12, right: 12),
-                child: SizedBox(
-                    child: ListView(
-                  scrollDirection: Axis.vertical,
-                  children: [
-                    DataTable(
-                      showCheckboxColumn: false,
-                      horizontalMargin: 4,
-                      dataRowHeight: 72,
-                      sortColumnIndex: sortColumnIndex,
-                      sortAscending: isAscending,
-                      columns: [
-                        DataColumn(
-                            tooltip: "Client's full name",
-                            label: Text('         Full name',
-                                style: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.textTheme.headline5
-                                    : AppTheme.appTheme.textTheme.headline5),
-                            onSort: onSort),
-                        DataColumn(
-                            tooltip: "Client's age",
-                            label: Text('Age',
-                                style: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.textTheme.headline5
-                                    : AppTheme.appTheme.textTheme.headline5),
-                            onSort: onSort),
-                        DataColumn(
-                            tooltip: "Favorite clients",
-                            label: SvgPicture.asset(
-                              'assets/icons/ui/star.svg',
-                              semanticsLabel: 'Favorite Client',
-                              color: Get.isDarkMode
-                                  ? AppTheme.appDarkTheme.colorScheme.tertiary
-                                  : Colors.black,
-                            ),
-                            onSort: onSort),
-                        DataColumn(
-                            tooltip: "Registered date",
-                            label: Text('Registered',
-                                style: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.textTheme.headline5
-                                    : AppTheme.appTheme.textTheme.headline5),
-                            onSort: onSort),
-                        DataColumn(
-                            tooltip: "Client's last session",
-                            label: Text('Last session',
-                                style: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.textTheme.headline5
-                                    : AppTheme.appTheme.textTheme.headline5),
-                            onSort: onSort),
-                      ],
-                      rows: _textEditingController.text.isNotEmpty
-                          ? getRowsAllClients(searchedClients)
-                          : getRowsAllClients(allRegisteredClients),
-                    ),
-                  ],
-                )),
-              ),
+              child: SizedBox(
+                  child: ListView(
+                scrollDirection: Axis.vertical,
+                children: [
+                  DataTable(
+                    showCheckboxColumn: false,
+                    dataRowHeight: 72,
+                    sortColumnIndex: sortColumnIndex,
+                    sortAscending: isAscending,
+                    columns: [
+                      DataColumn(
+                          tooltip: "Client's full name",
+                          label: Text('         Full name',
+                              style: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.textTheme.headline5
+                                  : AppTheme.appTheme.textTheme.headline5),
+                          onSort: onSort),
+                      DataColumn(
+                          tooltip: "Client's age",
+                          label: Text('Age',
+                              style: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.textTheme.headline5
+                                  : AppTheme.appTheme.textTheme.headline5),
+                          onSort: onSort),
+                      DataColumn(
+                          tooltip: "Favorite clients",
+                          label: SvgPicture.asset(
+                            'assets/icons/ui/star.svg',
+                            semanticsLabel: 'Favorite Client',
+                            color: Get.isDarkMode
+                                ? AppTheme.appDarkTheme.colorScheme.tertiary
+                                : Colors.black,
+                          ),
+                          onSort: onSort),
+                      DataColumn(
+                          tooltip: "Registered date",
+                          label: Text('Registered',
+                              style: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.textTheme.headline5
+                                  : AppTheme.appTheme.textTheme.headline5),
+                          onSort: onSort),
+                      DataColumn(
+                          tooltip: "Client's last session",
+                          label: Text('Last session',
+                              style: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.textTheme.headline5
+                                  : AppTheme.appTheme.textTheme.headline5),
+                          onSort: onSort),
+                    ],
+                    rows: _textEditingController.text.isNotEmpty
+                        ? getRowsAllClients(searchedClients)
+                        : getRowsAllClients(allRegisteredClients),
+                  ),
+                ],
+              )),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _getLoggedInUserDBAsync() async {
+    var user = await userOperations.getLoggedInUser();
+    if (user != null) {
+      _loggedInUser = user;
+    } else {
+      Get.off(() => UserRegistrationScreen());
+    }
+  }
+
+  Future<void> _getRegisteredClientsDBAsync() async {
+    var receivedData = await clientOperations.getAllClients();
+    allRegisteredClients = List.from(receivedData.toList());
+    allRegisteredClients.sort((a, b) => a.surname.compareTo(b.surname));
+    await Future.delayed(Duration(seconds: 2));
+    setState(() {});
+  }
+
+  Future<void> _initRegisteredSensorsDBAsync() async {
+    if (_foundSensorsWithCallback.isNotEmpty) {
+      List<SensorInfo> allRegisteredAndDiscoveredSensors = [];
+
+      // Prepare a list of the registered and discovered sensors, to connect to them later.
+      for (var registeredSensor in _allRegisteredSensors) {
+        SensorInfo? registeredAndDiscoveredSensor =
+            _foundSensorsWithCallback.firstWhereOrNull(
+                (element) => element.address == registeredSensor.address);
+        if (registeredAndDiscoveredSensor != null) {
+          allRegisteredAndDiscoveredSensors.add(registeredAndDiscoveredSensor);
+        }
+      }
+
+      /// Connect to the registered and discovered sensors just to get the battery level of the sensors.
+      List<Sensor> allConnectedSensors = [];
+      for (var info in allRegisteredAndDiscoveredSensors) {
+        log('CONNECTING...');
+        var connectedSensor = await Sensor.create(info);
+        var connectedSensorBattery = await connectedSensor.battery.value;
+        String connectedSensorAddress = await connectedSensor.address.value;
+
+        var currentRegisteredSensor = _allRegisteredSensors.firstWhereOrNull(
+            (registeredSensor) =>
+                registeredSensor.address == connectedSensorAddress);
+        currentRegisteredSensor?.battery ??= (connectedSensorBattery);
+
+        if (currentRegisteredSensor != null) {
+          RegisteredSensorOperations().updateRegisteredSensorBatteryByAddress(
+              currentRegisteredSensor.address, currentRegisteredSensor);
+        }
+
+        allConnectedSensors.add(connectedSensor);
+      }
+
+      /// Disconnect from all `allConnectedSensors`
+      for (var connectedSensor in allConnectedSensors) {
+        log('DISCONNECTING...');
+        connectedSensor.disconnect();
+        // connectedSensor.dispose();
+      }
+      _foundSensorsWithCallback.clear();
+    }
+    var registeredSensors =
+        await RegisteredSensorOperations().getAllRegisteredSensors();
+    _allRegisteredSensors = registeredSensors;
+
+    setState(() {});
   }
 
   showAccountSettings() {
@@ -537,36 +587,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
                         children: <Widget>[
-                          Container(
-                            height: 80,
-                            decoration: BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                  width: 1,
-                                  color: Color(0xff292929),
-                                ),
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                SizedBox(height: 12),
-                                Container(
-                                  width: 48,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                      color: Color(0xff727272),
-                                      borderRadius: BorderRadius.circular(8)),
-                                ),
-                                SizedBox(height: 20),
-                                Text(
-                                  "Settings",
-                                  style: AppTheme.appTheme.textTheme.headline5
-                                      ?.copyWith(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          AppBottomSheetHeader(
+                            text: 'Settings',
                           ),
                           Container(
                             padding: EdgeInsets.symmetric(
@@ -602,7 +624,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                       },
                                       child: Text(
                                         "Dark",
-                                        style: TextStyle(color: Colors.white),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          decorationThickness: 2,
+                                          decoration: Get.isDarkMode
+                                              ? TextDecoration.underline
+                                              : null,
+                                          decorationColor: Color(0xffe40031),
+                                        ),
                                       ),
                                     ),
                                     ZoomTapAnimation(
@@ -612,9 +641,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                             Duration(milliseconds: 700));
                                         setState(() {});
                                       },
-                                      child: const Text(
+                                      child: Text(
                                         "Light",
-                                        style: TextStyle(color: Colors.white),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          decorationThickness: 2,
+                                          decoration: Get.isDarkMode == false
+                                              ? TextDecoration.underline
+                                              : null,
+                                          decorationColor: Color(0xffe40031),
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -710,24 +746,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             onTap: () {},
                           ),
-                          ZoomTapAnimation(
-                            end: 0.98,
-                            onTap: () async {
+                          AppBottomSheetButton(
+                            text: 'Log out',
+                            svgFileName: 'log-out',
+                            onPressed: () async {
                               _loggedInUser.isLoggedIn = 0;
                               await userOperations.updateUser(_loggedInUser);
                               Get.off(() => UserRegistrationScreen());
                             },
-                            child: ListTile(
-                              title: Text(
-                                "Log out",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              leading: SvgPicture.asset(
-                                'assets/icons/ui/log-out.svg',
-                                width: 24,
-                                color: Colors.white,
-                              ),
-                            ),
                           ),
                         ],
                       )
@@ -738,83 +764,77 @@ class _HomeScreenState extends State<HomeScreen> {
         });
   }
 
-  Future<void> _getLoggedInUserDBAsync() async {
-    var user = await userOperations.getLoggedInUser();
-    if (user != null) {
-      _loggedInUser = user;
-    } else {
-      Get.off(() => UserRegistrationScreen());
-    }
-  }
-
-  Future<void> _getRegisteredClientsDBAsync() async {
-    var receivedData = await clientOperations.getAllClients();
-    allRegisteredClients = List.from(receivedData.toList());
-    allRegisteredClients.sort((a, b) => a.surname.compareTo(b.surname));
-    setState(() {});
-  }
-
-  Future<void> _getFavoriteClientsDBAsync() async {
-    var receivedData = await clientOperations.getAllFavoriteClients();
-    favoriteClients = List.from(receivedData.toList());
-    favoriteClients.sort((a, b) => a.surname.compareTo(b.surname));
-    setState(() {});
-  }
-
-  Future<void> _getLastAddedClientsDBAsync() async {
-    var receivedData = await clientOperations.getLastAddedClients();
-    lastAddedClients = List.from(receivedData.toList());
-    setState(() {});
-  }
-
-  Future<void> _initRegisteredSensorsDBAsync() async {
-    if (_foundSensorsWithCallback.isNotEmpty) {
-      List<SensorInfo> allRegisteredAndDiscoveredSensors = [];
-
-      // Prepare a list of the registered and discovered sensors, to connect to them later.
-      for (var registeredSensor in _allRegisteredSensors) {
-        SensorInfo? registeredAndDiscoveredSensor =
-            _foundSensorsWithCallback.firstWhereOrNull(
-                (element) => element.address == registeredSensor.address);
-        if (registeredAndDiscoveredSensor != null) {
-          allRegisteredAndDiscoveredSensors.add(registeredAndDiscoveredSensor);
-        }
-      }
-
-      /// Connect to the registered and discovered sensors just to get the battery level of the sensors.
-      List<Sensor> allConnectedSensors = [];
-      for (var info in allRegisteredAndDiscoveredSensors) {
-        log('CONNECTING...');
-        var connectedSensor = await Sensor.create(info);
-        var connectedSensorBattery = await connectedSensor.battery.value;
-        String connectedSensorAddress = await connectedSensor.address.value;
-
-        var currentRegisteredSensor = _allRegisteredSensors.firstWhereOrNull(
-            (registeredSensor) =>
-                registeredSensor.address == connectedSensorAddress);
-        currentRegisteredSensor?.battery ??= (connectedSensorBattery);
-
-        if (currentRegisteredSensor != null) {
-          RegisteredSensorOperations().updateRegisteredSensorBatteryByAddress(
-              currentRegisteredSensor.address, currentRegisteredSensor);
-        }
-
-        allConnectedSensors.add(connectedSensor);
-      }
-
-      /// Disconnect from all `allConnectedSensors`
-      for (var connectedSensor in allConnectedSensors) {
-        log('DISCONNECTING...');
-        connectedSensor.disconnect();
-        // connectedSensor.dispose();
-      }
-      _foundSensorsWithCallback.clear();
-    }
-    var registeredSensors =
-        await RegisteredSensorOperations().getAllRegisteredSensors();
-    _allRegisteredSensors = registeredSensors;
-
-    _isLoading = false;
-    setState(() {});
+  showClientSettings({required Client client}) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              Container(
+                  color: Color(0xff242424),
+                  child: Column(
+                    children: <Widget>[
+                      ListView(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        children: <Widget>[
+                          AppBottomSheetHeader(
+                              text:
+                                  'Client: ${client.surname} ${client.name} ${client.patronymic} '),
+                          AppBottomSheetButton(
+                              text: 'Open journal',
+                              svgFileName: 'notebook',
+                              onPressed: () => Get.to(
+                                  () => ClientHistoryScreen(client: client))),
+                          AppBottomSheetButton(
+                              text: 'Start new session',
+                              svgFileName: 'activity',
+                              onPressed: () => Get.to(
+                                  () => SessionSetupScreen(client: client))),
+                          AppBottomSheetButton(
+                            text: 'Edit client',
+                            svgFileName: 'edit',
+                            onPressed: () {},
+                          ),
+                          StatefulBuilder(
+                              builder: (BuildContext context, setStateBuilder) {
+                            bool isFavorite = client.isFavorite == 1;
+                            return AppBottomSheetButton(
+                              text: isFavorite == true
+                                  ? 'Remove from favorites'
+                                  : 'Mark as favorite',
+                              svgFileName: isFavorite == false
+                                  ? 'star-slash'
+                                  : 'star-filled',
+                              onPressed: () async {
+                                isFavorite = !isFavorite;
+                                client.isFavorite == 0
+                                    ? client.isFavorite = 1
+                                    : client.isFavorite = 0;
+                                await clientOperations.updateClient(client);
+                                setState(() {});
+                                setStateBuilder(() {});
+                              },
+                            );
+                          }),
+                          AppBottomSheetButton(
+                            text: 'Delete client',
+                            svgFileName: 'user-minus',
+                            onPressed: () async {
+                              await clientOperations.deleteClient(client);
+                              await _getRegisteredClientsDBAsync();
+                              setState(() {});
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      )
+                    ],
+                  )),
+            ],
+          );
+        });
   }
 }
