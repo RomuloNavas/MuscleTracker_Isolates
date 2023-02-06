@@ -9,14 +9,12 @@ class AppTheme {
   static ThemeData appTheme = ThemeData.light().copyWith(
     colorScheme: ColorScheme.fromSwatch().copyWith(
         primary: const Color(0xff071eff),
-        // primary: const Color(0xff5181b8),
         secondary:
             const Color(0xff0058e4), // Color got the overflow glow effect
-
         /// Used just for icons
         tertiary: const Color(0xff22272f),
-        surface: const Color.fromRGBO(232, 233, 234, 1), // card color
-        surfaceVariant: const Color(0xfff2f3f5),
+        surface: const Color(0xffe0e1e2), // card color
+        surfaceVariant: const Color(0xffe8e9ea),
         error: const Color(0xffe40031),
         outline: const Color(0xffe7e8ec),
         shadow:
@@ -31,7 +29,7 @@ class AppTheme {
         Colors.transparent, // Color by default of separation lines in tables
     useMaterial3: false,
     textTheme: appTextTheme,
-    scaffoldBackgroundColor: const Color(0xffffffff),
+    scaffoldBackgroundColor: const Color(0xfff2f3f5),
     hoverColor: const Color.fromARGB(255, 0, 0,
         0), // `InkWell` → Background color on tap. && `Button` → Background color on tap.
     buttonColor: const Color(0xffd3d5d7),
@@ -51,7 +49,7 @@ class AppTheme {
       secondary: const Color(0xff0058e4),
       tertiary: const Color(0xffe8eaed),
       // ⬇ Used for cards (important sections containers)
-      surface: const Color(0xff232529),
+      surface: const Color(0xff282828),
       surfaceVariant: const Color(0xff181818), // Used in text input background
       outline: const Color(0xff333333),
       error: const Color(0xffe40031),
