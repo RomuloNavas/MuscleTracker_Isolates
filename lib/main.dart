@@ -36,11 +36,12 @@ class _MyAppState extends State<MyApp> {
   User? _loggedUser;
   List<RegisteredSensor> _registeredSensors = [];
 
-  late Future<void> initRegisteredSensors;
+  late Future<void> initApp;
 
   @override
   void initState() {
-    initRegisteredSensors = initApp();
+    initApp = _initAppDBAsync();
+
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
@@ -61,12 +62,12 @@ class _MyAppState extends State<MyApp> {
               body: Center(child: CircularProgressIndicator()),
             );
           else {
-            if (_loggedUser == null) {
-              return UserRegistrationScreen();
-            } else if (_registeredSensors.isEmpty) {
+            if (_loggedUser != null && _registeredSensors.isNotEmpty) {
+              return HomeScreen();
+            } else if (_registeredSensors.isEmpty && _loggedUser != null) {
               return const SearchScreen();
             } else {
-              return HomeScreen();
+              return UserRegistrationScreen();
             }
           }
         },
@@ -74,7 +75,7 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  Future<void> initApp() async {
+  Future<void> _initAppDBAsync() async {
     final allUsers = await UserOperations().getAllUsers();
     if (allUsers.isNotEmpty) {
       _loggedUser = allUsers.first;
