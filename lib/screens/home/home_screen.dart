@@ -12,6 +12,7 @@ import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
 import 'package:neuro_sdk_isolate_example/screens/client_journal/client_history_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/home/add_client_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/controllers/search_controller.dart';
+import 'package:neuro_sdk_isolate_example/screens/sensor_registration/search_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/widgets/modal_bottom_sheet.dart';
 import 'package:neuro_sdk_isolate_example/screens/session/session_setup_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/user_registration/user_registration_screen.dart';
@@ -239,20 +240,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<RegisteredSensor> _allRegisteredSensors = [];
   late Future<void> initRegisteredSensors;
-
-  void initController() async {
-    await _searchController.init();
-    _subscription = _searchController.foundSensorsStream.listen((sensors) {
-      setState(() {
-        _foundSensorsWithCallback.clear();
-        _foundSensorsWithCallback.addAll(sensors);
-      });
-    });
-
-    setState(() {
-      _isLoading = false;
-    });
-  }
 
   @override
   void dispose() {
@@ -503,6 +490,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void initController() async {
+    await _searchController.init();
+    _subscription = _searchController.foundSensorsStream.listen((sensors) {
+      setState(() {
+        _foundSensorsWithCallback.clear();
+        _foundSensorsWithCallback.addAll(sensors);
+      });
+    });
+  }
+
   Future<void> _getLoggedInUserDBAsync() async {
     var user = await userOperations.getLoggedInUser();
     if (user != null) {
@@ -516,8 +513,9 @@ class _HomeScreenState extends State<HomeScreen> {
     var receivedData = await clientOperations.getAllClients();
     allRegisteredClients = List.from(receivedData.toList());
     allRegisteredClients.sort((a, b) => a.surname.compareTo(b.surname));
-    await Future.delayed(Duration(seconds: 2));
-    setState(() {});
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _initRegisteredSensorsDBAsync() async {
@@ -573,192 +571,196 @@ class _HomeScreenState extends State<HomeScreen> {
   showAccountSettings() {
     showModalBottomSheet(
         context: context,
+        isScrollControlled: true,
         builder: (BuildContext context) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              Container(
-                  color: Color(0xff242424),
-                  child: Column(
-                    children: <Widget>[
-                      ListView(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        children: <Widget>[
-                          AppBottomSheetHeader(
-                            text: 'Settings',
-                          ),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Row(
-                              children: [
-                                SvgPicture.asset(
-                                  Get.isDarkMode
-                                      ? 'assets/icons/ui/moon.svg'
-                                      : 'assets/icons/ui/sun.svg',
-                                  width: 24,
-                                  color: Colors.white,
-                                ),
-                                SizedBox(
-                                  width: 32,
-                                ),
-                                SizedBox(
-                                  width: 180,
-                                  child: Text(
-                                    "App Theme:",
-                                    style: TextStyle(color: Colors.white),
+          return Container(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: <Widget>[
+                Container(
+                    color: Color(0xff242424),
+                    child: Column(
+                      children: <Widget>[
+                        ListView(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          children: <Widget>[
+                            AppBottomSheetHeader(
+                              text: 'Settings',
+                            ),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    Get.isDarkMode
+                                        ? 'assets/icons/ui/moon.svg'
+                                        : 'assets/icons/ui/sun.svg',
+                                    width: 24,
+                                    color: Colors.white,
                                   ),
-                                ),
-                                Wrap(
-                                  spacing: 32,
-                                  children: [
-                                    ZoomTapAnimation(
-                                      onTap: () async {
-                                        Get.changeTheme(AppTheme.appDarkTheme);
-                                        await Future.delayed(
-                                            Duration(milliseconds: 700));
-                                        setState(() {});
-                                      },
-                                      child: Text(
-                                        "Dark",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          decorationThickness: 2,
-                                          decoration: Get.isDarkMode
-                                              ? TextDecoration.underline
-                                              : null,
-                                          decorationColor: Color(0xffe40031),
+                                  SizedBox(
+                                    width: 32,
+                                  ),
+                                  SizedBox(
+                                    width: 180,
+                                    child: Text(
+                                      "App Theme:",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                  Wrap(
+                                    spacing: 32,
+                                    children: [
+                                      ZoomTapAnimation(
+                                        onTap: () async {
+                                          Get.changeTheme(
+                                              AppTheme.appDarkTheme);
+                                          await Future.delayed(
+                                              Duration(milliseconds: 700));
+                                          setState(() {});
+                                        },
+                                        child: Text(
+                                          "Dark",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            decorationThickness: 2,
+                                            decoration: Get.isDarkMode
+                                                ? TextDecoration.underline
+                                                : null,
+                                            decorationColor: Color(0xffe40031),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    ZoomTapAnimation(
-                                      onTap: () async {
-                                        Get.changeTheme(AppTheme.appTheme);
-                                        await Future.delayed(
-                                            Duration(milliseconds: 700));
-                                        setState(() {});
-                                      },
-                                      child: Text(
-                                        "Light",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          decorationThickness: 2,
-                                          decoration: Get.isDarkMode == false
-                                              ? TextDecoration.underline
-                                              : null,
-                                          decorationColor: Color(0xffe40031),
+                                      ZoomTapAnimation(
+                                        onTap: () async {
+                                          Get.changeTheme(AppTheme.appTheme);
+                                          await Future.delayed(
+                                              Duration(milliseconds: 700));
+                                          setState(() {});
+                                        },
+                                        child: Text(
+                                          "Light",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            decorationThickness: 2,
+                                            decoration: Get.isDarkMode == false
+                                                ? TextDecoration.underline
+                                                : null,
+                                            decorationColor: Color(0xffe40031),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Row(
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/icons/ui/planet.svg',
-                                  width: 24,
-                                  color: Colors.white,
-                                ),
-                                SizedBox(
-                                  width: 32,
-                                ),
-                                SizedBox(
-                                  width: 180,
-                                  child: Text(
-                                    "App Language:",
-                                    style: TextStyle(color: Colors.white),
+                                    ],
                                   ),
-                                ),
-                                Wrap(
-                                  spacing: 32,
-                                  children: [
-                                    Text(
-                                      "Russian",
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                    Text(
-                                      "English",
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                    Text(
-                                      "French",
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Row(
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/icons/ui/globe.svg',
-                                  width: 24,
-                                  color: Colors.white,
-                                ),
-                                SizedBox(
-                                  width: 32,
-                                ),
-                                SizedBox(
-                                  width: 180,
-                                  child: Text(
-                                    "Muscles Language:",
-                                    style: TextStyle(color: Colors.white),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    'assets/icons/ui/planet.svg',
+                                    width: 24,
+                                    color: Colors.white,
                                   ),
-                                ),
-                                Wrap(
-                                  spacing: 32,
-                                  children: [
-                                    Text(
-                                      "Russian",
+                                  SizedBox(
+                                    width: 32,
+                                  ),
+                                  SizedBox(
+                                    width: 180,
+                                    child: Text(
+                                      "App Language:",
                                       style: TextStyle(color: Colors.white),
                                     ),
-                                    Text(
-                                      "Latin",
+                                  ),
+                                  Wrap(
+                                    spacing: 32,
+                                    children: [
+                                      Text(
+                                        "Russian",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      Text(
+                                        "English",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      Text(
+                                        "French",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    'assets/icons/ui/globe.svg',
+                                    width: 24,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(
+                                    width: 32,
+                                  ),
+                                  SizedBox(
+                                    width: 180,
+                                    child: Text(
+                                      "Muscles Language:",
                                       style: TextStyle(color: Colors.white),
                                     ),
-                                  ],
-                                ),
-                              ],
+                                  ),
+                                  Wrap(
+                                    spacing: 32,
+                                    children: [
+                                      Text(
+                                        "Russian",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      Text(
+                                        "Latin",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          ListTile(
-                            title: Text(
-                              "Edit account",
-                              style: TextStyle(color: Colors.white),
+                            AppBottomSheetButton(
+                              text: "Edit account",
+                              svgFileName: 'edit',
+                              onPressed: () => null,
                             ),
-                            leading: SvgPicture.asset(
-                              'assets/icons/ui/edit.svg',
-                              width: 24,
-                              color: Colors.white,
+                            if (_allRegisteredSensors.isNotEmpty)
+                              AppBottomSheetButton(
+                                text:
+                                    'Repeat Registration of Sensors (${_allRegisteredSensors.length} of 4 sensors added)',
+                                svgFileName: 'sensor',
+                                onPressed: () => Get.off(() => SearchScreen()),
+                              ),
+                            AppBottomSheetButton(
+                              text: 'Log out',
+                              svgFileName: 'log-out',
+                              onPressed: () async {
+                                _loggedInUser.isLoggedIn = 0;
+                                await userOperations.updateUser(_loggedInUser);
+                                Get.off(() => UserRegistrationScreen());
+                              },
                             ),
-                            onTap: () {},
-                          ),
-                          AppBottomSheetButton(
-                            text: 'Log out',
-                            svgFileName: 'log-out',
-                            onPressed: () async {
-                              _loggedInUser.isLoggedIn = 0;
-                              await userOperations.updateUser(_loggedInUser);
-                              Get.off(() => UserRegistrationScreen());
-                            },
-                          ),
-                        ],
-                      )
-                    ],
-                  )),
-            ],
+                          ],
+                        )
+                      ],
+                    )),
+              ],
+            ),
           );
         });
   }
