@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
+import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class AppBottom extends StatelessWidget {
   final Function() onPressed;
@@ -41,10 +42,14 @@ class AppBottom extends StatelessWidget {
                 width: MediaQuery.of(context).size.width > 600
                     ? MediaQuery.of(context).size.width * 0.65
                     : double.infinity,
-                child: AppTextButton(
-                  onPressed: onSecondaryButtonPressed!,
-                  text: secondaryText!,
-                  colorText: secondaryTextColor,
+                child: ZoomTapAnimation(
+                  end: 0.9,
+                  onTap: onSecondaryButtonPressed!,
+                  child: AppTextButton(
+                    onPressed: () => null,
+                    text: secondaryText!,
+                    colorText: secondaryTextColor,
+                  ),
                 ),
               ),
             ),
