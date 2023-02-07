@@ -7,15 +7,17 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   // 'appBarHeight' = 80,
   static ThemeData appTheme = ThemeData.light().copyWith(
+
+
     colorScheme: ColorScheme.fromSwatch().copyWith(
-        primary: const Color(0xff071eff),
+        primary: const Color(0xff5181b8),
         secondary:
-            const Color(0xff0058e4), // Color got the overflow glow effect
+            const Color(0xff148dc6), // Color got the overflow glow effect
         /// Used just for icons
         tertiary: const Color(0xff22272f),
         surface: const Color(0xffe0e1e2), // card color
         surfaceVariant: const Color(0xffe8e9ea),
-        error: const Color(0xffe40031),
+        error: const Color(0xffff3a2e),
         outline: const Color(0xffe7e8ec),
         shadow:
             const Color(0xff838997) // Used for icons in buttonIcons and labels
@@ -44,15 +46,16 @@ class AppTheme {
   );
 
   static ThemeData appDarkTheme = ThemeData.dark().copyWith(
+  
     colorScheme: ColorScheme.fromSwatch().copyWith(
-      primary: const Color(0xff071eff),
-      secondary: const Color(0xff0058e4),
+      primary: const Color(0xff5181b8),
+      secondary: const Color(0xff148dc6),
       tertiary: const Color(0xffe8eaed),
       // ⬇ Used for cards (important sections containers)
       surface: const Color(0xff282828),
       surfaceVariant: const Color(0xff181818), // Used in text input background
       outline: const Color(0xff333333),
-      error: const Color(0xffe40031),
+      error: const Color(0xffdf3228),
       shadow: const Color(0xff838997),
     ),
 
