@@ -410,7 +410,9 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 3,
           textColor: Colors.white,
-          backgroundColor: Color(0xffB85951),
+          backgroundColor: Get.isDarkMode
+              ? AppTheme.appDarkTheme.colorScheme.error
+              : AppTheme.appTheme.colorScheme.error,
           fontSize: 16.0,
         );
       } else {
@@ -450,7 +452,9 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 3,
         textColor: Colors.white,
-        backgroundColor: Color(0xffB85951),
+        backgroundColor: Get.isDarkMode
+            ? AppTheme.appDarkTheme.colorScheme.error
+            : AppTheme.appTheme.colorScheme.error,
         fontSize: 16.0,
       );
     } else {

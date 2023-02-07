@@ -959,9 +959,8 @@ class _SidePanelState extends State<SidePanel>
                 Padding(
                   padding: const EdgeInsets.only(left: 4),
                   child: AppIconButton(
-                    onPressed: () => Get.to(
-                      () => SessionSetupScreen(client: widget.client),
-                    ),
+                    onPressed: () =>
+                        Get.to(() => SessionSetupScreen(client: widget.client)),
                     iconData: Icons.sports_gymnastics,
                     size: ButtonSize.small,
                     backgroundColor: Get.isDarkMode

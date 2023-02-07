@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/database/database.dart';
 
 import 'package:flutter/services.dart';
+import 'package:neuro_sdk_isolate_example/theme.dart';
 
 class UserOperations {
   UserOperations? userOperations;
@@ -35,7 +37,9 @@ class UserOperations {
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 3,
         textColor: Colors.white,
-        backgroundColor: Color(0xffB85951),
+        backgroundColor: Get.isDarkMode
+            ? AppTheme.appDarkTheme.colorScheme.error
+            : AppTheme.appTheme.colorScheme.error,
         fontSize: 16.0,
       );
       return null;
@@ -63,14 +67,16 @@ class UserOperations {
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 3,
         textColor: Colors.white,
-        backgroundColor: Color(0xffB85951),
+        backgroundColor: Get.isDarkMode
+            ? AppTheme.appDarkTheme.colorScheme.error
+            : AppTheme.appTheme.colorScheme.error,
         fontSize: 16.0,
       );
       return null;
     }
   }
 
-  Future<void>updateUser(User user) async {
+  Future<void> updateUser(User user) async {
     final db = await dbProvider.database;
     try {
       db.update('user', user.toJson(),
@@ -120,7 +126,9 @@ class UserOperations {
               gravity: ToastGravity.BOTTOM,
               timeInSecForIosWeb: 3,
               textColor: Colors.white,
-              backgroundColor: Color(0xffB85951),
+              backgroundColor: Get.isDarkMode
+                  ? AppTheme.appDarkTheme.colorScheme.error
+                  : AppTheme.appTheme.colorScheme.error,
               fontSize: 16.0,
             );
             return null;
@@ -138,7 +146,9 @@ class UserOperations {
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 3,
           textColor: Colors.white,
-          backgroundColor: Color(0xffB85951),
+          backgroundColor: Get.isDarkMode
+              ? AppTheme.appDarkTheme.colorScheme.error
+              : AppTheme.appTheme.colorScheme.error,
           fontSize: 16.0,
         );
         return null;
@@ -150,7 +160,9 @@ class UserOperations {
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 3,
         textColor: Colors.white,
-        backgroundColor: Color(0xffB85951),
+        backgroundColor: Get.isDarkMode
+            ? AppTheme.appDarkTheme.colorScheme.error
+            : AppTheme.appTheme.colorScheme.error,
         fontSize: 16.0,
       );
     }
