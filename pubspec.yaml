@@ -31,6 +31,7 @@ dependencies:
   fluttertoast: ^8.1.2
   zoom_tap_animation: ^1.1.0
   flutter_scale_tap: ^1.0.5
+  intl_phone_number_input: ^0.7.2
 
   permission_handler: ^10.2.0
   flutter_bluetooth_serial: ^0.4.0
