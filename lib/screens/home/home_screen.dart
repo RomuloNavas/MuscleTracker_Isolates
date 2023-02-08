@@ -20,6 +20,7 @@ import 'dart:async';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/utils/global_utils.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_battery_indicator.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_client_avatar.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_pop_menu_item_child.dart';
@@ -52,9 +53,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late Future initUserAccount;
   late Future initRegisteredClients;
+  late Future<void> initRegisteredSensors;
 
   late User _loggedInUser;
-  List<Client> allRegisteredClients = [];
+  List<Client> _allRegisteredClients = [];
+  List<RegisteredSensor> _allRegisteredSensors = [];
+
+  bool _isLoading = true;
+
+  final SearchController _searchController = SearchController();
+  late StreamSubscription _subscription;
+  final List<SensorInfo> _foundSensorsWithCallback = [];
 
   @override
   void initState() {
@@ -75,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
   filterContacts() {
     List<Client>? clients = [];
     if (_textEditingController.text.isNotEmpty) {
-      clients.addAll(allRegisteredClients.toList());
+      clients.addAll(_allRegisteredClients.toList());
       clients.retainWhere((Client c) {
         String searchTerm = _textEditingController.text.toLowerCase();
 
@@ -94,19 +103,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void onSort(int columnIndex, bool ascending) {
     if (columnIndex == 0) {
-      allRegisteredClients.sort((value1, value2) =>
+      _allRegisteredClients.sort((value1, value2) =>
           compareString(ascending, value1.surname, value2.surname));
     } else if (columnIndex == 1) {
-      allRegisteredClients.sort((value1, value2) =>
+      _allRegisteredClients.sort((value1, value2) =>
           compareString(ascending, value1.birthday, value2.birthday));
     } else if (columnIndex == 2) {
-      allRegisteredClients.sort((value1, value2) => compareString(
+      _allRegisteredClients.sort((value1, value2) => compareString(
           ascending, '${value1.isFavorite}', '${value2.isFavorite}'));
     } else if (columnIndex == 3) {
-      allRegisteredClients.sort((value1, value2) => compareString(
+      _allRegisteredClients.sort((value1, value2) => compareString(
           ascending, value1.lastSession ?? '', value2.lastSession ?? ''));
     } else if (columnIndex == 4) {
-      allRegisteredClients.sort((value1, value2) => compareString(
+      _allRegisteredClients.sort((value1, value2) => compareString(
           ascending, value1.registrationDate, value2.registrationDate));
     }
     setState(() {
@@ -246,15 +255,6 @@ class _HomeScreenState extends State<HomeScreen> {
         .toList();
   }
 
-  bool _isLoading = true;
-
-  final SearchController _searchController = SearchController();
-  late StreamSubscription _subscription;
-  final List<SensorInfo> _foundSensorsWithCallback = [];
-
-  List<RegisteredSensor> _allRegisteredSensors = [];
-  late Future<void> initRegisteredSensors;
-
   @override
   void dispose() {
     super.dispose();
@@ -317,8 +317,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // if (_allRegisteredSensors.isEmpty)
-
+                              if (_allRegisteredSensors.isEmpty)
+                                AppIconButton(
+                                  onPressed: () => Get.to(() => SearchScreen()),
+                                  text: 'Add Sensors',
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.secondary,
+                                  svgIconPath: 'sensor',
+                                ),
                               if (_allRegisteredSensors.isNotEmpty)
                                 Builder(
                                   builder: (context) {
@@ -411,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: AppTextFieldSearch(
                       textEditingController: _textEditingController,
                       hintText:
-                          'Search from ${allRegisteredClients.length} clients...',
+                          'Search from ${_allRegisteredClients.length} clients...',
                       onCancelButtonPressed: () {
                         if (_textEditingController.text != '') {
                           searchedClients.clear();
@@ -441,63 +447,87 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            Expanded(
-              child: SizedBox(
-                  child: ListView(
-                scrollDirection: Axis.vertical,
-                children: [
-                  DataTable(
-                    showCheckboxColumn: false,
-                    dataRowHeight: 72,
-                    sortColumnIndex: sortColumnIndex,
-                    sortAscending: isAscending,
-                    columns: [
-                      DataColumn(
-                          tooltip: "Client's full name",
-                          label: Text('         Full name',
-                              style: Get.isDarkMode
-                                  ? AppTheme.appDarkTheme.textTheme.headline5
-                                  : AppTheme.appTheme.textTheme.headline5),
-                          onSort: onSort),
-                      DataColumn(
-                          tooltip: "Client's age",
-                          label: Text('Age',
-                              style: Get.isDarkMode
-                                  ? AppTheme.appDarkTheme.textTheme.headline5
-                                  : AppTheme.appTheme.textTheme.headline5),
-                          onSort: onSort),
-                      DataColumn(
-                          tooltip: "Favorite clients",
-                          label: SvgPicture.asset(
-                            'assets/icons/ui/star.svg',
-                            semanticsLabel: 'Favorite Client',
-                            color: Get.isDarkMode
-                                ? AppTheme.appDarkTheme.colorScheme.tertiary
-                                : Colors.black,
-                          ),
-                          onSort: onSort),
-                      DataColumn(
-                          tooltip: "Registered date",
-                          label: Text('Registered',
-                              style: Get.isDarkMode
-                                  ? AppTheme.appDarkTheme.textTheme.headline5
-                                  : AppTheme.appTheme.textTheme.headline5),
-                          onSort: onSort),
-                      DataColumn(
-                          tooltip: "Client's last session",
-                          label: Text('Last session',
-                              style: Get.isDarkMode
-                                  ? AppTheme.appDarkTheme.textTheme.headline5
-                                  : AppTheme.appTheme.textTheme.headline5),
-                          onSort: onSort),
-                    ],
-                    rows: _textEditingController.text.isNotEmpty
-                        ? getRowsAllClients(searchedClients)
-                        : getRowsAllClients(allRegisteredClients),
-                  ),
-                ],
+            if (_allRegisteredClients.isEmpty)
+              Expanded(
+                  child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AppHeaderInfo(
+                      title: 'No clients',
+                      labelPrimary: "You haven't registered any client yet",
+                    ),
+                    SvgPicture.asset(
+                      'assets/illustrations/empty.svg',
+                      width: 220,
+                    ),
+                    SizedBox(height: 24),
+                    AppIconButton(
+                      onPressed: () => Get.to(() => AddClientScreen()),
+                      svgIconPath: 'user-plus',
+                      text: 'Add client',
+                    ),
+                  ],
+                ),
               )),
-            ),
+            if (_allRegisteredClients.isNotEmpty)
+              Expanded(
+                child: SizedBox(
+                    child: ListView(
+                  scrollDirection: Axis.vertical,
+                  children: [
+                    DataTable(
+                      showCheckboxColumn: false,
+                      dataRowHeight: 72,
+                      sortColumnIndex: sortColumnIndex,
+                      sortAscending: isAscending,
+                      columns: [
+                        DataColumn(
+                            tooltip: "Client's full name",
+                            label: Text('         Full name',
+                                style: Get.isDarkMode
+                                    ? AppTheme.appDarkTheme.textTheme.headline5
+                                    : AppTheme.appTheme.textTheme.headline5),
+                            onSort: onSort),
+                        DataColumn(
+                            tooltip: "Client's age",
+                            label: Text('Age',
+                                style: Get.isDarkMode
+                                    ? AppTheme.appDarkTheme.textTheme.headline5
+                                    : AppTheme.appTheme.textTheme.headline5),
+                            onSort: onSort),
+                        DataColumn(
+                            tooltip: "Favorite clients",
+                            label: SvgPicture.asset(
+                              'assets/icons/ui/star.svg',
+                              semanticsLabel: 'Favorite Client',
+                              color: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.colorScheme.tertiary
+                                  : Colors.black,
+                            ),
+                            onSort: onSort),
+                        DataColumn(
+                            tooltip: "Registered date",
+                            label: Text('Registered',
+                                style: Get.isDarkMode
+                                    ? AppTheme.appDarkTheme.textTheme.headline5
+                                    : AppTheme.appTheme.textTheme.headline5),
+                            onSort: onSort),
+                        DataColumn(
+                            tooltip: "Client's last session",
+                            label: Text('Last session',
+                                style: Get.isDarkMode
+                                    ? AppTheme.appDarkTheme.textTheme.headline5
+                                    : AppTheme.appTheme.textTheme.headline5),
+                            onSort: onSort),
+                      ],
+                      rows: _textEditingController.text.isNotEmpty
+                          ? getRowsAllClients(searchedClients)
+                          : getRowsAllClients(_allRegisteredClients),
+                    ),
+                  ],
+                )),
+              ),
           ],
         ),
       ),
@@ -521,8 +551,8 @@ class _HomeScreenState extends State<HomeScreen> {
       _loggedInUser = user;
       userId = user.id;
       var receivedData = await clientOperations.getAllClientsByUserId(userId);
-      allRegisteredClients = List.from(receivedData.toList());
-      allRegisteredClients.sort((a, b) => a.surname.compareTo(b.surname));
+      _allRegisteredClients = List.from(receivedData.toList());
+      _allRegisteredClients.sort((a, b) => a.surname.compareTo(b.surname));
       setState(() {
         _isLoading = false;
       });
