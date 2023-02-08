@@ -344,58 +344,63 @@ class _AddClientScreenState extends State<AddClientScreen> {
                                       width: Get.size.width > 800
                                           ? 720 - 64
                                           : Get.size.width - 32 - 64,
-                                      child: TextFormField(
-                                        autocorrect: false,
-                                        controller:
-                                            _textEditingControllerPatronymic,
-                                        inputFormatters:
-                                            _textInputFormatterFullName,
-                                        style: TextStyle(
-                                            color: Get.isDarkMode
-                                                ? Colors.white
-                                                : Colors.black),
-                                        cursorColor: Colors.grey,
-                                        decoration: InputDecoration(
-                                          enabledBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
+                                      child: Form(
+                                        child: TextFormField(
+                                          autocorrect: false,
+                                          controller:
+                                              _textEditingControllerPatronymic,
+                                          inputFormatters:
+                                              _textInputFormatterFullName,
+                                          validator: (value) {
+                                            return null;
+                                          },
+                                          style: TextStyle(
                                               color: Get.isDarkMode
-                                                  ? lighterColorFrom(
-                                                      color: AppTheme
-                                                          .appDarkTheme
-                                                          .colorScheme
-                                                          .surfaceVariant,
-                                                      amount: 0.1)
-                                                  : darkerColorFrom(
-                                                      color: AppTheme
-                                                          .appTheme
-                                                          .colorScheme
-                                                          .surfaceVariant,
-                                                      amount: 0.1),
+                                                  ? Colors.white
+                                                  : Colors.black),
+                                          cursorColor: Colors.grey,
+                                          decoration: InputDecoration(
+                                            enabledBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                color: Get.isDarkMode
+                                                    ? lighterColorFrom(
+                                                        color: AppTheme
+                                                            .appDarkTheme
+                                                            .colorScheme
+                                                            .surfaceVariant,
+                                                        amount: 0.1)
+                                                    : darkerColorFrom(
+                                                        color: AppTheme
+                                                            .appTheme
+                                                            .colorScheme
+                                                            .surfaceVariant,
+                                                        amount: 0.1),
+                                              ),
                                             ),
-                                          ),
-                                          focusedBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color: Get.isDarkMode
-                                                  ? lighterColorFrom(
-                                                      color: AppTheme
-                                                          .appDarkTheme
-                                                          .colorScheme
-                                                          .surfaceVariant,
-                                                      amount: 0.3)
-                                                  : darkerColorFrom(
-                                                      color: AppTheme
-                                                          .appTheme
-                                                          .colorScheme
-                                                          .surfaceVariant,
-                                                      amount: 0.3),
+                                            focusedBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                color: Get.isDarkMode
+                                                    ? lighterColorFrom(
+                                                        color: AppTheme
+                                                            .appDarkTheme
+                                                            .colorScheme
+                                                            .surfaceVariant,
+                                                        amount: 0.3)
+                                                    : darkerColorFrom(
+                                                        color: AppTheme
+                                                            .appTheme
+                                                            .colorScheme
+                                                            .surfaceVariant,
+                                                        amount: 0.3),
+                                              ),
                                             ),
+                                            hintText: 'Patronymic',
+                                            hintStyle: TextStyle(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .shadow,
+                                                fontSize: 18),
                                           ),
-                                          hintText: 'Patronymic',
-                                          hintStyle: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .shadow,
-                                              fontSize: 18),
                                         ),
                                       ),
                                     ),
