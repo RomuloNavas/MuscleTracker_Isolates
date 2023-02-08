@@ -427,12 +427,7 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
           user.id = idOfInsertedUser;
           user.isLoggedIn = 1;
           await userOperations.updateUser(user);
-
-          Get.to(() => Scaffold(
-                body: Container(
-                  color: Colors.blue,
-                ),
-              ));
+          Get.off(() => HomeScreen());
         }
       }
     } else {
@@ -468,7 +463,7 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
         logInUser.isLoggedIn = 1;
         await userOperations.updateUser(logInUser);
 
-        Get.to(() => HomeScreen());
+        Get.off(() => HomeScreen());
       }
     }
   }
