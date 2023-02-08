@@ -786,12 +786,19 @@ class _HomeScreenState extends State<HomeScreen> {
                               svgFileName: 'edit',
                               onPressed: () => null,
                             ),
+                            if (_allRegisteredSensors.isEmpty)
+                              AppBottomSheetButton(
+                                text:
+                                    'Register your Sensors (${_allRegisteredSensors.length} of 4 sensors added)',
+                                svgFileName: 'sensor',
+                                onPressed: () => Get.to(() => SearchScreen()),
+                              ),
                             if (_allRegisteredSensors.isNotEmpty)
                               AppBottomSheetButton(
                                 text:
                                     'Repeat Registration of Sensors (${_allRegisteredSensors.length} of 4 sensors added)',
                                 svgFileName: 'sensor',
-                                onPressed: () => Get.off(() => SearchScreen()),
+                                onPressed: () => Get.to(() => SearchScreen()),
                               ),
                             AppBottomSheetButton(
                               text: 'Log out',
@@ -799,7 +806,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               onPressed: () async {
                                 _loggedInUser.isLoggedIn = 0;
                                 await userOperations.updateUser(_loggedInUser);
-                                Get.off(() => UserRegistrationScreen());
+                                Get.offAll(() => UserRegistrationScreen());
                               },
                             ),
                           ],
