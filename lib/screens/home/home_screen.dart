@@ -457,9 +457,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: 'No clients',
                       labelPrimary: "You haven't registered any client yet",
                     ),
-                    SvgPicture.asset(
-                      'assets/illustrations/empty.svg',
+                    SizedBox(
                       width: 220,
+                      height: 220,
+                      child: SvgPicture.asset(
+                        'assets/illustrations/empty.svg',
+                        height: 220,
+                      ),
                     ),
                     SizedBox(height: 24),
                     AppIconButton(
