@@ -33,13 +33,15 @@ dependencies:
   flutter_scale_tap: ^1.0.5
   intl_phone_number_input: ^0.7.2
 
+  # Services
+  get: ^4.6.5
   permission_handler: ^10.2.0
   flutter_bluetooth_serial: ^0.4.0
   intl: ^0.17.0
   timeago: ^3.3.0
-  get: ^4.6.5
   geolocator: ^9.0.1
   location: ^4.4.0
+  email_validator: ^2.1.17
   
   # Local Storage 
   sqflite: ^2.1.0
