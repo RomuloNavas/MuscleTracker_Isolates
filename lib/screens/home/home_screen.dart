@@ -49,18 +49,15 @@ class _HomeScreenState extends State<HomeScreen> {
   // Async load data on init:
   final clientOperations = ClientOperations();
   final userOperations = UserOperations();
+
+  late Future initUserAccount;
+  late Future initRegisteredClients;
+
   late User _loggedInUser;
   List<Client> allRegisteredClients = [];
-  List<Client> favoriteClients = [];
-  List<Client> lastAddedClients = [];
-  late Future initRegisteredClients;
-  late Future initFavoriteClients;
-  late Future initLastAddedClients;
-  late Future initUserAccount;
 
   @override
   void initState() {
-    initUserAccount = _getLoggedInUserDBAsync();
     initRegisteredClients = _getRegisteredClientsDBAsync();
     initRegisteredSensors = _initRegisteredSensorsDBAsync();
     initController();
@@ -273,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return Scaffold(
           body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+        children: const [
           Center(
               child: AppHeaderInfo(
             title: 'Welcome back!',
@@ -517,22 +514,21 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _getLoggedInUserDBAsync() async {
+  Future<void> _getRegisteredClientsDBAsync() async {
     var user = await userOperations.getLoggedInUser();
+    int? userId;
     if (user != null) {
       _loggedInUser = user;
+      userId = user.id;
+      var receivedData = await clientOperations.getAllClientsByUserId(userId);
+      allRegisteredClients = List.from(receivedData.toList());
+      allRegisteredClients.sort((a, b) => a.surname.compareTo(b.surname));
+      setState(() {
+        _isLoading = false;
+      });
     } else {
       Get.off(() => UserRegistrationScreen());
     }
-  }
-
-  Future<void> _getRegisteredClientsDBAsync() async {
-    var receivedData = await clientOperations.getAllClients();
-    allRegisteredClients = List.from(receivedData.toList());
-    allRegisteredClients.sort((a, b) => a.surname.compareTo(b.surname));
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   Future<void> _initRegisteredSensorsDBAsync() async {

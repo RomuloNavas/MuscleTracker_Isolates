@@ -47,8 +47,19 @@ class ClientOperations {
     final db = await dbProvider.database;
     List<Map<String, dynamic>> allRows = await db.query('client');
     List<Client> clients =
-        allRows.map((client) => Client.fromJson(client)).toList();
+        allRows.map((client) => Client.fromMap(client)).toList();
     return clients;
+  }
+
+  Future<List<Client>> getAllClientsByUserId(userId) async {
+    final db = await dbProvider.database;
+    List<Map<String, dynamic>> allRows = await db.rawQuery('''
+    SELECT * FROM client 
+    WHERE client.user_id = $userId
+    ''');
+    List<Client> userClients =
+        allRows.map((client) => Client.fromMap(client)).toList();
+    return userClients;
   }
 
   Future<List<Client>> getLastAddedClients() async {
@@ -60,7 +71,7 @@ class ClientOperations {
 
     ''');
     List<Client> lastAdded =
-        allRows.map((clientJson) => Client.fromJson(clientJson)).toList();
+        allRows.map((clientJson) => Client.fromMap(clientJson)).toList();
     return lastAdded;
   }
 
@@ -70,7 +81,7 @@ class ClientOperations {
         await db.query('client', where: "clientIsFavorite = 1");
     // log('RAW' + allRows.toString());
     List<Client> favoriteClients =
-        allRows.map((client) => Client.fromJson(client)).toList();
+        allRows.map((client) => Client.fromMap(client)).toList();
     return favoriteClients;
   }
 
@@ -79,7 +90,7 @@ class ClientOperations {
     List<Map<String, dynamic>> allRows =
         await db.query('client', where: "id = ?", whereArgs: [client.id]);
     List<Client> clients =
-        allRows.map((client) => Client.fromJson(client)).toList();
+        allRows.map((client) => Client.fromMap(client)).toList();
     return clients.first;
   }
 
@@ -88,7 +99,7 @@ class ClientOperations {
     List<Map<String, dynamic>> allRows = await db
         .query('client', where: 'clientName LIKE ?', whereArgs: ['%$keyword%']);
     List<Client> clients =
-        allRows.map((client) => Client.fromJson(client)).toList();
+        allRows.map((client) => Client.fromMap(client)).toList();
     return clients;
   }
 
@@ -127,7 +138,7 @@ class Client {
   double? height;
   double? weight;
   late int isFavorite;
-  String? lastVisit;
+  String? lastSession;
 
   Client({
     this.id,
@@ -142,10 +153,10 @@ class Client {
     this.height,
     this.weight,
     this.isFavorite = 0,
-    this.lastVisit,
+    this.lastSession,
   });
 
-  Client.fromJson(Map<String, dynamic> json) {
+  Client.fromMap(Map<String, dynamic> json) {
     id = json['clientId'];
     name = json['clientName'];
     surname = json['clientSurname'];
@@ -159,7 +170,7 @@ class Client {
     isFavorite = json['clientIsFavorite'];
     // DateTime as Iso8601String
     registrationDate = json['clientRegisteredDate'];
-    lastVisit = json['clientLastVisitDate'];
+    lastSession = json['clientLastVisitDate'];
   }
 
   Map<String, dynamic> toJson() => {
@@ -174,6 +185,6 @@ class Client {
         "clientWeight": weight,
         "clientIsFavorite": isFavorite,
         "clientRegisteredDate": registrationDate,
-        "clientLastVisitDate": lastVisit,
+        "clientLastVisitDate": lastSession,
       };
 }
