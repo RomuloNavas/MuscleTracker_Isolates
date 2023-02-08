@@ -44,9 +44,8 @@ class AppBottom extends StatelessWidget {
                     : double.infinity,
                 child: ZoomTapAnimation(
                   end: 0.9,
-                  onTap: onSecondaryButtonPressed!,
                   child: AppTextButton(
-                    onPressed: () => null,
+                    onPressed: onSecondaryButtonPressed!,
                     text: secondaryText!,
                     colorText: secondaryTextColor,
                   ),
