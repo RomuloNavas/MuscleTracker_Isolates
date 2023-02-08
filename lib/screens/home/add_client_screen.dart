@@ -45,6 +45,7 @@ class _AddClientScreenState extends State<AddClientScreen> {
   final userOperations = UserOperations();
   late User _loggedInUser;
   late Future initUserAccount;
+  late List<TextInputFormatter> _textInputFormatterFullName;
 
   PhoneNumber number = PhoneNumber(isoCode: 'RU');
   @override
@@ -53,6 +54,10 @@ class _AddClientScreenState extends State<AddClientScreen> {
 
     initUserAccount = _getLoggedInUserDBAsync();
 
+    _textInputFormatterFullName = [
+      FilteringTextInputFormatter.allow(RegExp("[a-zA-ZЁёА-яء-ي]")),
+      LengthLimitingTextInputFormatter(50),
+    ];
     _textEditingControllerName = TextEditingController();
     _textEditingControllerSurname = TextEditingController();
     _textEditingControllerPatronymic = TextEditingController();
@@ -88,8 +93,29 @@ class _AddClientScreenState extends State<AddClientScreen> {
               ? AppTheme.appDarkTheme.textTheme.headline3
               : AppTheme.appTheme.textTheme.headline3,
           title: const Text('New client'),
-          titleSpacing: 32.0,
+          titleSpacing: 8.0,
           automaticallyImplyLeading: false,
+          leading: ScaleTap(
+            onPressed: () => Get.back(),
+            scaleMinValue: 0.9,
+            opacityMinValue: 0.4,
+            scaleCurve: Curves.decelerate,
+            opacityCurve: Curves.fastOutSlowIn,
+            child: Container(
+              width: 48,
+              height: 48,
+              color: Colors.transparent,
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/icons/ui/arrow-left.svg',
+                  width: 32,
+                  color: Get.isDarkMode
+                      ? AppTheme.appDarkTheme.colorScheme.tertiary
+                      : AppTheme.appTheme.colorScheme.tertiary,
+                ),
+              ),
+            ),
+          ),
         ),
         body: Center(
           child: SizedBox(
@@ -142,6 +168,8 @@ class _AddClientScreenState extends State<AddClientScreen> {
                                                 ? Colors.white
                                                 : Colors.black),
                                         cursorColor: Colors.grey,
+                                        inputFormatters:
+                                            _textInputFormatterFullName,
                                         decoration: InputDecoration(
                                           enabledBorder: UnderlineInputBorder(
                                             borderSide: BorderSide(
@@ -249,6 +277,8 @@ class _AddClientScreenState extends State<AddClientScreen> {
                                       child: TextField(
                                         autocorrect: false,
                                         controller: _textEditingControllerName,
+                                        inputFormatters:
+                                            _textInputFormatterFullName,
                                         style: TextStyle(
                                             color: Get.isDarkMode
                                                 ? Colors.white
@@ -362,6 +392,8 @@ class _AddClientScreenState extends State<AddClientScreen> {
                                         autocorrect: false,
                                         controller:
                                             _textEditingControllerPatronymic,
+                                        inputFormatters:
+                                            _textInputFormatterFullName,
                                         style: TextStyle(
                                             color: Get.isDarkMode
                                                 ? Colors.white
@@ -584,7 +616,28 @@ class _AddClientScreenState extends State<AddClientScreen> {
                       const SizedBox(height: 16),
                       AppTextField(
                           textEditingController: _textEditingControllerWeight,
-                          hint: 'Weight',
+                          keyboardType: TextInputType.phone,
+                          hint: 'Weight in Kilograms',
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp("[0-9.]")),
+                            LengthLimitingTextInputFormatter(5),
+                          ],
+                          validator: (value) {
+                            if (value != null) {
+                              int numberOfSlashes = 0;
+                              List<String> letters = value.split('');
+                              for (var letter in letters) {
+                                if (letter == '.') {
+                                  numberOfSlashes++;
+                                }
+                              }
+                              if (numberOfSlashes > 1) {
+                                return "Invalid weight: Weight can't contain more than one dot";
+                              } else {
+                                return null;
+                              }
+                            }
+                          },
                           svgIconPath: 'weighter'),
                       const SizedBox(height: 48),
                       AppBottom(
