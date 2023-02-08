@@ -7,6 +7,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
 import 'package:neuro_sdk_isolate_example/screens/home/home_screen.dart';
+import 'package:neuro_sdk_isolate_example/screens/sensor_registration/search_screen.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/utils/global_utils.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
@@ -427,7 +428,7 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
           user.id = idOfInsertedUser;
           user.isLoggedIn = 1;
           await userOperations.updateUser(user);
-          Get.off(() => HomeScreen());
+          Get.off(() => SearchScreen());
         }
       }
     } else {
