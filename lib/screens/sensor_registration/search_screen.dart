@@ -83,29 +83,33 @@ class _SearchScreenState extends State<SearchScreen> {
             ? AppTheme.appDarkTheme.textTheme.headline3
             : AppTheme.appTheme.textTheme.headline3,
         title: const Text('Sensors Registration'),
-        titleSpacing: 8.0,
+        titleSpacing: Get.previousRoute == '/HomeScreen' ? 8 : 24,
         automaticallyImplyLeading: false,
-        leading: ScaleTap(
-          onPressed: () => Get.back(),
-          scaleMinValue: 0.9,
-          opacityMinValue: 0.4,
-          scaleCurve: Curves.decelerate,
-          opacityCurve: Curves.fastOutSlowIn,
-          child: Container(
-            width: 48,
-            height: 48,
-            color: Colors.transparent,
-            child: Center(
-              child: SvgPicture.asset(
-                'assets/icons/ui/arrow-left.svg',
-                width: 32,
-                color: Get.isDarkMode
-                    ? AppTheme.appDarkTheme.colorScheme.tertiary
-                    : AppTheme.appTheme.colorScheme.tertiary,
-              ),
-            ),
-          ),
-        ),
+        // After registration, you can't go back ot registration screen, and should go to HomeScreen();
+
+        leading: Get.previousRoute == '/HomeScreen'
+            ? ScaleTap(
+                onPressed: () => Get.back(),
+                scaleMinValue: 0.9,
+                opacityMinValue: 0.4,
+                scaleCurve: Curves.decelerate,
+                opacityCurve: Curves.fastOutSlowIn,
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  color: Colors.transparent,
+                  child: Center(
+                    child: SvgPicture.asset(
+                      'assets/icons/ui/arrow-left.svg',
+                      width: 32,
+                      color: Get.isDarkMode
+                          ? AppTheme.appDarkTheme.colorScheme.tertiary
+                          : AppTheme.appTheme.colorScheme.tertiary,
+                    ),
+                  ),
+                ),
+              )
+            : null,
       ),
       body: Builder(
         builder: (context) {
