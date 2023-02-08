@@ -142,12 +142,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           opacityMinValue: 0.4,
                           scaleCurve: Curves.decelerate,
                           opacityCurve: Curves.fastOutSlowIn,
-                          child: SvgPicture.asset(
-                            'assets/icons/ui/more-vert.svg',
-                            width: 24,
-                            color: Get.isDarkMode
-                                ? AppTheme.appDarkTheme.colorScheme.tertiary
-                                : AppTheme.appTheme.colorScheme.tertiary,
+                          child: Container(
+                            height: 48,
+                            width: 48,
+                            color: Colors.transparent,
+                            child: Center(
+                              child: SvgPicture.asset(
+                                'assets/icons/ui/more-vert.svg',
+                                width: 24,
+                                color: Get.isDarkMode
+                                    ? AppTheme.appDarkTheme.colorScheme.tertiary
+                                    : AppTheme.appTheme.colorScheme.tertiary,
+                              ),
+                            ),
                           ),
                         ),
                         ContactCircleAvatar(
@@ -196,11 +203,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         setState(() {});
                       },
                       end: 0.9,
-                      child: SvgPicture.asset('assets/icons/ui/star.svg',
-                          color: c.isFavorite == 1
-                              ? Color(0xffffc933)
-                              : Color(0xffffc933).withOpacity(0.2),
-                          semanticsLabel: 'Client marked as favorite'),
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        color: Colors.transparent,
+                        child: Center(
+                          child: SvgPicture.asset('assets/icons/ui/star.svg',
+                              color: c.isFavorite == 1
+                                  ? Color(0xffffc933)
+                                  : Color(0xffffc933).withOpacity(0.2),
+                              semanticsLabel: 'Client marked as favorite'),
+                        ),
+                      ),
                     ),
                   ),
                   DataCell(Column(
