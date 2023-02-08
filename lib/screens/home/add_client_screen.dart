@@ -44,6 +44,9 @@ class _AddClientScreenState extends State<AddClientScreen> {
   final _formKeySurname = GlobalKey<FormState>();
   final _formKeyName = GlobalKey<FormState>();
   final _formKeyBirthday = GlobalKey<FormState>();
+  final _formKeyEmail = GlobalKey<FormState>();
+  final _formKeyWeight = GlobalKey<FormState>();
+  final _formKeyMobile = GlobalKey<FormState>();
 
   // Async load data on init:
   final clientOperations = ClientOperations();
@@ -164,158 +167,33 @@ class _AddClientScreenState extends State<AddClientScreen> {
                                       width: Get.size.width > 800
                                           ? 720 - 64
                                           : Get.size.width - 32 - 64,
-                                      child: TextFormField(
-                                        autocorrect: false,
-                                        controller:
-                                            _textEditingControllerSurname,
-                                        autovalidateMode:
-                                            AutovalidateMode.always,
-                                        validator: (surname) {
-                                          if (surname != null) {
-                                            if (surname == '') {
+                                      child: Form(
+                                        key: _formKeySurname,
+                                        child: TextFormField(
+                                          autocorrect: false,
+                                          controller:
+                                              _textEditingControllerSurname,
+                                          autovalidateMode:
+                                              AutovalidateMode.always,
+                                          validator: (value) {
+                                            if (value != null) {
+                                              if (value == '') {
+                                                return "Surname is required";
+                                              } else {
+                                                return null;
+                                              }
+                                            } else {
                                               return "Surname is required";
-                                            } else {
-                                              return null;
                                             }
-                                          } else {
-                                            return "Surname is required";
-                                          }
-                                        },
-                                        style: TextStyle(
-                                            color: Get.isDarkMode
-                                                ? Colors.white
-                                                : Colors.black),
-                                        cursorColor: Colors.grey,
-                                        inputFormatters:
-                                            _textInputFormatterFullName,
-                                        decoration: InputDecoration(
-                                          enabledBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
+                                          },
+                                          style: TextStyle(
                                               color: Get.isDarkMode
-                                                  ? lighterColorFrom(
-                                                      color: AppTheme
-                                                          .appDarkTheme
-                                                          .colorScheme
-                                                          .surfaceVariant,
-                                                      amount: 0.1)
-                                                  : darkerColorFrom(
-                                                      color: AppTheme
-                                                          .appTheme
-                                                          .colorScheme
-                                                          .surfaceVariant,
-                                                      amount: 0.1),
-                                            ),
-                                          ),
-                                          focusedBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color: Get.isDarkMode
-                                                  ? lighterColorFrom(
-                                                      color: AppTheme
-                                                          .appDarkTheme
-                                                          .colorScheme
-                                                          .surfaceVariant,
-                                                      amount: 0.3)
-                                                  : darkerColorFrom(
-                                                      color: AppTheme
-                                                          .appTheme
-                                                          .colorScheme
-                                                          .surfaceVariant,
-                                                      amount: 0.3),
-                                            ),
-                                          ),
-                                          hintText: 'Surname',
-                                          hintStyle: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .shadow,
-                                              fontSize: 18),
-                                          suffixIcon: SizedBox(
-                                            width: 24,
-                                            child: Center(
-                                              child: ScaleTap(
-                                                onPressed: () {
-                                                  Fluttertoast.showToast(
-                                                    msg: "Required field",
-                                                    toastLength:
-                                                        Toast.LENGTH_LONG,
-                                                    gravity:
-                                                        ToastGravity.BOTTOM,
-                                                    timeInSecForIosWeb: 3,
-                                                    textColor: Colors.white,
-                                                    backgroundColor:
-                                                        Get.isDarkMode
-                                                            ? AppTheme
-                                                                .appDarkTheme
-                                                                .colorScheme
-                                                                .error
-                                                            : AppTheme
-                                                                .appTheme
-                                                                .colorScheme
-                                                                .error,
-                                                    fontSize: 16.0,
-                                                  );
-                                                },
-                                                scaleMinValue: 0.9,
-                                                opacityMinValue: 0.4,
-                                                scaleCurve: Curves.decelerate,
-                                                opacityCurve:
-                                                    Curves.fastOutSlowIn,
-                                                child: SvgPicture.asset(
-                                                  'assets/icons/ui/alert-circle.svg',
-                                                  width: 20,
-                                                  color: Get.isDarkMode
-                                                      ? AppTheme.appDarkTheme
-                                                          .colorScheme.error
-                                                      : AppTheme.appTheme
-                                                          .colorScheme.error,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                ),
-                                Column(
-                                  children: [
-                                    // - icon at left
-                                    Container(
-                                      width: Get.size.width > 800
-                                          ? 720 - 64
-                                          : Get.size.width - 32 - 64,
-                                      child: TextFormField(
-                                        autocorrect: false,
-                                        controller: _textEditingControllerName,
-                                        inputFormatters:
-                                            _textInputFormatterFullName,
-                                        autovalidateMode:
-                                            AutovalidateMode.always,
-                                        validator: (surname) {
-                                          if (surname != null) {
-                                            if (surname == '') {
-                                              return "Name is required";
-                                            } else {
-                                              return null;
-                                            }
-                                          } else {
-                                            return "Name is required";
-                                          }
-                                        },
-                                        style: TextStyle(
-                                            color: Get.isDarkMode
-                                                ? Colors.white
-                                                : Colors.black),
-                                        cursorColor: Colors.grey,
-                                        decoration: InputDecoration(
+                                                  ? Colors.white
+                                                  : Colors.black),
+                                          cursorColor: Colors.grey,
+                                          inputFormatters:
+                                              _textInputFormatterFullName,
+                                          decoration: InputDecoration(
                                             enabledBorder: UnderlineInputBorder(
                                               borderSide: BorderSide(
                                                 color: Get.isDarkMode
@@ -350,14 +228,148 @@ class _AddClientScreenState extends State<AddClientScreen> {
                                                         amount: 0.3),
                                               ),
                                             ),
-                                            hintText: 'Name',
+                                            hintText: 'Surname',
                                             hintStyle: TextStyle(
                                                 color: Theme.of(context)
                                                     .colorScheme
                                                     .shadow,
                                                 fontSize: 18),
-                                            suffixIcon:
-                                                AppSuffixIconRequiredField()),
+                                            suffixIcon: SizedBox(
+                                              width: 24,
+                                              child: Center(
+                                                child: ScaleTap(
+                                                  onPressed: () {
+                                                    Fluttertoast.showToast(
+                                                      msg: "Required field",
+                                                      toastLength:
+                                                          Toast.LENGTH_LONG,
+                                                      gravity:
+                                                          ToastGravity.BOTTOM,
+                                                      timeInSecForIosWeb: 3,
+                                                      textColor: Colors.white,
+                                                      backgroundColor:
+                                                          Get.isDarkMode
+                                                              ? AppTheme
+                                                                  .appDarkTheme
+                                                                  .colorScheme
+                                                                  .error
+                                                              : AppTheme
+                                                                  .appTheme
+                                                                  .colorScheme
+                                                                  .error,
+                                                      fontSize: 16.0,
+                                                    );
+                                                  },
+                                                  scaleMinValue: 0.9,
+                                                  opacityMinValue: 0.4,
+                                                  scaleCurve: Curves.decelerate,
+                                                  opacityCurve:
+                                                      Curves.fastOutSlowIn,
+                                                  child: SvgPicture.asset(
+                                                    'assets/icons/ui/alert-circle.svg',
+                                                    width: 20,
+                                                    color: Get.isDarkMode
+                                                        ? AppTheme.appDarkTheme
+                                                            .colorScheme.error
+                                                        : AppTheme.appTheme
+                                                            .colorScheme.error,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 40,
+                                ),
+                                Column(
+                                  children: [
+                                    // - icon at left
+                                    Container(
+                                      width: Get.size.width > 800
+                                          ? 720 - 64
+                                          : Get.size.width - 32 - 64,
+                                      child: Form(
+                                        key: _formKeyName,
+                                        child: TextFormField(
+                                          autocorrect: false,
+                                          controller:
+                                              _textEditingControllerName,
+                                          inputFormatters:
+                                              _textInputFormatterFullName,
+                                          autovalidateMode:
+                                              AutovalidateMode.always,
+                                          validator: (value) {
+                                            if (value != null) {
+                                              if (value == '') {
+                                                return "Name is required";
+                                              } else {
+                                                return null;
+                                              }
+                                            } else {
+                                              return "Name is required";
+                                            }
+                                          },
+                                          style: TextStyle(
+                                              color: Get.isDarkMode
+                                                  ? Colors.white
+                                                  : Colors.black),
+                                          cursorColor: Colors.grey,
+                                          decoration: InputDecoration(
+                                              enabledBorder:
+                                                  UnderlineInputBorder(
+                                                borderSide: BorderSide(
+                                                  color: Get.isDarkMode
+                                                      ? lighterColorFrom(
+                                                          color: AppTheme
+                                                              .appDarkTheme
+                                                              .colorScheme
+                                                              .surfaceVariant,
+                                                          amount: 0.1)
+                                                      : darkerColorFrom(
+                                                          color: AppTheme
+                                                              .appTheme
+                                                              .colorScheme
+                                                              .surfaceVariant,
+                                                          amount: 0.1),
+                                                ),
+                                              ),
+                                              focusedBorder:
+                                                  UnderlineInputBorder(
+                                                borderSide: BorderSide(
+                                                  color: Get.isDarkMode
+                                                      ? lighterColorFrom(
+                                                          color: AppTheme
+                                                              .appDarkTheme
+                                                              .colorScheme
+                                                              .surfaceVariant,
+                                                          amount: 0.3)
+                                                      : darkerColorFrom(
+                                                          color: AppTheme
+                                                              .appTheme
+                                                              .colorScheme
+                                                              .surfaceVariant,
+                                                          amount: 0.3),
+                                                ),
+                                              ),
+                                              hintText: 'Name',
+                                              hintStyle: TextStyle(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .shadow,
+                                                  fontSize: 18),
+                                              suffixIcon:
+                                                  AppSuffixIconRequiredField()),
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -377,7 +389,7 @@ class _AddClientScreenState extends State<AddClientScreen> {
                                       width: Get.size.width > 800
                                           ? 720 - 64
                                           : Get.size.width - 32 - 64,
-                                      child: TextField(
+                                      child: TextFormField(
                                         autocorrect: false,
                                         controller:
                                             _textEditingControllerPatronymic,
@@ -446,6 +458,7 @@ class _AddClientScreenState extends State<AddClientScreen> {
                         hint: 'Birthday: DD/MM/YYYY',
                         svgIconPath: 'calendar-dates',
                         keyboardType: TextInputType.datetime,
+                        globalKey: _formKeyBirthday,
                         isRequired: true,
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(RegExp("[0-9/]")),
@@ -494,98 +507,104 @@ class _AddClientScreenState extends State<AddClientScreen> {
                               width: Get.size.width > 800
                                   ? 720 - 64
                                   : Get.size.width - 32 - 64,
-                              child: InternationalPhoneNumberInput(
-                                textFieldController:
-                                    _textEditingControllerPhone,
-                                ignoreBlank: true,
-                                spaceBetweenSelectorAndTextField: 12,
-                                selectorButtonOnErrorPadding:
-                                    23, //Padding at bottom of selector on error message.
-                                cursorColor: Color(0xff9c9fa3),
-                                onInputChanged: (PhoneNumber number) {
-                                  print(number.phoneNumber);
-                                },
-                                onInputValidated: (bool value) {
-                                  print(value);
-                                },
+                              child: Form(
+                                key: _formKeyMobile,
+                                child: InternationalPhoneNumberInput(
+                                  textFieldController:
+                                      _textEditingControllerPhone,
+                                  ignoreBlank: true,
+                                  spaceBetweenSelectorAndTextField: 12,
+                                  selectorButtonOnErrorPadding:
+                                      23, //Padding at bottom of selector on error message.
+                                  cursorColor: Color(0xff9c9fa3),
+                                  onInputChanged: (PhoneNumber number) {
+                                    print(number.phoneNumber);
+                                  },
+                                  onInputValidated: (bool value) {
+                                    print(value);
+                                  },
 
-                                initialValue: number,
-                                selectorConfig: SelectorConfig(
-                                  leadingPadding: 12, // Padding at left
-                                  trailingSpace: false,
+                                  initialValue: number,
+                                  selectorConfig: SelectorConfig(
+                                    leadingPadding: 12, // Padding at left
+                                    trailingSpace: false,
 
-                                  setSelectorButtonAsPrefixIcon: false,
-                                  selectorType:
-                                      PhoneInputSelectorType.BOTTOM_SHEET,
-                                ),
-                                selectorTextStyle: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.textTheme.button
-                                    : AppTheme.appTheme.textTheme.button
-                                        ?.copyWith(color: Colors.black),
-
-                                autoValidateMode:
-                                    AutovalidateMode.onUserInteraction,
-                                inputBorder: UnderlineInputBorder(),
-                                textStyle: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.textTheme.bodyText1
-                                    : AppTheme.appTheme.textTheme.bodyText1,
-                                inputDecoration: InputDecoration(
-                                  enabledBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: Get.isDarkMode
-                                          ? lighterColorFrom(
-                                              color: AppTheme.appDarkTheme
-                                                  .colorScheme.surfaceVariant,
-                                              amount: 0.1)
-                                          : darkerColorFrom(
-                                              color: AppTheme.appTheme
-                                                  .colorScheme.surfaceVariant,
-                                              amount: 0.1),
-                                    ),
+                                    setSelectorButtonAsPrefixIcon: false,
+                                    selectorType:
+                                        PhoneInputSelectorType.BOTTOM_SHEET,
                                   ),
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: Get.isDarkMode
-                                          ? lighterColorFrom(
-                                              color: AppTheme.appDarkTheme
-                                                  .colorScheme.surfaceVariant,
-                                              amount: 0.3)
-                                          : darkerColorFrom(
-                                              color: AppTheme.appTheme
-                                                  .colorScheme.surfaceVariant,
-                                              amount: 0.3),
+                                  selectorTextStyle: Get.isDarkMode
+                                      ? AppTheme.appDarkTheme.textTheme.button
+                                      : AppTheme.appTheme.textTheme.button
+                                          ?.copyWith(color: Colors.black),
+
+                                  autoValidateMode:
+                                      AutovalidateMode.onUserInteraction,
+                                  inputBorder: UnderlineInputBorder(),
+                                  textStyle: Get.isDarkMode
+                                      ? AppTheme
+                                          .appDarkTheme.textTheme.bodyText1
+                                      : AppTheme.appTheme.textTheme.bodyText1,
+                                  inputDecoration: InputDecoration(
+                                    enabledBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: Get.isDarkMode
+                                            ? lighterColorFrom(
+                                                color: AppTheme.appDarkTheme
+                                                    .colorScheme.surfaceVariant,
+                                                amount: 0.1)
+                                            : darkerColorFrom(
+                                                color: AppTheme.appTheme
+                                                    .colorScheme.surfaceVariant,
+                                                amount: 0.1),
+                                      ),
                                     ),
+                                    focusedBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: Get.isDarkMode
+                                            ? lighterColorFrom(
+                                                color: AppTheme.appDarkTheme
+                                                    .colorScheme.surfaceVariant,
+                                                amount: 0.3)
+                                            : darkerColorFrom(
+                                                color: AppTheme.appTheme
+                                                    .colorScheme.surfaceVariant,
+                                                amount: 0.3),
+                                      ),
+                                    ),
+                                    hintText: 'Phone number',
+                                    hintStyle: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .shadow,
+                                        fontSize: 18),
                                   ),
-                                  hintText: 'Phone number',
-                                  hintStyle: TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.shadow,
-                                      fontSize: 18),
-                                ),
-                                // - UI of search text field
-                                searchBoxDecoration: InputDecoration(
-                                  fillColor: AppTheme
-                                      .appDarkTheme.colorScheme.surfaceVariant,
-                                  filled: true,
-                                  contentPadding: const EdgeInsets.all(0),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      borderSide: BorderSide.none),
-                                  hintText:
-                                      'Search by country name or dial code',
-                                  hintStyle: TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.shadow,
-                                      fontSize: 18),
-                                  prefixIcon: Container(
-                                    width: 40,
-                                    child: Center(
-                                      child: SvgPicture.asset(
-                                          'assets/icons/ui/search.svg',
-                                          width: 24,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .shadow),
+                                  // - UI of search text field
+                                  searchBoxDecoration: InputDecoration(
+                                    fillColor: AppTheme.appDarkTheme.colorScheme
+                                        .surfaceVariant,
+                                    filled: true,
+                                    contentPadding: const EdgeInsets.all(0),
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        borderSide: BorderSide.none),
+                                    hintText:
+                                        'Search by country name or dial code',
+                                    hintStyle: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .shadow,
+                                        fontSize: 18),
+                                    prefixIcon: Container(
+                                      width: 40,
+                                      child: Center(
+                                        child: SvgPicture.asset(
+                                            'assets/icons/ui/search.svg',
+                                            width: 24,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .shadow),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -599,6 +618,7 @@ class _AddClientScreenState extends State<AddClientScreen> {
                           textEditingController: _textEditingControllerEmail,
                           keyboardType: TextInputType.emailAddress,
                           autovalidateMode: AutovalidateMode.onUserInteraction,
+                          globalKey: _formKeyEmail,
                           hint: 'E-mail',
                           svgIconPath: 'email',
                           validator: (email) {
@@ -620,6 +640,7 @@ class _AddClientScreenState extends State<AddClientScreen> {
                       AppTextField(
                           textEditingController: _textEditingControllerWeight,
                           keyboardType: TextInputType.phone,
+                          globalKey: _formKeyWeight,
                           hint: 'Weight in Kilograms',
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(RegExp("[0-9.]")),
@@ -646,16 +667,38 @@ class _AddClientScreenState extends State<AddClientScreen> {
                       AppBottom(
                         onPressed: () {
                           final isValidBirthday =
-                              _formKeyBirthday.currentState!.validate();
-                          final isValidName =
-                              _formKeyName.currentState!.validate();
+                              _formKeyBirthday.currentState != null
+                                  ? _formKeyBirthday.currentState!.validate()
+                                  : false;
+                          final isValidName = _formKeyName.currentState != null
+                              ? _formKeyName.currentState!.validate()
+                              : false;
                           final isValidSurname =
-                              _formKeySurname.currentState!.validate();
+                              _formKeySurname.currentState != null
+                                  ? _formKeySurname.currentState!.validate()
+                                  : false;
+                          final isValidEmail =
+                              _formKeyEmail.currentState != null
+                                  ? _formKeyEmail.currentState!.validate()
+                                  : true;
+                          final isValidMobile =
+                              _formKeyMobile.currentState != null
+                                  ? _formKeyMobile.currentState!.validate()
+                                  : true;
+                          final isValidWeight =
+                              _formKeyWeight.currentState != null
+                                  ? _formKeyWeight.currentState!.validate()
+                                  : true;
 
                           if (isValidBirthday &&
                               isValidSurname &&
-                              isValidName) {
-                            log('vaslid');
+                              isValidName &&
+                              isValidEmail &&
+                              isValidMobile &&
+                              isValidWeight) {
+                            log('allValid');
+                          } else {
+                            log('no valid');
                           }
                         },
                         mainText: 'Done',
@@ -704,9 +747,7 @@ class _AddClientScreenState extends State<AddClientScreen> {
 }
 
 class AppSuffixIconRequiredField extends StatelessWidget {
-  const AppSuffixIconRequiredField({
-    Key? key,
-  }) : super(key: key);
+  const AppSuffixIconRequiredField({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -753,6 +794,8 @@ class AppTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
   final AutovalidateMode? autovalidateMode;
+  final GlobalKey<FormState>? globalKey;
+
   bool? isValid;
   AppTextField({
     Key? key,
@@ -765,6 +808,7 @@ class AppTextField extends StatelessWidget {
     this.isRequired,
     this.autovalidateMode,
     this.isValid,
+    this.globalKey,
   }) : super(key: key);
 
   @override
@@ -792,6 +836,7 @@ class AppTextField extends StatelessWidget {
                     Get.size.width > 800 ? 720 - 64 : Get.size.width - 32 - 64,
                 child: Form(
                   autovalidateMode: AutovalidateMode.onUserInteraction,
+                  key: globalKey,
                   child: TextFormField(
                     autocorrect: false,
                     controller: textEditingController,
