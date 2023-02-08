@@ -107,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ascending, '${value1.isFavorite}', '${value2.isFavorite}'));
     } else if (columnIndex == 3) {
       allRegisteredClients.sort((value1, value2) => compareString(
-          ascending, value1.lastVisit ?? '', value2.lastVisit ?? ''));
+          ascending, value1.lastSession ?? '', value2.lastSession ?? ''));
     } else if (columnIndex == 4) {
       allRegisteredClients.sort((value1, value2) => compareString(
           ascending, value1.registrationDate, value2.registrationDate));
@@ -221,27 +221,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(c.lastVisit ?? (""),
-                          style: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.textTheme.bodyText2
-                              : AppTheme.appTheme.textTheme.bodyText2),
-                      if (c.lastVisit != null)
-                        Text(timeago.format(DateTime.parse(c.lastVisit!)),
-                            style: AppTheme.appDarkTheme.textTheme.caption),
-                    ],
-                  )),
-                  DataCell(Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(c.registrationDate,
+                      Text(iso8601StringToDate(c.registrationDate),
                           style: Get.isDarkMode
                               ? AppTheme.appDarkTheme.textTheme.bodyText2
                               : AppTheme.appTheme.textTheme.bodyText2),
                       Text(timeago.format(DateTime.parse(c.registrationDate)),
                           style: AppTheme.appDarkTheme.textTheme.caption),
                     ],
-                  ))
+                  )),
+                  DataCell(Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                          c.lastSession != null
+                              ? iso8601StringToDate(c.lastSession!)
+                              : "No sessions",
+                          style: Get.isDarkMode
+                              ? AppTheme.appDarkTheme.textTheme.bodyText2
+                              : AppTheme.appTheme.textTheme.bodyText2),
+                      if (c.lastSession != null)
+                        Text(timeago.format(DateTime.parse(c.lastSession!)),
+                            style: AppTheme.appDarkTheme.textTheme.caption),
+                    ],
+                  )),
                 ]))
         .toList();
   }
