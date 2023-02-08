@@ -121,6 +121,7 @@ class Client {
   late String birthday;
   late String registrationDate;
   late String patronymic;
+  late int userId;
   String? mobile;
   String? email;
   double? height;
@@ -134,6 +135,7 @@ class Client {
     required this.surname,
     required this.birthday,
     required this.registrationDate,
+    required this.userId,
     this.patronymic = '',
     this.mobile,
     this.email,
@@ -149,6 +151,7 @@ class Client {
     surname = json['clientSurname'];
     birthday = json['clientBirthday'];
     patronymic = json['clientPatronymic'];
+    userId = json['user_id'];
     mobile = json['clientMobile'];
     email = json['clientEmail'];
     height = json['clientHeight'];
@@ -164,6 +167,7 @@ class Client {
         "clientSurname": surname,
         "clientBirthday": birthday,
         "clientPatronymic": patronymic,
+        "user_id": userId,
         "clientMobile": mobile,
         "clientEmail": email,
         "clientHeight": height,
