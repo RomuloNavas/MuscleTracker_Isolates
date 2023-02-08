@@ -76,9 +76,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initAppDBAsync() async {
-    final allUsers = await UserOperations().getAllUsers();
-    if (allUsers.isNotEmpty) {
-      _loggedUser = allUsers.first;
+    final loggedUser = await UserOperations().getLoggedInUser();
+    if (loggedUser!=null) {
+      _loggedUser = loggedUser;
       _registeredSensors = await registeredSensorOperations
           .getRegisteredSensorsByUser(_loggedUser!);
     }
