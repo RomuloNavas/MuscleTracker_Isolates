@@ -680,6 +680,7 @@ class _AddClientScreenState extends State<AddClientScreen> {
                             );
 
                             ClientOperations().createClient(client);
+                            Get.off(() => HomeScreen());
                           } else {
                             Fluttertoast.showToast(
                               msg: "Please, correct the fields.",
