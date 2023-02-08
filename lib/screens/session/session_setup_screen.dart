@@ -350,7 +350,7 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                     children: [
                       AppIconButton(
                         size: ButtonSize.big,
-                        iconData: Icons.arrow_back,
+                        svgIconPath: 'arrow-left',
                         iconColor: Theme.of(context).colorScheme.error,
                         onPressed: () {
                           for (var registeredAndConnectedSensor
@@ -582,7 +582,7 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                                       ),
                                     ),
                                     AppIconButton(
-                                      iconData: Icons.delete,
+                                      svgIconPath: 'trash',
                                       onPressed: () {
                                         _controllerWorkoutSetup
                                             .allConnectedSensorsUsedInSession[i]

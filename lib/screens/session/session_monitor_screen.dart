@@ -156,7 +156,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             AppIconButton(
-                                iconData: Icons.check,
+                                svgIconPath: 'check',
                                 iconColor: Theme.of(context).colorScheme.error,
                                 size: ButtonSize.big,
                                 onPressed: () async {
@@ -271,10 +271,9 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                         ?.copyWith(
                                                             fontSize: 13)),
                                             AppIconButton(
-                                                iconData: isRecording
-                                                    ? Icons.stop_circle_rounded
-                                                    : Icons
-                                                        .radio_button_checked_outlined,
+                                                svgIconPath: isRecording
+                                                    ? 'stop'
+                                                    : 'record',
                                                 iconColor: isRecording
                                                     ? Theme.of(context)
                                                         .shadowColor
@@ -357,9 +356,9 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                           ?.copyWith(
                                                               fontSize: 13)),
                                               AppIconButton(
-                                                  iconData: isPaused
-                                                      ? Icons.play_arrow
-                                                      : Icons.pause,
+                                                  svgIconPath: isPaused
+                                                      ? 'play'
+                                                      : 'pause',
                                                   iconColor: isPaused
                                                       ? Theme.of(context)
                                                           .shadowColor
@@ -390,7 +389,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                           ?.copyWith(
                                                               fontSize: 13)),
                                               AppIconButton(
-                                                iconData: Icons.play_arrow,
+                                                svgIconPath: 'play',
                                                 iconColor: Get.isDarkMode
                                                     ? AppTheme.appDarkTheme
                                                         .colorScheme.primary
@@ -866,15 +865,17 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                         const EdgeInsets.fromLTRB(0, 4, 0, 0),
                                     decoration: BoxDecoration(
                                       color: Get.isDarkMode
-                                          ? AppTheme.appDarkTheme.colorScheme.surface
-                                          : AppTheme.appTheme.colorScheme.surface,
+                                          ? AppTheme
+                                              .appDarkTheme.colorScheme.surface
+                                          : AppTheme
+                                              .appTheme.colorScheme.surface,
                                     ),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.start,
                                       children: [
                                         AppIconButton(
-                                            iconData: Icons.delete,
+                                            svgIconPath: 'trash',
                                             onPressed: () {
                                               _completedWorkouts.removeAt(i);
                                               setState(() {});
@@ -1235,10 +1236,12 @@ Color buildPlotAreaBackgroundColorFromSensor(
       : AppTheme.appTheme.scaffoldBackgroundColor;
   if (connectedSensorUsedInSession.electrodeState !=
       CallibriElectrodeState.elStNormal) {
-    plotAreaBackgroundColor = AppTheme.appTheme.colorScheme.error.withOpacity(0.5);
+    plotAreaBackgroundColor =
+        AppTheme.appTheme.colorScheme.error.withOpacity(0.5);
   }
   if (connectedSensorUsedInSession.isConnected == false) {
-    plotAreaBackgroundColor = AppTheme.appTheme.colorScheme.error.withOpacity(0.7);
+    plotAreaBackgroundColor =
+        AppTheme.appTheme.colorScheme.error.withOpacity(0.7);
   }
 
   return plotAreaBackgroundColor;

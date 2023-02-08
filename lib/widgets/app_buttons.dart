@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_scale_tap/flutter_scale_tap.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/utils/global_utils.dart';
 import '../theme.dart';
@@ -163,95 +165,101 @@ class AppTextButton extends StatelessWidget {
 }
 
 class AppIconButton extends StatelessWidget {
-  const AppIconButton(
-      {Key? key,
-      required VoidCallback onPressed,
-      required this.iconData,
-      this.text,
-      this.iconColor,
-      this.backgroundColor,
-      this.size})
-      : _onPressed = onPressed,
+  const AppIconButton({
+    Key? key,
+    required VoidCallback onPressed,
+    required this.svgIconPath,
+    this.iconColor,
+    this.text,
+    this.backgroundColor,
+    this.size,
+  })  : _onPressed = onPressed,
         super(key: key);
 
   final VoidCallback _onPressed;
   final String? text;
   final Color? backgroundColor;
   final Color? iconColor;
-  final IconData iconData;
+  final String svgIconPath;
   final ButtonSize? size;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor ??
-            (Get.isDarkMode
-                ? Colors.white.withOpacity(0.05)
-                : Colors.black.withOpacity(0.05)),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-            borderRadius: BorderRadius.circular(30),
-            onTap: _onPressed,
-            child: Builder(
-              builder: (context) {
-                Row? textButton;
-                SizedBox? button;
+    return Builder(
+      builder: (context) {
+        Widget? textButton;
+        Widget? button;
 
-                if (size == ButtonSize.big) {
-                  button = SizedBox(
-                    width: 53,
-                    height: 53,
-                    child: Icon(
-                      iconData,
-                      size: 28,
-                      color: iconColor ??
-                          (Get.isDarkMode ? Colors.white : Color(0xff000b1d)),
-                    ),
-                  );
-                } else if (size == ButtonSize.medium) {
-                  button = SizedBox(
-                    width: 50,
-                    height: 50,
-                    child: Icon(
-                      iconData,
-                      size: 25,
-                      color: iconColor ?? (Color(0xff838997)),
-                    ),
-                  );
-                } else if (size == ButtonSize.small || size == null) {
-                  button = SizedBox(
-                    width: 44,
-                    height: 44,
-                    child: Icon(
-                      iconData,
-                      size: 22,
-                      color: iconColor ?? (Color(0xff838997)),
-                    ),
-                  );
-                }
+        button = ScaleTap(
+          onPressed: _onPressed,
+          scaleMinValue: 0.9,
+          opacityMinValue: 0.4,
+          scaleCurve: Curves.decelerate,
+          opacityCurve: Curves.fastOutSlowIn,
+          child: SizedBox(
+            width: size == ButtonSize.big
+                ? 48
+                : size == ButtonSize.medium
+                    ? 44
+                    : 40,
+            height: size == ButtonSize.big
+                ? 48
+                : size == ButtonSize.medium
+                    ? 44
+                    : 40,
+            child: Center(
+              child: SvgPicture.asset(
+                'assets/icons/ui/$svgIconPath.svg',
+                width: size == ButtonSize.big
+                    ? 32
+                    : size == ButtonSize.medium
+                        ? 24
+                        : 20,
+                color: iconColor ??
+                    (Get.isDarkMode
+                        ? AppTheme.appDarkTheme.colorScheme.tertiary
+                        : AppTheme.appTheme.colorScheme.tertiary),
+              ),
+            ),
+          ),
+        );
 
-                if (text == null) {
-                  return button!;
-                } else {
-                  return textButton = Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(text!,
-                          style: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.textTheme.button
-                              : AppTheme.appTheme.textTheme.button),
-                      SizedBox(width: 4),
-                      button!
-                    ],
-                  );
-                }
-              },
-            )),
-      ),
+        if (text == null) {
+          return button;
+        } else {
+          return textButton = ScaleTap(
+            onPressed: _onPressed,
+            scaleMinValue: 0.9,
+            scaleCurve: Curves.decelerate,
+            opacityCurve: Curves.fastOutSlowIn,
+            child: Container(
+              width: 220,
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color:
+                    backgroundColor ?? (Theme.of(context).colorScheme.primary),
+              ),
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(text!,
+                        style: AppTheme.appDarkTheme.textTheme.button
+                            ?.copyWith(color: Colors.white)),
+                    const SizedBox(width: 8),
+                    SvgPicture.asset(
+                      'assets/icons/ui/$svgIconPath.svg',
+                      width: 24,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+      },
     );
   }
 }

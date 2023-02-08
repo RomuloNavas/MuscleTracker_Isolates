@@ -224,7 +224,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                 spacing: 12,
                                 children: [
                                   AppIconButton(
-                                    iconData: Icons.delete,
+                                    svgIconPath: 'trash',
                                     iconColor:
                                         Theme.of(context).colorScheme.error,
                                     onPressed: () async {
@@ -235,15 +235,15 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                     },
                                   ),
                                   AppIconButton(
-                                    iconData: Icons.edit,
+                                    svgIconPath: 'edit',
                                     onPressed: () => null,
                                   ),
                                   AppIconButton(
-                                    iconData: Icons.compare,
+                                    svgIconPath: 'compare', // compare
                                     onPressed: () => null,
                                   ),
                                   AppIconButton(
-                                    iconData: Icons.ios_share,
+                                    svgIconPath: 'share',
                                     onPressed: () => null,
                                   ),
                                 ],
@@ -838,7 +838,7 @@ class _SidePanelState extends State<SidePanel>
                     children: [
                       AppIconButton(
                         size: ButtonSize.big,
-                        iconData: Icons.arrow_back,
+                        svgIconPath: 'arrow-left',
                         onPressed: Get.back,
                       ),
                       Row(
@@ -961,7 +961,7 @@ class _SidePanelState extends State<SidePanel>
                   child: AppIconButton(
                     onPressed: () =>
                         Get.to(() => SessionSetupScreen(client: widget.client)),
-                    iconData: Icons.sports_gymnastics,
+                    svgIconPath: 'activity',
                     size: ButtonSize.small,
                     backgroundColor: Get.isDarkMode
                         ? AppTheme.appDarkTheme.colorScheme.primary
