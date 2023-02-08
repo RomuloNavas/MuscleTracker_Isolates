@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_scale_tap/flutter_scale_tap.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
 import 'package:neuro_sdk_isolate_example/controllers/services_manager.dart';
@@ -80,9 +82,30 @@ class _SearchScreenState extends State<SearchScreen> {
         titleTextStyle: Get.isDarkMode
             ? AppTheme.appDarkTheme.textTheme.headline3
             : AppTheme.appTheme.textTheme.headline3,
-        title: const Text('Sensors registration'),
-        titleSpacing: 32.0,
+        title: const Text('Sensors Registration'),
+        titleSpacing: 8.0,
         automaticallyImplyLeading: false,
+        leading: ScaleTap(
+          onPressed: () => Get.back(),
+          scaleMinValue: 0.9,
+          opacityMinValue: 0.4,
+          scaleCurve: Curves.decelerate,
+          opacityCurve: Curves.fastOutSlowIn,
+          child: Container(
+            width: 48,
+            height: 48,
+            color: Colors.transparent,
+            child: Center(
+              child: SvgPicture.asset(
+                'assets/icons/ui/arrow-left.svg',
+                width: 32,
+                color: Get.isDarkMode
+                    ? AppTheme.appDarkTheme.colorScheme.tertiary
+                    : AppTheme.appTheme.colorScheme.tertiary,
+              ),
+            ),
+          ),
+        ),
       ),
       body: Builder(
         builder: (context) {
