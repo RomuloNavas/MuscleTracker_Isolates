@@ -7,6 +7,7 @@ import 'package:flutter_scale_tap/flutter_scale_tap.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
 import 'package:neuro_sdk_isolate_example/controllers/services_manager.dart';
@@ -35,9 +36,9 @@ class _AddClientScreenState extends State<AddClientScreen> {
   late TextEditingController _textEditingControllerName;
   late TextEditingController _textEditingControllerSurname;
   late TextEditingController _textEditingControllerPatronymic;
-  late TextEditingController _textEditingControllerBornDate;
+  late TextEditingController _textEditingControllerBirthday;
   late TextEditingController _textEditingControllerWeight;
-  late TextEditingController _textEditingControllerPhone;
+  late TextEditingController _textEditingControllerMobile;
   late TextEditingController _textEditingControllerEmail;
 
   // - keys
@@ -69,11 +70,11 @@ class _AddClientScreenState extends State<AddClientScreen> {
     _textEditingControllerName = TextEditingController();
     _textEditingControllerSurname = TextEditingController();
     _textEditingControllerPatronymic = TextEditingController();
-    _textEditingControllerBornDate = TextEditingController();
+    _textEditingControllerBirthday = TextEditingController();
     _textEditingControllerEmail = TextEditingController();
     _textEditingControllerWeight = TextEditingController();
 
-    _textEditingControllerPhone = TextEditingController();
+    _textEditingControllerMobile = TextEditingController();
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
@@ -234,49 +235,6 @@ class _AddClientScreenState extends State<AddClientScreen> {
                                                     .colorScheme
                                                     .shadow,
                                                 fontSize: 18),
-                                            suffixIcon: SizedBox(
-                                              width: 24,
-                                              child: Center(
-                                                child: ScaleTap(
-                                                  onPressed: () {
-                                                    Fluttertoast.showToast(
-                                                      msg: "Required field",
-                                                      toastLength:
-                                                          Toast.LENGTH_LONG,
-                                                      gravity:
-                                                          ToastGravity.BOTTOM,
-                                                      timeInSecForIosWeb: 3,
-                                                      textColor: Colors.white,
-                                                      backgroundColor:
-                                                          Get.isDarkMode
-                                                              ? AppTheme
-                                                                  .appDarkTheme
-                                                                  .colorScheme
-                                                                  .error
-                                                              : AppTheme
-                                                                  .appTheme
-                                                                  .colorScheme
-                                                                  .error,
-                                                      fontSize: 16.0,
-                                                    );
-                                                  },
-                                                  scaleMinValue: 0.9,
-                                                  opacityMinValue: 0.4,
-                                                  scaleCurve: Curves.decelerate,
-                                                  opacityCurve:
-                                                      Curves.fastOutSlowIn,
-                                                  child: SvgPicture.asset(
-                                                    'assets/icons/ui/alert-circle.svg',
-                                                    width: 20,
-                                                    color: Get.isDarkMode
-                                                        ? AppTheme.appDarkTheme
-                                                            .colorScheme.error
-                                                        : AppTheme.appTheme
-                                                            .colorScheme.error,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
                                           ),
                                         ),
                                       ),
@@ -325,50 +283,47 @@ class _AddClientScreenState extends State<AddClientScreen> {
                                                   : Colors.black),
                                           cursorColor: Colors.grey,
                                           decoration: InputDecoration(
-                                              enabledBorder:
-                                                  UnderlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: Get.isDarkMode
-                                                      ? lighterColorFrom(
-                                                          color: AppTheme
-                                                              .appDarkTheme
-                                                              .colorScheme
-                                                              .surfaceVariant,
-                                                          amount: 0.1)
-                                                      : darkerColorFrom(
-                                                          color: AppTheme
-                                                              .appTheme
-                                                              .colorScheme
-                                                              .surfaceVariant,
-                                                          amount: 0.1),
-                                                ),
+                                            enabledBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                color: Get.isDarkMode
+                                                    ? lighterColorFrom(
+                                                        color: AppTheme
+                                                            .appDarkTheme
+                                                            .colorScheme
+                                                            .surfaceVariant,
+                                                        amount: 0.1)
+                                                    : darkerColorFrom(
+                                                        color: AppTheme
+                                                            .appTheme
+                                                            .colorScheme
+                                                            .surfaceVariant,
+                                                        amount: 0.1),
                                               ),
-                                              focusedBorder:
-                                                  UnderlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: Get.isDarkMode
-                                                      ? lighterColorFrom(
-                                                          color: AppTheme
-                                                              .appDarkTheme
-                                                              .colorScheme
-                                                              .surfaceVariant,
-                                                          amount: 0.3)
-                                                      : darkerColorFrom(
-                                                          color: AppTheme
-                                                              .appTheme
-                                                              .colorScheme
-                                                              .surfaceVariant,
-                                                          amount: 0.3),
-                                                ),
+                                            ),
+                                            focusedBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                color: Get.isDarkMode
+                                                    ? lighterColorFrom(
+                                                        color: AppTheme
+                                                            .appDarkTheme
+                                                            .colorScheme
+                                                            .surfaceVariant,
+                                                        amount: 0.3)
+                                                    : darkerColorFrom(
+                                                        color: AppTheme
+                                                            .appTheme
+                                                            .colorScheme
+                                                            .surfaceVariant,
+                                                        amount: 0.3),
                                               ),
-                                              hintText: 'Name',
-                                              hintStyle: TextStyle(
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .shadow,
-                                                  fontSize: 18),
-                                              suffixIcon:
-                                                  AppSuffixIconRequiredField()),
+                                            ),
+                                            hintText: 'Name',
+                                            hintStyle: TextStyle(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .shadow,
+                                                fontSize: 18),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -453,13 +408,12 @@ class _AddClientScreenState extends State<AddClientScreen> {
                       ),
                       const SizedBox(height: 16),
                       AppTextField(
-                        textEditingController: _textEditingControllerBornDate,
+                        textEditingController: _textEditingControllerBirthday,
                         autovalidateMode: AutovalidateMode.always,
                         hint: 'Birthday: DD/MM/YYYY',
                         svgIconPath: 'calendar-dates',
                         keyboardType: TextInputType.datetime,
                         globalKey: _formKeyBirthday,
-                        isRequired: true,
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(RegExp("[0-9/]")),
                           LengthLimitingTextInputFormatter(10),
@@ -511,7 +465,7 @@ class _AddClientScreenState extends State<AddClientScreen> {
                                 key: _formKeyMobile,
                                 child: InternationalPhoneNumberInput(
                                   textFieldController:
-                                      _textEditingControllerPhone,
+                                      _textEditingControllerMobile,
                                   ignoreBlank: true,
                                   spaceBetweenSelectorAndTextField: 12,
                                   selectorButtonOnErrorPadding:
@@ -696,9 +650,48 @@ class _AddClientScreenState extends State<AddClientScreen> {
                               isValidEmail &&
                               isValidMobile &&
                               isValidWeight) {
-                            log('allValid');
+                            int userId = _loggedInUser.id!;
+                            var inputFormat = DateFormat('dd/MM/yyyy');
+                            var dateDMY = inputFormat
+                                .parse(_textEditingControllerBirthday.text);
+                            var outputFormat = DateFormat('yyyy-MM-dd');
+                            var dateYMD = outputFormat.format(dateDMY);
+
+                            var client = Client(
+                              userId: userId,
+                              name: _textEditingControllerName.text,
+                              surname: _textEditingControllerSurname.text,
+                              patronymic: _textEditingControllerPatronymic.text,
+                              birthday: dateYMD,
+                              registrationDate:
+                                  DateTime.now().toIso8601String(),
+                              weight:
+                                  _textEditingControllerWeight.text.isNotEmpty
+                                      ? double.tryParse(
+                                          _textEditingControllerWeight.text)
+                                      : null,
+                              email: _textEditingControllerEmail.text.isNotEmpty
+                                  ? _textEditingControllerEmail.text
+                                  : null,
+                              mobile:
+                                  _textEditingControllerMobile.text.isNotEmpty
+                                      ? _textEditingControllerMobile.text
+                                      : null,
+                            );
+
+                            ClientOperations().createClient(client);
                           } else {
-                            log('no valid');
+                            Fluttertoast.showToast(
+                              msg: "Please, correct the fields.",
+                              toastLength: Toast.LENGTH_LONG,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 3,
+                              textColor: Colors.white,
+                              backgroundColor: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.colorScheme.error
+                                  : AppTheme.appTheme.colorScheme.error,
+                              fontSize: 16.0,
+                            );
                           }
                         },
                         mainText: 'Done',
@@ -790,7 +783,6 @@ class AppTextField extends StatelessWidget {
   final String hint;
   final List<TextInputFormatter>? inputFormatters;
   final String svgIconPath;
-  final bool? isRequired;
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
   final AutovalidateMode? autovalidateMode;
@@ -805,7 +797,6 @@ class AppTextField extends StatelessWidget {
     this.keyboardType,
     this.validator,
     this.inputFormatters,
-    this.isRequired,
     this.autovalidateMode,
     this.isValid,
     this.globalKey,
@@ -848,39 +839,37 @@ class AppTextField extends StatelessWidget {
                         color: Get.isDarkMode ? Colors.white : Colors.black),
                     cursorColor: Colors.grey,
                     decoration: InputDecoration(
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Get.isDarkMode
-                                ? lighterColorFrom(
-                                    color: AppTheme.appDarkTheme.colorScheme
-                                        .surfaceVariant,
-                                    amount: 0.1)
-                                : darkerColorFrom(
-                                    color: AppTheme
-                                        .appTheme.colorScheme.surfaceVariant,
-                                    amount: 0.1),
-                          ),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Get.isDarkMode
+                              ? lighterColorFrom(
+                                  color: AppTheme
+                                      .appDarkTheme.colorScheme.surfaceVariant,
+                                  amount: 0.1)
+                              : darkerColorFrom(
+                                  color: AppTheme
+                                      .appTheme.colorScheme.surfaceVariant,
+                                  amount: 0.1),
                         ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Get.isDarkMode
-                                ? lighterColorFrom(
-                                    color: AppTheme.appDarkTheme.colorScheme
-                                        .surfaceVariant,
-                                    amount: 0.3)
-                                : darkerColorFrom(
-                                    color: AppTheme
-                                        .appTheme.colorScheme.surfaceVariant,
-                                    amount: 0.3),
-                          ),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Get.isDarkMode
+                              ? lighterColorFrom(
+                                  color: AppTheme
+                                      .appDarkTheme.colorScheme.surfaceVariant,
+                                  amount: 0.3)
+                              : darkerColorFrom(
+                                  color: AppTheme
+                                      .appTheme.colorScheme.surfaceVariant,
+                                  amount: 0.3),
                         ),
-                        hintText: hint,
-                        hintStyle: TextStyle(
-                            color: Theme.of(context).colorScheme.shadow,
-                            fontSize: 18),
-                        suffixIcon: isRequired == true
-                            ? AppSuffixIconRequiredField()
-                            : SizedBox()),
+                      ),
+                      hintText: hint,
+                      hintStyle: TextStyle(
+                          color: Theme.of(context).colorScheme.shadow,
+                          fontSize: 18),
+                    ),
                   ),
                 ),
               ),
