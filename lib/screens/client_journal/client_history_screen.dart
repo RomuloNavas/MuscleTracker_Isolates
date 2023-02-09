@@ -122,43 +122,64 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
     required String bodyRegionName,
     String? side,
   }) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: SizedBox(
-        width: 240,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(width: 12),
-            CircleAvatar(
-              backgroundColor: Get.isDarkMode
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.black.withOpacity(0.05),
-              radius: 22,
-              child: SvgPicture.asset(
-                  'assets/icons/callibri_device-$sensorColor.svg',
-                  width: 16,
-                  semanticsLabel: 'Sensor'),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(bodyRegionName,
+    return Container(
+      margin: const EdgeInsets.all(6),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Get.isDarkMode
+            ? AppTheme.appDarkTheme.colorScheme.surface
+            : AppTheme.appTheme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      width: 320,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: Get.isDarkMode
+                    ? Colors.white.withOpacity(0.05)
+                    : Colors.black.withOpacity(0.05),
+                radius: 22,
+                child: SvgPicture.asset(
+                    'assets/icons/callibri_device-$sensorColor.svg',
+                    width: 16,
+                    semanticsLabel: 'Sensor'),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(bodyRegionName,
+                      style: Get.isDarkMode
+                          ? AppTheme.appDarkTheme.textTheme.bodyText2
+                          : AppTheme.appTheme.textTheme.bodyText2),
+                  Text(
+                    muscleName,
                     style: Get.isDarkMode
-                        ? AppTheme.appDarkTheme.textTheme.bodyText2
-                        : AppTheme.appTheme.textTheme.bodyText2),
-                Text(
-                  muscleName,
-                  style: Get.isDarkMode
-                      ? AppTheme.appDarkTheme.textTheme.bodyText1
-                      : AppTheme.appTheme.textTheme.bodyText1,
-                ),
-                if (side != null) AppMuscleSideIndicator(side: side!)
-              ],
-            )
-          ],
-        ),
+                        ? AppTheme.appDarkTheme.textTheme.bodyText1
+                        : AppTheme.appTheme.textTheme.bodyText1,
+                  ),
+                  SizedBox(height: 2),
+                  if (side != null) AppMuscleSideIndicator(side: side),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(width: 12),
+          Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    fit: BoxFit.contain,
+                    image: AssetImage(
+                      'assets/images/sensor_placements/$bodyRegionName/$muscleName.png',
+                    )),
+              ))
+        ],
       ),
     );
   }
@@ -319,8 +340,6 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                                     ConnectionState.done &&
                                                 snapshot.hasData) {
                                               return Wrap(
-                                                runSpacing: 20,
-                                                spacing: 20,
                                                 children: [
                                                   for (var sensor
                                                       in snapshot.data!)
