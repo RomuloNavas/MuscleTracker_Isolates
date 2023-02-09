@@ -167,16 +167,16 @@ class AppTextButton extends StatelessWidget {
 class AppIconButton extends StatelessWidget {
   const AppIconButton({
     Key? key,
-    required VoidCallback onPressed,
     required this.svgIconPath,
+    this.onPressed,
     this.iconColor,
     this.text,
     this.backgroundColor,
     this.size,
-  })  : _onPressed = onPressed,
+  })  : 
         super(key: key);
 
-  final VoidCallback _onPressed;
+  final Function()? onPressed;
   final String? text;
   final Color? backgroundColor;
   final Color? iconColor;
@@ -191,7 +191,7 @@ class AppIconButton extends StatelessWidget {
         Widget? button;
 
         button = ScaleTap(
-          onPressed: _onPressed,
+          onPressed: onPressed,
           scaleMinValue: 0.9,
           opacityMinValue: 0.4,
           scaleCurve: Curves.decelerate,
@@ -228,7 +228,7 @@ class AppIconButton extends StatelessWidget {
           return button;
         } else {
           return textButton = ScaleTap(
-            onPressed: _onPressed,
+            onPressed: onPressed,
             scaleMinValue: 0.9,
             scaleCurve: Curves.decelerate,
             opacityCurve: Curves.fastOutSlowIn,
