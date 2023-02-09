@@ -27,6 +27,7 @@ import 'package:neuro_sdk_isolate_example/widgets/app_client_avatar.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_muscle_side.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_text_field.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class UsedSensorResults {
   UsedSensorResults({
@@ -124,7 +125,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
-        width: 260,
+        width: 240,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -191,7 +192,13 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 8),
+                          Text(
+                            '${widget.client.surname} ${widget.client.name} ${widget.client.patronymic}',
+                            style: Get.isDarkMode
+                                ? AppTheme.appDarkTheme.textTheme.headline1
+                                : AppTheme.appTheme.textTheme.headline1,
+                          ),
+                          SizedBox(height: 36),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -250,24 +257,25 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 26),
+                          SizedBox(height: 24),
                           Text(
-                              selectedSession!.name.isNotEmpty
-                                  ? selectedSession!.name.toCapitalized()
-                                  : 'Unnamed Session',
-                              style: Get.isDarkMode
-                                  ? AppTheme.appDarkTheme.textTheme.headline1
-                                  : AppTheme.appTheme.textTheme.headline1),
+                            selectedSession!.name.isNotEmpty
+                                ? 'Title: ${selectedSession!.name.toCapitalized()}'
+                                : 'Unnamed Session',
+                            style: Get.isDarkMode
+                                ? AppTheme.appDarkTheme.textTheme.headline2
+                                : AppTheme.appTheme.textTheme.headline2,
+                          ),
                           if (selectedSession!.description.isNotEmpty)
                             Padding(
-                              padding: const EdgeInsets.only(top: 16),
+                              padding: const EdgeInsets.only(top: 12),
                               child: Text(
                                   'Description: ${selectedSession!.description.toCapitalized()}',
                                   style: Get.isDarkMode
                                       ? AppTheme.appDarkTheme.textTheme.caption
                                       : AppTheme.appTheme.textTheme.caption),
                             ),
-                          const SizedBox(height: 36),
+                          const SizedBox(height: 48),
                           Column(
                             children: [
                               Align(
@@ -283,8 +291,9 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                             style: AppTheme.appDarkTheme
                                                 .textTheme.headline1
                                                 ?.copyWith(
-                                                    color: const Color(
-                                                        0xffe40031))),
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .secondary)),
                                         Expanded(
                                           child: Text('Used sensors',
                                               style: Get.isDarkMode
@@ -329,7 +338,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                               return Text('no data');
                                             }
                                           }),
-                                    const SizedBox(height: 36),
+                                    const SizedBox(height: 48),
                                     Row(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
@@ -338,8 +347,9 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                             style: AppTheme.appDarkTheme
                                                 .textTheme.headline1
                                                 ?.copyWith(
-                                                    color: const Color(
-                                                        0xffe40031))),
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .secondary)),
                                         Expanded(
                                           child: Text(
                                               'Muscles activity comparison',
@@ -353,7 +363,6 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 16),
                                   ],
                                 ),
                               ),
@@ -371,231 +380,210 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
 
                                     for (var usedSensor
                                         in snapshotSensorReport.data!) {
-                                      column.add(SizedBox(
-                                        width: double.infinity,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            buildSensorPlacementCard(
-                                              sensorColor: usedSensor.color,
-                                              muscleName: usedSensor.muscleName,
-                                              bodyRegionName:
-                                                  usedSensor.bodyRegion,
-                                              side: usedSensor.side,
-                                            ),
-                                            FutureBuilder(
-                                              future:
-                                                  getAllSensorReportsFromSensorId(
-                                                      usedSensor.sensorId),
-                                              builder: (context,
-                                                  AsyncSnapshot<
-                                                          List<
-                                                              MuscleActivityComparison>>
-                                                      snapshot) {
-                                                if (snapshot.connectionState ==
-                                                        ConnectionState.done &&
-                                                    snapshot.hasData) {
-                                                  var listAllSensorValuesFromAvrAmp =
-                                                      <double>[];
-                                                  var listAllSensorValuesFromMaxAmp =
-                                                      <double>[];
-                                                  var listAllSensorValuesFromMinAmp =
-                                                      <double>[];
-                                                  var listAllSensorValuesFromArea =
-                                                      <double>[];
+                                      column.add(Container(
+                                        margin: const EdgeInsets.only(
+                                            bottom: 12, top: 24),
+                                        padding:
+                                            EdgeInsets.fromLTRB(6, 12, 6, 12),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: Get.isDarkMode
+                                              ? AppTheme.appDarkTheme
+                                                  .colorScheme.surface
+                                              : AppTheme
+                                                  .appTheme.colorScheme.surface,
+                                        ),
+                                        child: SizedBox(
+                                          width: double.infinity,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              buildSensorPlacementCard(
+                                                sensorColor: usedSensor.color,
+                                                muscleName:
+                                                    usedSensor.muscleName,
+                                                bodyRegionName:
+                                                    usedSensor.bodyRegion,
+                                                side: usedSensor.side,
+                                              ),
+                                              FutureBuilder(
+                                                future:
+                                                    getAllSensorReportsFromSensorId(
+                                                        usedSensor.sensorId),
+                                                builder: (context,
+                                                    AsyncSnapshot<
+                                                            List<
+                                                                MuscleActivityComparison>>
+                                                        snapshot) {
+                                                  if (snapshot.connectionState ==
+                                                          ConnectionState
+                                                              .done &&
+                                                      snapshot.hasData) {
+                                                    var listAllSensorValuesFromAvrAmp =
+                                                        <double>[];
+                                                    var listAllSensorValuesFromMaxAmp =
+                                                        <double>[];
+                                                    var listAllSensorValuesFromMinAmp =
+                                                        <double>[];
+                                                    var listAllSensorValuesFromArea =
+                                                        <double>[];
 
-                                                  for (var muscleActivityComparison
-                                                      in snapshot.data!) {
+                                                    for (var muscleActivityComparison
+                                                        in snapshot.data!) {
+                                                      listAllSensorValuesFromAvrAmp
+                                                          .add(
+                                                              muscleActivityComparison
+                                                                  .sensorReport
+                                                                  .avrAmp);
+                                                      listAllSensorValuesFromMaxAmp
+                                                          .add(
+                                                              muscleActivityComparison
+                                                                  .sensorReport
+                                                                  .maxAmp);
+                                                      listAllSensorValuesFromMinAmp
+                                                          .add(
+                                                              muscleActivityComparison
+                                                                  .sensorReport
+                                                                  .minAmp);
+                                                      listAllSensorValuesFromArea
+                                                          .add(
+                                                              muscleActivityComparison
+                                                                  .sensorReport
+                                                                  .area);
+                                                    }
                                                     listAllSensorValuesFromAvrAmp
-                                                        .add(
-                                                            muscleActivityComparison
-                                                                .sensorReport
-                                                                .avrAmp);
+                                                        .sort();
                                                     listAllSensorValuesFromMaxAmp
-                                                        .add(
-                                                            muscleActivityComparison
-                                                                .sensorReport
-                                                                .maxAmp);
+                                                        .sort();
                                                     listAllSensorValuesFromMinAmp
-                                                        .add(
-                                                            muscleActivityComparison
-                                                                .sensorReport
-                                                                .minAmp);
-                                                    listAllSensorValuesFromArea.add(
-                                                        muscleActivityComparison
-                                                            .sensorReport.area);
-                                                  }
-                                                  listAllSensorValuesFromAvrAmp
-                                                      .sort();
-                                                  listAllSensorValuesFromMaxAmp
-                                                      .sort();
-                                                  listAllSensorValuesFromMinAmp
-                                                      .sort();
-                                                  listAllSensorValuesFromArea
-                                                      .sort();
-                                                  return Column(
-                                                    children: [
+                                                        .sort();
+                                                    listAllSensorValuesFromArea
+                                                        .sort();
+                                                    return Column(
+                                                      children: [
 // TABLE
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                    .only(
-                                                                bottom: 24,
-                                                                top: 8),
-                                                        child: SizedBox(
-                                                          width:
-                                                              double.infinity,
-                                                          child: DataTable(
-                                                            sortColumnIndex:
-                                                                sortColumnIndex,
-                                                            sortAscending:
-                                                                isAscending,
-                                                            horizontalMargin:
-                                                                10,
-                                                            columnSpacing: 0,
-                                                            dataRowHeight: 60,
-                                                            columns: [
-                                                              DataColumn(
-                                                                  label: Text(
-                                                                      'Exercise name',
-                                                                      style: Get.isDarkMode
-                                                                          ? AppTheme
-                                                                              .appDarkTheme
-                                                                              .textTheme
-                                                                              .headline5
-                                                                          : AppTheme
-                                                                              .appTheme
-                                                                              .textTheme
-                                                                              .headline5)),
-                                                              DataColumn(
-                                                                  label: Text(
-                                                                      'A(avr), µV',
-                                                                      style: Get.isDarkMode
-                                                                          ? AppTheme
-                                                                              .appDarkTheme
-                                                                              .textTheme
-                                                                              .headline5
-                                                                          : AppTheme
-                                                                              .appTheme
-                                                                              .textTheme
-                                                                              .headline5)),
-                                                              DataColumn(
-                                                                  label: Text(
-                                                                      'A(max), µV',
-                                                                      style: Get.isDarkMode
-                                                                          ? AppTheme
-                                                                              .appDarkTheme
-                                                                              .textTheme
-                                                                              .headline5
-                                                                          : AppTheme
-                                                                              .appTheme
-                                                                              .textTheme
-                                                                              .headline5)),
-                                                              DataColumn(
-                                                                  label: Text(
-                                                                      'A(min), µV',
-                                                                      style: Get.isDarkMode
-                                                                          ? AppTheme
-                                                                              .appDarkTheme
-                                                                              .textTheme
-                                                                              .headline5
-                                                                          : AppTheme
-                                                                              .appTheme
-                                                                              .textTheme
-                                                                              .headline5)),
-                                                              DataColumn(
-                                                                  label: Text(
-                                                                      'S, mV*ms',
-                                                                      style: Get.isDarkMode
-                                                                          ? AppTheme
-                                                                              .appDarkTheme
-                                                                              .textTheme
-                                                                              .headline5
-                                                                          : AppTheme
-                                                                              .appTheme
-                                                                              .textTheme
-                                                                              .headline5)),
-                                                            ],
-                                                            rows: [
-                                                              for (var muscleActivityComparison
-                                                                  in snapshot
-                                                                      .data!)
-                                                                DataRow(
-                                                                  cells: [
-                                                                    DataCell(
-                                                                      Container(
-                                                                        width:
-                                                                            150,
-                                                                        child:
-                                                                            Column(
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.center,
-                                                                          crossAxisAlignment:
-                                                                              CrossAxisAlignment.start,
-                                                                          children: [
-                                                                            Text(muscleActivityComparison.workoutName,
-                                                                                style: Get.isDarkMode ? AppTheme.appDarkTheme.textTheme.bodyText1 : AppTheme.appTheme.textTheme.bodyText1),
-                                                                            Text(getMinutesAndSecondsFromDurationWithSign(duration: Duration(seconds: DateTime.parse(muscleActivityComparison.workoutReport.endedAt).difference(DateTime.parse(muscleActivityComparison.workoutReport.startedAt)).inSeconds)),
-                                                                                style: Get.isDarkMode ? AppTheme.appDarkTheme.textTheme.overline : AppTheme.appTheme.textTheme.overline)
-                                                                          ],
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                      .only(
+                                                                  bottom: 24,
+                                                                  top: 8),
+                                                          child: SizedBox(
+                                                            width:
+                                                                double.infinity,
+                                                            child: DataTable(
+                                                              sortColumnIndex:
+                                                                  sortColumnIndex,
+                                                              sortAscending:
+                                                                  isAscending,
+                                                              horizontalMargin:
+                                                                  10,
+                                                              columnSpacing: 0,
+                                                              dataRowHeight: 60,
+                                                              columns: [
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        'Exercise name',
+                                                                        style: Get.isDarkMode
+                                                                            ? AppTheme.appDarkTheme.textTheme.headline5
+                                                                            : AppTheme.appTheme.textTheme.headline5)),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        'A(avr), µV',
+                                                                        style: Get.isDarkMode
+                                                                            ? AppTheme.appDarkTheme.textTheme.headline5
+                                                                            : AppTheme.appTheme.textTheme.headline5)),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        'A(max), µV',
+                                                                        style: Get.isDarkMode
+                                                                            ? AppTheme.appDarkTheme.textTheme.headline5
+                                                                            : AppTheme.appTheme.textTheme.headline5)),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        'A(min), µV',
+                                                                        style: Get.isDarkMode
+                                                                            ? AppTheme.appDarkTheme.textTheme.headline5
+                                                                            : AppTheme.appTheme.textTheme.headline5)),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        'S, mV*ms',
+                                                                        style: Get.isDarkMode
+                                                                            ? AppTheme.appDarkTheme.textTheme.headline5
+                                                                            : AppTheme.appTheme.textTheme.headline5)),
+                                                              ],
+                                                              rows: [
+                                                                for (var muscleActivityComparison
+                                                                    in snapshot
+                                                                        .data!)
+                                                                  DataRow(
+                                                                    cells: [
+                                                                      DataCell(
+                                                                        Container(
+                                                                          width:
+                                                                              150,
+                                                                          child:
+                                                                              Column(
+                                                                            mainAxisAlignment:
+                                                                                MainAxisAlignment.center,
+                                                                            crossAxisAlignment:
+                                                                                CrossAxisAlignment.start,
+                                                                            children: [
+                                                                              Text(muscleActivityComparison.workoutName, style: Get.isDarkMode ? AppTheme.appDarkTheme.textTheme.bodyText1 : AppTheme.appTheme.textTheme.bodyText1),
+                                                                              Text(getMinutesAndSecondsFromDurationWithSign(duration: Duration(seconds: DateTime.parse(muscleActivityComparison.workoutReport.endedAt).difference(DateTime.parse(muscleActivityComparison.workoutReport.startedAt)).inSeconds)), style: Get.isDarkMode ? AppTheme.appDarkTheme.textTheme.overline : AppTheme.appTheme.textTheme.overline)
+                                                                            ],
+                                                                          ),
                                                                         ),
                                                                       ),
-                                                                    ),
-                                                                    DataCell(
-                                                                      AppDataCellPercentageBox(
-                                                                          cellWidth:
-                                                                              90,
-                                                                          value: muscleActivityComparison
-                                                                              .sensorReport
-                                                                              .avrAmp,
-                                                                          maxValue:
-                                                                              listAllSensorValuesFromAvrAmp.last),
-                                                                    ),
-                                                                    DataCell(
-                                                                      AppDataCellPercentageBox(
-                                                                          cellWidth:
-                                                                              90,
-                                                                          value: muscleActivityComparison
-                                                                              .sensorReport
-                                                                              .maxAmp,
-                                                                          maxValue:
-                                                                              listAllSensorValuesFromMaxAmp.last),
-                                                                    ),
-                                                                    DataCell(
-                                                                      AppDataCellPercentageBox(
-                                                                          cellWidth:
-                                                                              90,
-                                                                          value: muscleActivityComparison
-                                                                              .sensorReport
-                                                                              .minAmp,
-                                                                          maxValue:
-                                                                              listAllSensorValuesFromMinAmp.last),
-                                                                    ),
-                                                                    DataCell(
-                                                                      AppDataCellPercentageBox(
-                                                                          cellWidth:
-                                                                              90,
-                                                                          value: muscleActivityComparison
-                                                                              .sensorReport
-                                                                              .area,
-                                                                          maxValue:
-                                                                              listAllSensorValuesFromArea.last),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                            ],
+                                                                      DataCell(
+                                                                        AppDataCellPercentageBox(
+                                                                            cellWidth:
+                                                                                90,
+                                                                            value:
+                                                                                muscleActivityComparison.sensorReport.avrAmp,
+                                                                            maxValue: listAllSensorValuesFromAvrAmp.last),
+                                                                      ),
+                                                                      DataCell(
+                                                                        AppDataCellPercentageBox(
+                                                                            cellWidth:
+                                                                                90,
+                                                                            value:
+                                                                                muscleActivityComparison.sensorReport.maxAmp,
+                                                                            maxValue: listAllSensorValuesFromMaxAmp.last),
+                                                                      ),
+                                                                      DataCell(
+                                                                        AppDataCellPercentageBox(
+                                                                            cellWidth:
+                                                                                90,
+                                                                            value:
+                                                                                muscleActivityComparison.sensorReport.minAmp,
+                                                                            maxValue: listAllSensorValuesFromMinAmp.last),
+                                                                      ),
+                                                                      DataCell(
+                                                                        AppDataCellPercentageBox(
+                                                                            cellWidth:
+                                                                                90,
+                                                                            value:
+                                                                                muscleActivityComparison.sensorReport.area,
+                                                                            maxValue: listAllSensorValuesFromArea.last),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                              ],
+                                                            ),
                                                           ),
                                                         ),
-                                                      ),
-                                                    ],
-                                                  );
-                                                } else {
-                                                  return Text('NADA NDADFA');
-                                                }
-                                              },
-                                            ),
-                                          ],
+                                                      ],
+                                                    );
+                                                  } else {
+                                                    return Text('Nothing');
+                                                  }
+                                                },
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ));
                                     }
@@ -686,7 +674,7 @@ class SidePanel extends StatefulWidget {
 
 class _SidePanelState extends State<SidePanel>
     with SingleTickerProviderStateMixin {
-  final sidePanelWidth = 340.0;
+  final _sidePanelWidth = 320.0;
   // Data table variables
   int sortColumnIndex = 0;
   bool isAscending = true;
@@ -696,8 +684,8 @@ class _SidePanelState extends State<SidePanel>
   Session? selectedSession;
   int selectedBodyRegion = Constants.allBodyRegions;
   // Async load data on init:
-  List<Session> searchedClientSessions = [];
-  List<Session> allClientSessions = [];
+  List<Session> _searchedClientSessions = [];
+  List<Session> _allClientSessions = [];
   List<BodyRegion> allBodyRegions = [];
 
   late Future initAllSessions;
@@ -726,7 +714,7 @@ class _SidePanelState extends State<SidePanel>
   filterSessions() {
     List<Session>? sessions = [];
     if (_textEditingController.text.isNotEmpty) {
-      sessions.addAll(allClientSessions.toList());
+      sessions.addAll(_allClientSessions.toList());
       sessions.retainWhere((Session s) {
         String searchTerm = _textEditingController.text.toLowerCase();
 
@@ -734,9 +722,9 @@ class _SidePanelState extends State<SidePanel>
 
         return title.contains(searchTerm);
       });
-      searchedClientSessions.clear();
-      searchedClientSessions.addAll(sessions);
-      log(searchedClientSessions.length.toString());
+      _searchedClientSessions.clear();
+      _searchedClientSessions.addAll(sessions);
+      log(_searchedClientSessions.length.toString());
 
       setState(() {});
     }
@@ -749,7 +737,7 @@ class _SidePanelState extends State<SidePanel>
   void onSort(int columnIndex, bool ascending) {
     log('sorted');
     if (columnIndex == 0) {
-      allClientSessions.sort((value1, value2) =>
+      _allClientSessions.sort((value1, value2) =>
           compareString(ascending, value1.startedAt, value2.startedAt));
     }
     setState(() {
@@ -781,26 +769,31 @@ class _SidePanelState extends State<SidePanel>
                 setState(() {});
               },
               cells: [
-                DataCell(Text(iso8601StringToDate(session.startedAt),
-                    style: Get.isDarkMode
-                        ? AppTheme.appDarkTheme.textTheme.bodyText2
-                        : AppTheme.appTheme.textTheme.bodyText2)),
+                DataCell(Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(iso8601StringToDate(session.startedAt),
+                        style: Get.isDarkMode
+                            ? AppTheme.appDarkTheme.textTheme.bodyText2
+                            : AppTheme.appTheme.textTheme.bodyText2),
+                    Text(timeago.format(DateTime.parse(session.startedAt)),
+                        style: AppTheme.appDarkTheme.textTheme.caption),
+                  ],
+                )),
                 DataCell(
-                  Row(
-                    children: [
-                      Flexible(
-                        flex: 1,
-                        child: Text(
-                            session.name.isEmpty
-                                ? 'Unnamed'
-                                : session.name.toCapitalized(),
-                            overflow: TextOverflow.fade,
-                            softWrap: false,
-                            style: Get.isDarkMode
-                                ? AppTheme.appDarkTheme.textTheme.bodyText2
-                                : AppTheme.appTheme.textTheme.bodyText2),
-                      ),
-                    ],
+                  SizedBox(
+                    width: 150,
+                    child: Text(
+                        session.name.isEmpty
+                            ? 'Unnamed'
+                            : session.name.toCapitalized(),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
+                        style: Get.isDarkMode
+                            ? AppTheme.appDarkTheme.textTheme.bodyText2
+                            : AppTheme.appTheme.textTheme.bodyText2),
                   ),
                 ),
               ],
@@ -811,7 +804,12 @@ class _SidePanelState extends State<SidePanel>
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: sidePanelWidth,
+      width: _sidePanelWidth,
+      padding: const EdgeInsets.only(
+        top: 16,
+        left: 6,
+        right: 6,
+      ),
       decoration: BoxDecoration(
         color: Get.isDarkMode
             ? AppTheme.appDarkTheme.scaffoldBackgroundColor
@@ -820,8 +818,8 @@ class _SidePanelState extends State<SidePanel>
           right: BorderSide(
               width: 1.0,
               color: Get.isDarkMode
-                  ? AppTheme.appDarkTheme.dividerColor
-                  : AppTheme.appTheme.dividerColor),
+                  ? AppTheme.appDarkTheme.colorScheme.outline
+                  : AppTheme.appTheme.colorScheme.outline),
         ),
       ),
       child: Column(
@@ -830,168 +828,133 @@ class _SidePanelState extends State<SidePanel>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 16, left: 12, right: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      AppIconButton(
-                        size: ButtonSize.big,
-                        svgIconPath: 'arrow-left',
-                        onPressed: Get.back,
-                      ),
-                      Row(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                  '${widget.client.surname} ${widget.client.name}',
-                                  style: Get.isDarkMode
-                                      ? AppTheme
-                                          .appDarkTheme.textTheme.headline5
-                                      : AppTheme.appTheme.textTheme.headline5),
-                              Text(
-                                  allClientSessions.length != 1
-                                      ? '${allClientSessions.length} sessions'
-                                      : '${allClientSessions.length} session',
-                                  style: Get.isDarkMode
-                                      ? AppTheme
-                                          .appDarkTheme.textTheme.headline5
-                                          ?.copyWith(color: Color(0xff878787))
-                                      : AppTheme.appTheme.textTheme.headline5
-                                          ?.copyWith(color: Color(0xff7a7575))),
-                            ],
-                          ),
-                          const SizedBox(width: 12),
-                          ContactCircleAvatar(
-                            radius: 27,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    AppIconButton(
+                      size: ButtonSize.big,
+                      svgIconPath: 'arrow-left',
+                      onPressed: Get.back,
+                    ),
+                    SizedBox(width: 6),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Client's Journal",
+                            textAlign: TextAlign.left,
+                            style: Get.isDarkMode
+                                ? AppTheme.appDarkTheme.textTheme.headline2
+                                : AppTheme.appTheme.textTheme.headline2),
+                        SizedBox(
+                          child: Text(
+                              '${widget.client.surname} ${widget.client.name} ${widget.client.patronymic}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              softWrap: false,
+                              textAlign: TextAlign.right,
+                              style: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.textTheme.overline
+                                  : AppTheme.appTheme.textTheme.overline),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.only(left: 8, right: 8, top: 16),
-            width: sidePanelWidth,
-            child: Row(
-              children: [
-                PopupMenuButton(
-                    initialValue: selectedBodyRegion,
-                    onSelected: (int value) async {
-                      selectedBodyRegion = value;
-                      await _getClientSessionsByBodyRegionIdDBAsync(
-                          bodyRegionId: value);
-                      setState(() {});
-                    },
-                    constraints: BoxConstraints(minWidth: 200),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(20.0),
-                        topRight: Radius.circular(20.0),
-                        bottomRight: Radius.circular(20.0),
+                SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      flex: 1,
+                      child: AppTextFieldSearch(
+                        textEditingController: _textEditingController,
+                        hintText: _allClientSessions.length == 1
+                            ? '${_allClientSessions.length} session'
+                            : '${_allClientSessions.length} sessions',
+                        onCancelButtonPressed: () {
+                          if (_textEditingController.text != '') {
+                            _searchedClientSessions.clear();
+                            _textEditingController.text = '';
+                            FocusManager.instance.primaryFocus?.unfocus();
+                          } else {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                          }
+                          setState(() {});
+                        },
                       ),
                     ),
-                    elevation: 0.2,
-                    color: Get.isDarkMode
-                        ? AppTheme.appDarkTheme.colorScheme.surface
-                        : AppTheme.appTheme.colorScheme.surface,
-                    position: PopupMenuPosition.under,
-                    offset: Offset(24, 4),
-                    // offset: Offset(48, -10),
-                    splashRadius: 46,
-                    icon: Icon(
-                      Icons.filter_list,
-                      size: 32,
-                      color: Get.isDarkMode
-                          ? AppTheme.appDarkTheme.colorScheme.shadow
-                          : AppTheme.appTheme.colorScheme.shadow,
-                    ),
-                    itemBuilder: (context) => [
-                          for (var bodyRegion in allBodyRegions)
-                            PopupMenuItem(
-                              value: bodyRegion.id,
-                              child: Row(
-                                children: [
-                                  // CircleAvatar(
-                                  //   backgroundColor:
-                                  //       Colors.black.withOpacity(0.05),
-                                  //   radius: 22,
-                                  //   child: Align(
-                                  //     alignment: Alignment.center,
-                                  //     child: Icon(Icons.dark_mode,
-                                  //         size: 22, color: Color(0xffffffff)),
-                                  //   ),
-                                  // ),
-                                  const SizedBox(width: 10),
-                                  Text(bodyRegion.name,
+                    PopupMenuButton(
+                        initialValue: selectedBodyRegion,
+                        onSelected: (int value) async {
+                          selectedBodyRegion = value;
+                          await _getClientSessionsByBodyRegionIdDBAsync(
+                              bodyRegionId: value);
+                          setState(() {});
+                        },
+                        constraints: BoxConstraints(minWidth: 200),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(20.0),
+                            topRight: Radius.circular(20.0),
+                            bottomRight: Radius.circular(20.0),
+                          ),
+                        ),
+                        elevation: 0.2,
+                        color: Get.isDarkMode
+                            ? AppTheme.appDarkTheme.colorScheme.surface
+                            : AppTheme.appTheme.colorScheme.surface,
+                        position: PopupMenuPosition.under,
+                        offset: Offset(24, 4),
+                        splashRadius: 46,
+                        icon: AppIconButton(
+                          size: ButtonSize.medium,
+                          svgIconPath: 'filter',
+                        ),
+                        itemBuilder: (context) => [
+                              for (var bodyRegion in allBodyRegions)
+                                PopupMenuItem(
+                                  value: bodyRegion.id,
+                                  child: Text(bodyRegion.name,
                                       style: Get.isDarkMode
                                           ? AppTheme
                                               .appDarkTheme.textTheme.bodyText1
                                           : AppTheme
                                               .appTheme.textTheme.bodyText1),
-                                ],
-                              ),
-                            ),
-                        ]),
-                Flexible(
-                  flex: 1,
-                  child: AppTextFieldSearch(
-                    textEditingController: _textEditingController,
-                    hintText: 'Search session',
-                    onCancelButtonPressed: () {
-                      if (_textEditingController.text != '') {
-                        searchedClientSessions.clear();
-                        _textEditingController.text = '';
-                        FocusManager.instance.primaryFocus?.unfocus();
-                      } else {
-                        FocusManager.instance.primaryFocus?.unfocus();
-                      }
-                      setState(() {});
-                    },
-                  ),
+                                ),
+                            ]),
+                  ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: AppIconButton(
-                    onPressed: () =>
-                        Get.to(() => SessionSetupScreen(client: widget.client)),
-                    svgIconPath: 'activity',
-                    size: ButtonSize.small,
-                    backgroundColor: Get.isDarkMode
-                        ? AppTheme.appDarkTheme.colorScheme.primary
-                            .withAlpha(200)
-                        : AppTheme.appTheme.colorScheme.primary.withAlpha(200),
-                    iconColor: Colors.white,
-                  ),
-                )
               ],
             ),
           ),
-          if (allClientSessions.isEmpty)
+          if (_allClientSessions.isEmpty)
             EmptyJournal(
                 widget: widget, selectedBodyRegion: selectedBodyRegion),
-          if (allClientSessions.isNotEmpty)
+          if (_allClientSessions.isNotEmpty)
             Expanded(
               child: Container(
                   padding: const EdgeInsets.fromLTRB(6, 0, 6, 0),
                   child: ListView(
                     scrollDirection: Axis.vertical,
                     children: [
+                      SizedBox(height: 8),
+                      AppIconButton(
+                        onPressed: () => Get.to(
+                          () => SessionSetupScreen(client: widget.client),
+                        ),
+                        svgIconPath: 'activity',
+                        text: 'Start new session',
+                      ),
                       DataTable(
                         showCheckboxColumn: false,
-                        horizontalMargin: 10,
-                        dataRowHeight: 70,
+                        horizontalMargin: 6,
+                        dataRowHeight: 60,
                         sortColumnIndex: sortColumnIndex,
                         sortAscending: isAscending,
                         columns: [
                           DataColumn(
-                            tooltip: 'Date when client was registered',
+                            tooltip: 'Date when session was created',
                             label: Text('Date',
                                 style: Get.isDarkMode
                                     ? AppTheme.appDarkTheme.textTheme.headline5
@@ -999,7 +962,7 @@ class _SidePanelState extends State<SidePanel>
                             onSort: onSort,
                           ),
                           DataColumn(
-                            tooltip: "Client's full name",
+                            tooltip: "Session's Title",
                             label: Text('Title',
                                 style: Get.isDarkMode
                                     ? AppTheme.appDarkTheme.textTheme.headline5
@@ -1007,8 +970,8 @@ class _SidePanelState extends State<SidePanel>
                           ),
                         ],
                         rows: _textEditingController.text.isNotEmpty
-                            ? getRowsAllSessions(searchedClientSessions)
-                            : getRowsAllSessions(allClientSessions),
+                            ? getRowsAllSessions(_searchedClientSessions)
+                            : getRowsAllSessions(_allClientSessions),
                       ),
                     ],
                   )),
@@ -1027,19 +990,19 @@ class _SidePanelState extends State<SidePanel>
   Future<void> _getClientSessionsByBodyRegionIdDBAsync(
       {required int bodyRegionId}) async {
     if (selectedBodyRegion == Constants.allBodyRegions) {
-      allClientSessions =
+      _allClientSessions =
           await SessionOperations().getAllSessionsByClientID(widget.client);
     } else {
-      allClientSessions = await SessionOperations()
+      _allClientSessions = await SessionOperations()
           .getAllSessionsByClientIDAndBodyRegionId(
               client: widget.client, bodyRegionId: selectedBodyRegion);
     }
-    if (allClientSessions.isNotEmpty && selectedSession == null) {
-      selectedSession = allClientSessions.last;
+    if (_allClientSessions.isNotEmpty && selectedSession == null) {
+      selectedSession = _allClientSessions.last;
       widget.notifyParentSessionSelected(selectedSession!);
     }
-    if (allClientSessions.isNotEmpty) {
-      allClientSessions.sort(
+    if (_allClientSessions.isNotEmpty) {
+      _allClientSessions.sort(
         (a, b) => b.startedAt.compareTo(a.startedAt),
       );
     }
@@ -1058,78 +1021,47 @@ class EmptyJournal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints.expand(height: 240),
-      decoration: BoxDecoration(
-        color: Get.isDarkMode
-            ? Colors.white.withOpacity(0.05)
-            : Colors.black.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      margin: const EdgeInsets.fromLTRB(8, 32, 8, 8),
-      padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
-      child: Column(
-        children: [
-          if (selectedBodyRegion != null && selectedBodyRegion == 0)
-            AppHeaderInfo(
-              title: 'The Journal is empty',
-              labelPrimary:
-                  'Start a new session with ${widget.client.name} by pressing the button below',
+    {
+      return Expanded(
+          child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Builder(builder: (context) {
+              if (selectedBodyRegion != null && selectedBodyRegion == 0) {
+                return AppHeaderInfo(
+                  title: 'Empty Journal',
+                  labelPrimary: "You haven't recorded any session",
+                );
+              } else if (selectedBodyRegion != null &&
+                  selectedBodyRegion != 0) {
+                return AppHeaderInfo(
+                  title: 'Empty',
+                  labelPrimary:
+                      'Any session recorded for ${idToBodyRegionString(bodyRegionId: selectedBodyRegion!)} muscles',
+                );
+              }
+              return SizedBox();
+            }),
+            SizedBox(
+              width: 180,
+              // height: 220,
+              child: SvgPicture.asset(
+                'assets/illustrations/empty.svg',
+                width: 180,
+              ),
             ),
-          if (selectedBodyRegion != null && selectedBodyRegion != 0)
-            AppHeaderInfo(
-              title: 'No sessions',
-              labelPrimary:
-                  'Any session recorded for ${idToBodyRegionString(bodyRegionId: selectedBodyRegion!)} muscles',
-              labelSecondary: 'Start a new session by pressing on the button',
-            ),
-          Spacer(),
-          AppBottom(
+            SizedBox(height: 24),
+            AppIconButton(
               onPressed: () => Get.to(
-                    () => SessionSetupScreen(client: widget.client),
-                  ),
-              mainText: 'Start new Session')
-        ],
-      ),
-    );
+                () => SessionSetupScreen(client: widget.client),
+              ),
+              svgIconPath: 'activity',
+              text: 'Start new session',
+            ),
+          ],
+        ),
+      ));
+    }
   }
 }
-
-// Number of sessions
-//            Padding(
-//   padding:
-//       const EdgeInsets.only(left: 12, right: 12, bottom: 8, top: 8),
-//   child: Row(
-//     children: [
-//       RichText(
-//         text: TextSpan(
-//           style: Get.isDarkMode
-//               ? AppTheme.appDarkTheme.textTheme.headline3
-//                   ?.copyWith(color: Colors.white)
-//               : AppTheme.appTheme.textTheme.headline3,
-//           children: <TextSpan>[
-//             const TextSpan(text: 'Sessions '),
-//             TextSpan(
-//                 text: '16',
-//                 style: Get.isDarkMode
-//                     ? AppTheme.appDarkTheme.textTheme.headline3
-//                         ?.copyWith(
-//                         shadows: [
-//                           Shadow(
-//                               color: Colors.white,
-//                               offset: Offset(0, -2))
-//                         ],
-//                         color: Colors.transparent,
-//                         decorationThickness: 2,
-//                         decoration: TextDecoration.underline,
-//                         decorationColor: Color(0xffe40031),
-//                       )
-//                     : AppTheme.appTheme.textTheme.headline3
-//                         ?.copyWith(color: Color(0xffe40031))),
-//           ],
-//         ),
-//       ),
-//     ],
-//   ),
-// ),
-
