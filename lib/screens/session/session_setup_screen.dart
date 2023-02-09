@@ -13,6 +13,7 @@ import 'package:neuro_sdk_isolate_example/database/body_region_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/placement_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
+import 'package:neuro_sdk_isolate_example/screens/sensor_registration/search_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/session/session_monitor_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/controllers/search_controller.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
@@ -262,7 +263,7 @@ class SidePanelWorkoutSetup extends StatefulWidget {
 }
 
 class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
-  double sidebarWidth = 310;
+  double _sidePanelWidth = 320;
   bool _isLoading = true;
 
   final SearchController _searchController = SearchController();
@@ -323,7 +324,7 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
 
     return Container(
       height: MediaQuery.of(context).size.height,
-      width: sidebarWidth,
+      width: _sidePanelWidth,
       decoration: BoxDecoration(
         color: Get.isDarkMode
             ? AppTheme.appDarkTheme.scaffoldBackgroundColor
@@ -346,7 +347,7 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                   padding: const EdgeInsets.only(top: 16, left: 12, right: 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppIconButton(
                         size: ButtonSize.big,
@@ -362,244 +363,279 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                           Get.back();
                         },
                       ),
-                      Row(
+                      SizedBox(width: 6),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              SizedBox(
-                                width: 160,
-                                child: Text(
-                                    '${widget.client.surname} ${widget.client.name}',
-                                    maxLines: 2,
-                                    textAlign: TextAlign.right,
-                                    style: Get.isDarkMode
-                                        ? AppTheme
-                                            .appDarkTheme.textTheme.headline5
-                                        : AppTheme
-                                            .appTheme.textTheme.headline5),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                  DateFormat.Md()
-                                      .add_jm()
-                                      .format(DateTime.now()),
-                                  style: Get.isDarkMode
-                                      ? AppTheme
-                                          .appDarkTheme.textTheme.headline5
-                                          ?.copyWith(color: Color(0xff878787))
-                                      : AppTheme.appTheme.textTheme.headline5
-                                          ?.copyWith(color: Color(0xff7a7575))),
-                            ],
+                          Text('New Session',
+                              maxLines: 2,
+                              textAlign: TextAlign.right,
+                              style: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.textTheme.headline2
+                                  : AppTheme.appTheme.textTheme.headline2),
+                          SizedBox(
+                            width: _sidePanelWidth - 76 - 6,
+                            child: Text(
+                                '${widget.client.surname} ${widget.client.name} ${widget.client.patronymic}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                softWrap: false,
+                                style: Get.isDarkMode
+                                    ? AppTheme.appDarkTheme.textTheme.overline
+                                    : AppTheme.appTheme.textTheme.overline),
                           ),
-                          const SizedBox(width: 12),
-                          ContactCircleAvatar(
-                            radius: 27,
-                          ),
+                          SizedBox(height: 2),
+                          Text(
+                              DateFormat.yMMMd()
+                                  .add_jm()
+                                  .format(DateTime.now()),
+                              style: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.textTheme.caption
+                                      ?.copyWith(color: Color(0xff878787))
+                                  : AppTheme.appTheme.textTheme.caption
+                                      ?.copyWith(color: Color(0xff7a7575))),
                         ],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                Builder(
-                  builder: (context) {
-                    if (_controllerWorkoutSetup
-                        .allConnectedSensorsUsedInSession.value.isNotEmpty) {
+                const SizedBox(height: 24),
+                if (_allRegisteredSensors.isEmpty)
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      AppHeaderInfo(
+                        title: 'No sensors registered',
+                        labelPrimary:
+                            "Add your Callibri sensors to start a session",
+                      ),
+                      Container(
+                        width: 220,
+                        height: 180,
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage(
+                                'assets/images/devices_turned_on.png'),
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 24),
+                      AppIconButton(
+                        onPressed: () => Get.to(() => SearchScreen()),
+                        backgroundColor:
+                            Theme.of(context).colorScheme.secondary,
+                        svgIconPath: 'sensor',
+                        text: 'Add sensors',
+                      ),
+                    ],
+                  ),
+                if (_allRegisteredSensors.isNotEmpty)
+                  Builder(
+                    builder: (context) {
+                      if (_controllerWorkoutSetup
+                          .allConnectedSensorsUsedInSession.value.isNotEmpty) {
+                        return AppHeaderInfo(
+                          title: _controllerWorkoutSetup
+                                      .allConnectedSensorsUsedInSession
+                                      .length ==
+                                  1
+                              ? 'Connected to ${_controllerWorkoutSetup.allConnectedSensorsUsedInSession.length} sensor'
+                              : 'Connected to ${_controllerWorkoutSetup.allConnectedSensorsUsedInSession.length} sensors',
+                        );
+                      }
+                      if (_allRegisteredAndFoundSensors.isNotEmpty) {
+                        return AppHeaderInfo(
+                            title: _allRegisteredAndFoundSensors.length == 1
+                                ? 'Connecting to ${_allRegisteredAndFoundSensors.length} sensor'
+                                : 'Connecting to ${_allRegisteredAndFoundSensors.length} sensors',
+                            labelPrimary:
+                                'Turn on the sensors you want to use');
+                      }
                       return AppHeaderInfo(
-                        title: _controllerWorkoutSetup
-                                    .allConnectedSensorsUsedInSession.length ==
-                                1
-                            ? 'Connected to ${_controllerWorkoutSetup.allConnectedSensorsUsedInSession.length} sensor'
-                            : 'Connected to ${_controllerWorkoutSetup.allConnectedSensorsUsedInSession.length} sensors',
-                      );
-                    }
-                    if (_allRegisteredAndFoundSensors.isNotEmpty) {
-                      return AppHeaderInfo(
-                          title: _allRegisteredAndFoundSensors.length == 1
-                              ? 'Connecting to ${_allRegisteredAndFoundSensors.length} sensor'
-                              : 'Connecting to ${_allRegisteredAndFoundSensors.length} sensors',
-                          labelPrimary: 'Turn on the sensors you want to use');
-                    }
-                    return AppHeaderInfo(
-                        title: _allRegisteredAndFoundSensors.isEmpty
-                            ? 'Connect to your Sensors'
-                            : 'Found ${_allRegisteredAndFoundSensors.length} Sensors',
-                        labelPrimary: 'Turn on the sensors you want to use');
-                  },
-                ),
+                          title: _allRegisteredAndFoundSensors.isEmpty
+                              ? 'Turn on your sensors'
+                              : 'Found ${_allRegisteredAndFoundSensors.length} Sensors',
+                          labelPrimary:
+                              'Connect to your registered Callibri sensors');
+                    },
+                  ),
                 if (_controllerWorkoutSetup
                     .allConnectedSensorsUsedInSession.isNotEmpty)
-                  SizedBox(height: 12),
-                Container(
-                  width: sidebarWidth,
-                  child: Column(
-                    children: [
-                      for (int i = 0;
-                          i <
-                              _controllerWorkoutSetup
-                                  .allConnectedSensorsUsedInSession.length;
-                          i++)
-                        Container(
-                          height: 80,
-                          width: sidebarWidth,
-                          decoration: BoxDecoration(
-                            color: _controllerWorkoutSetup
-                                    .allConnectedSensorsUsedInSession[i]
-                                    .isSelectedToAssignPlacement
-                                ? Get.isDarkMode
-                                    ? Colors.white.withOpacity(0.1)
-                                    : Colors.black.withOpacity(0.1)
-                                : Colors.transparent,
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                var listConnectedSensorsUsedInSession =
-                                    _controllerWorkoutSetup
-                                        .allConnectedSensorsUsedInSession;
-                                // Unselects all sensors
-                                for (var sensor
-                                    in listConnectedSensorsUsedInSession
-                                        .value) {
-                                  sensor.isSelectedToAssignPlacement = false;
-                                }
-                                //selects the chosen sensor
-                                listConnectedSensorsUsedInSession[i]
-                                    .isSelectedToAssignPlacement = true;
+                  Container(
+                    width: _sidePanelWidth,
+                    child: Column(
+                      children: [
+                        for (int i = 0;
+                            i <
+                                _controllerWorkoutSetup
+                                    .allConnectedSensorsUsedInSession.length;
+                            i++)
+                          Container(
+                            height: 80,
+                            width: _sidePanelWidth,
+                            decoration: BoxDecoration(
+                              color: _controllerWorkoutSetup
+                                      .allConnectedSensorsUsedInSession[i]
+                                      .isSelectedToAssignPlacement
+                                  ? Get.isDarkMode
+                                      ? Colors.white.withOpacity(0.1)
+                                      : Colors.black.withOpacity(0.1)
+                                  : Colors.transparent,
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  var listConnectedSensorsUsedInSession =
+                                      _controllerWorkoutSetup
+                                          .allConnectedSensorsUsedInSession;
+                                  // Unselects all sensors
+                                  for (var sensor
+                                      in listConnectedSensorsUsedInSession
+                                          .value) {
+                                    sensor.isSelectedToAssignPlacement = false;
+                                  }
+                                  //selects the chosen sensor
+                                  listConnectedSensorsUsedInSession[i]
+                                      .isSelectedToAssignPlacement = true;
 
-                                _controllerWorkoutSetup.selectedSensor =
-                                    listConnectedSensorsUsedInSession[i];
-                                setState(() {});
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                    right: 12, left: 12, top: 8, bottom: 8),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
-                                      children: [
-                                        CircleAvatar(
-                                          backgroundColor: _controllerWorkoutSetup
-                                                  .allConnectedSensorsUsedInSession[
-                                                      i]
-                                                  .isSelectedToAssignPlacement
-                                              ? Colors.white
-                                              : Colors.transparent,
-                                          radius: 22,
-                                          child: CircleAvatar(
-                                            backgroundColor: Get.isDarkMode
-                                                ? Colors.white.withOpacity(0.1)
-                                                : Colors.black.withOpacity(0.1),
-                                            child: SvgPicture.asset(
-                                                'assets/icons/callibri_device-${_controllerWorkoutSetup.allConnectedSensorsUsedInSession[i].color}.svg',
-                                                width: 16,
-                                                semanticsLabel: 'Battery'),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        AppBatteryIndicator(
-                                            batteryLevel: _controllerWorkoutSetup
-                                                .allConnectedSensorsUsedInSession[
-                                                    i]
-                                                .battery!,
-                                            appBatteryIndicatorLabelPosition:
-                                                AppBatteryIndicatorLabelPosition
-                                                    .inside)
-                                      ],
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                  _controllerWorkoutSetup.selectedSensor =
+                                      listConnectedSensorsUsedInSession[i];
+                                  setState(() {});
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      right: 12, left: 12, top: 8, bottom: 8),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Column(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                            MainAxisAlignment.spaceAround,
                                         children: [
-                                          Text(
-                                            _controllerWorkoutSetup
-                                                        .allConnectedSensorsUsedInSession[
-                                                            i]
-                                                        .placement ==
-                                                    null
-                                                ? 'Not assigned'
-                                                : idToBodyRegionString(
-                                                    bodyRegionId:
-                                                        _controllerWorkoutSetup
-                                                            .allConnectedSensorsUsedInSession[
-                                                                i]
-                                                            .placement!
-                                                            .bodyRegionId),
-                                            style: Get.isDarkMode
-                                                ? AppTheme.appDarkTheme
-                                                    .textTheme.caption
-                                                    ?.copyWith(
-                                                        color: const Color(
-                                                            0xff878787))
-                                                : AppTheme
-                                                    .appTheme.textTheme.caption
-                                                    ?.copyWith(
-                                                    color:
-                                                        const Color(0xff444547),
-                                                  ),
+                                          CircleAvatar(
+                                            backgroundColor: _controllerWorkoutSetup
+                                                    .allConnectedSensorsUsedInSession[
+                                                        i]
+                                                    .isSelectedToAssignPlacement
+                                                ? Colors.white
+                                                : Colors.transparent,
+                                            radius: 22,
+                                            child: CircleAvatar(
+                                              backgroundColor: Get.isDarkMode
+                                                  ? Colors.white
+                                                      .withOpacity(0.1)
+                                                  : Colors.black
+                                                      .withOpacity(0.1),
+                                              child: SvgPicture.asset(
+                                                  'assets/icons/callibri_device-${_controllerWorkoutSetup.allConnectedSensorsUsedInSession[i].color}.svg',
+                                                  width: 16,
+                                                  semanticsLabel: 'Battery'),
+                                            ),
                                           ),
                                           const SizedBox(height: 2),
-                                          Text(
+                                          AppBatteryIndicator(
+                                              batteryLevel: _controllerWorkoutSetup
+                                                  .allConnectedSensorsUsedInSession[
+                                                      i]
+                                                  .battery!,
+                                              appBatteryIndicatorLabelPosition:
+                                                  AppBatteryIndicatorLabelPosition
+                                                      .inside)
+                                        ],
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
                                               _controllerWorkoutSetup
                                                           .allConnectedSensorsUsedInSession[
                                                               i]
                                                           .placement ==
                                                       null
                                                   ? 'Not assigned'
-                                                  : _controllerWorkoutSetup
+                                                  : idToBodyRegionString(
+                                                      bodyRegionId:
+                                                          _controllerWorkoutSetup
+                                                              .allConnectedSensorsUsedInSession[
+                                                                  i]
+                                                              .placement!
+                                                              .bodyRegionId),
+                                              style: Get.isDarkMode
+                                                  ? AppTheme.appDarkTheme
+                                                      .textTheme.caption
+                                                      ?.copyWith(
+                                                          color: const Color(
+                                                              0xff878787))
+                                                  : AppTheme.appTheme.textTheme
+                                                      .caption
+                                                      ?.copyWith(
+                                                      color: const Color(
+                                                          0xff444547),
+                                                    ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                                _controllerWorkoutSetup
+                                                            .allConnectedSensorsUsedInSession[
+                                                                i]
+                                                            .placement ==
+                                                        null
+                                                    ? 'Not assigned'
+                                                    : _controllerWorkoutSetup
+                                                        .allConnectedSensorsUsedInSession[
+                                                            i]
+                                                        .placement!
+                                                        .muscleName,
+                                                style: Get.isDarkMode
+                                                    ? AppTheme.appDarkTheme
+                                                        .textTheme.bodyText1
+                                                    : AppTheme.appTheme
+                                                        .textTheme.bodyText1),
+                                            const SizedBox(height: 2),
+                                            if (_controllerWorkoutSetup
+                                                    .allConnectedSensorsUsedInSession[
+                                                        i]
+                                                    .placement
+                                                    ?.side !=
+                                                null)
+                                              AppMuscleSideIndicator(
+                                                  side: _controllerWorkoutSetup
                                                       .allConnectedSensorsUsedInSession[
                                                           i]
                                                       .placement!
-                                                      .muscleName,
-                                              style: Get.isDarkMode
-                                                  ? AppTheme.appDarkTheme
-                                                      .textTheme.bodyText1
-                                                  : AppTheme.appTheme.textTheme
-                                                      .bodyText1),
-                                          const SizedBox(height: 2),
-                                          if (_controllerWorkoutSetup
-                                                  .allConnectedSensorsUsedInSession[
-                                                      i]
-                                                  .placement
-                                                  ?.side !=
-                                              null)
-                                            AppMuscleSideIndicator(
-                                                side: _controllerWorkoutSetup
-                                                    .allConnectedSensorsUsedInSession[
-                                                        i]
-                                                    .placement!
-                                                    .side!)
-                                        ],
+                                                      .side!)
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    AppIconButton(
-                                      svgIconPath: 'trash',
-                                      onPressed: () {
-                                        _controllerWorkoutSetup
-                                            .allConnectedSensorsUsedInSession[i]
-                                            .placement = null;
+                                      AppIconButton(
+                                        svgIconPath: 'trash',
+                                        onPressed: () {
+                                          _controllerWorkoutSetup
+                                              .allConnectedSensorsUsedInSession[
+                                                  i]
+                                              .placement = null;
 
-                                        setState(() {});
-                                      },
-                                    ),
-                                  ],
+                                          setState(() {});
+                                        },
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
+
                 // - Start searching button
                 if (_isLoading)
                   Center(
@@ -607,25 +643,35 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                   ),
                 if (!_isLoading &&
                     _controllerWorkoutSetup
-                        .allConnectedSensorsUsedInSession.isEmpty)
-                  AppBottom(
-                      onPressed: () async {
-                        setState(() {
-                          _isLoading = true;
-                        });
-                        _searchController.startScanner();
-                        await Future.delayed(Duration(seconds: 2));
-                        _searchController.stopScanner();
-                        _searchController.startScanner();
-                        await Future.delayed(Duration(seconds: 4));
-                        _searchController.stopScanner();
-                        _searchController.startScanner();
-                        await Future.delayed(Duration(seconds: 6));
-                        _searchController.stopScanner();
+                        .allConnectedSensorsUsedInSession.isEmpty &&
+                    _allRegisteredSensors.isNotEmpty)
+                  Column(
+                    children: [
+                      SvgPicture.asset(
+                        'assets/illustrations/turn-on.svg',
+                        height: 180,
+                      ),
+                      SizedBox(height: 16),
+                      AppBottom(
+                          onPressed: () async {
+                            setState(() {
+                              _isLoading = true;
+                            });
+                            _searchController.startScanner();
+                            await Future.delayed(Duration(seconds: 2));
+                            _searchController.stopScanner();
+                            _searchController.startScanner();
+                            await Future.delayed(Duration(seconds: 4));
+                            _searchController.stopScanner();
+                            _searchController.startScanner();
+                            await Future.delayed(Duration(seconds: 6));
+                            _searchController.stopScanner();
 
-                        _initRegisteredSensorsDBAsync();
-                      },
-                      mainText: 'Start Searching'),
+                            _initRegisteredSensorsDBAsync();
+                          },
+                          mainText: 'Start Searching'),
+                    ],
+                  ),
                 if (!_isLoading &&
                     _controllerWorkoutSetup
                         .allConnectedSensorsUsedInSession.isNotEmpty)
