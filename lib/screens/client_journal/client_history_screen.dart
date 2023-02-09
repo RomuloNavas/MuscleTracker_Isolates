@@ -123,7 +123,6 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
     String? side,
   }) {
     return Container(
-      margin: const EdgeInsets.all(6),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Get.isDarkMode
@@ -213,13 +212,6 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            '${widget.client.surname} ${widget.client.name} ${widget.client.patronymic}',
-                            style: Get.isDarkMode
-                                ? AppTheme.appDarkTheme.textTheme.headline1
-                                : AppTheme.appTheme.textTheme.headline1,
-                          ),
-                          SizedBox(height: 36),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -278,10 +270,10 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 24),
+                          SizedBox(height: 20),
                           Text(
                             selectedSession!.name.isNotEmpty
-                                ? 'Title: ${selectedSession!.name.toCapitalized()}'
+                                ? selectedSession!.name.toCapitalized()
                                 : 'Unnamed Session',
                             style: Get.isDarkMode
                                 ? AppTheme.appDarkTheme.textTheme.headline2
@@ -291,12 +283,11 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                             Padding(
                               padding: const EdgeInsets.only(top: 12),
                               child: Text(
-                                  'Description: ${selectedSession!.description.toCapitalized()}',
+                                  selectedSession!.description.toCapitalized(),
                                   style: Get.isDarkMode
                                       ? AppTheme.appDarkTheme.textTheme.caption
                                       : AppTheme.appTheme.textTheme.caption),
                             ),
-                          const SizedBox(height: 48),
                           Column(
                             children: [
                               Align(
@@ -304,30 +295,9 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        Text("• ",
-                                            style: AppTheme.appDarkTheme
-                                                .textTheme.headline1
-                                                ?.copyWith(
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .secondary)),
-                                        Expanded(
-                                          child: Text('Used sensors',
-                                              style: Get.isDarkMode
-                                                  ? AppTheme.appDarkTheme
-                                                      .textTheme.headline4
-                                                      ?.copyWith(
-                                                          color: Colors.white)
-                                                  : AppTheme.appTheme.textTheme
-                                                      .headline4),
-                                        ),
-                                      ],
+                                    AppResultsSectionHeader(
+                                      text: 'Used sensors',
                                     ),
-                                    const SizedBox(height: 16),
                                     if (allWorkoutReports.isNotEmpty)
                                       // - USED SENSORS
                                       FutureBuilder(
@@ -340,6 +310,8 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                                     ConnectionState.done &&
                                                 snapshot.hasData) {
                                               return Wrap(
+                                                runSpacing: 12,
+                                                spacing: 12,
                                                 children: [
                                                   for (var sensor
                                                       in snapshot.data!)
@@ -357,30 +329,8 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                               return Text('no data');
                                             }
                                           }),
-                                    const SizedBox(height: 48),
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        Text("• ",
-                                            style: AppTheme.appDarkTheme
-                                                .textTheme.headline1
-                                                ?.copyWith(
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .secondary)),
-                                        Expanded(
-                                          child: Text(
-                                              'Muscles activity comparison',
-                                              style: Get.isDarkMode
-                                                  ? AppTheme.appDarkTheme
-                                                      .textTheme.headline4
-                                                      ?.copyWith(
-                                                          color: Colors.white)
-                                                  : AppTheme.appTheme.textTheme
-                                                      .headline4),
-                                        ),
-                                      ],
+                                    AppResultsSectionHeader(
+                                      text: 'Muscles activity comparison',
                                     ),
                                   ],
                                 ),
@@ -400,8 +350,8 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                     for (var usedSensor
                                         in snapshotSensorReport.data!) {
                                       column.add(Container(
-                                        margin: const EdgeInsets.only(
-                                            bottom: 12, top: 24),
+                                        margin:
+                                            const EdgeInsets.only(bottom: 20),
                                         padding:
                                             EdgeInsets.fromLTRB(6, 12, 6, 12),
                                         decoration: BoxDecoration(
@@ -675,6 +625,36 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
       allUsedSensors = listUsedSensors;
       return listUsedSensors;
     }
+  }
+}
+
+class AppResultsSectionHeader extends StatelessWidget {
+  const AppResultsSectionHeader({
+    required this.text,
+    Key? key,
+  }) : super(key: key);
+
+  final String text;
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16, top: 32),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Text("• ",
+              style: AppTheme.appDarkTheme.textTheme.headline1
+                  ?.copyWith(color: Theme.of(context).colorScheme.secondary)),
+          Expanded(
+            child: Text(text,
+                style: Get.isDarkMode
+                    ? AppTheme.appDarkTheme.textTheme.headline4
+                        ?.copyWith(color: Colors.white)
+                    : AppTheme.appTheme.textTheme.headline4),
+          ),
+        ],
+      ),
+    );
   }
 }
 
