@@ -66,28 +66,133 @@ class ClientHistoryScreen extends StatefulWidget {
 }
 
 class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
-  final GetxControllerServices servicesManager =
-      Get.put(GetxControllerServices());
-
   List<Client> allRegisteredClients = [];
+
+  final _sidePanelWidth = 320.0;
+  // Data table variables
   int sortColumnIndex = 0;
   bool isAscending = true;
 
-  List<Client> searchedClients = [];
+  late TextEditingController _textEditingController;
+
   Session? selectedSession;
+  int selectedBodyRegion = Constants.allBodyRegions;
+  // Async load data on init:
+  List<Session> _searchedClientSessions = [];
+  List<Session> _allClientSessions = [];
+  List<BodyRegion> allBodyRegions = [];
+
+  List<Client> searchedClients = [];
   List<WorkoutReport> allWorkoutReports = [];
   List<UsedSensorResults> allUsedSensors = [];
 
+  late Future initAllSessions;
+  late Future initBodyRegions;
   late Future initCurrentSelectedSession;
   late Future initUsedSensors;
-
   @override
   void initState() {
     super.initState();
-    servicesManager.requestBluetoothAndGPS();
-
+    initAllSessions = _getClientSessionsByBodyRegionIdDBAsync(bodyRegionId: 0);
+    initBodyRegions = _getAllBodyRegionsDBAsync();
     initCurrentSelectedSession = getWorkoutReportFromSelectedSession();
     initUsedSensors = getUsedSensors();
+    // Text Field for Session Searching
+    _textEditingController = TextEditingController();
+    _textEditingController.addListener(() {
+      filterSessions();
+    });
+  }
+
+  filterSessions() {
+    List<Session>? sessions = [];
+    if (_textEditingController.text.isNotEmpty) {
+      sessions.addAll(_allClientSessions.toList());
+      sessions.retainWhere((Session s) {
+        String searchTerm = _textEditingController.text.toLowerCase();
+
+        String title = s.name.toLowerCase();
+
+        return title.contains(searchTerm);
+      });
+      _searchedClientSessions.clear();
+      _searchedClientSessions.addAll(sessions);
+      log(_searchedClientSessions.length.toString());
+
+      setState(() {});
+    }
+  }
+
+  int compareString(bool ascending, String value1, String value2) {
+    return ascending ? value1.compareTo(value2) : value2.compareTo(value1);
+  }
+
+  void onSort(int columnIndex, bool ascending) {
+    log('sorted');
+    if (columnIndex == 0) {
+      _allClientSessions.sort((value1, value2) =>
+          compareString(ascending, value1.startedAt, value2.startedAt));
+    }
+    setState(() {
+      sortColumnIndex = columnIndex;
+      isAscending = ascending;
+    });
+  }
+
+  List<DataRow> getRowsAllSessions(List<Session> sessions) {
+    return sessions
+        .map((Session session) => DataRow(
+              color: MaterialStateColor.resolveWith(
+                (states) {
+                  if (states.isNotEmpty) {
+                    return Get.isDarkMode
+                        ? AppTheme.appDarkTheme.colorScheme.surfaceVariant
+                        : AppTheme.appTheme.colorScheme.surfaceVariant;
+                  } else {
+                    return Get.isDarkMode
+                        ? AppTheme.appDarkTheme.scaffoldBackgroundColor
+                        : AppTheme.appTheme.scaffoldBackgroundColor;
+                  }
+                },
+              ),
+              selected: selectedSession == session,
+              onSelectChanged: (value) async {
+                selectedSession = session;
+                allWorkoutReports = await WorkoutReportOperations()
+                    .getAllWorkoutReportsBySessionId(session);
+                setState(() {});
+              },
+              cells: [
+                DataCell(Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(iso8601StringToDate(session.startedAt),
+                        style: Get.isDarkMode
+                            ? AppTheme.appDarkTheme.textTheme.bodyText2
+                            : AppTheme.appTheme.textTheme.bodyText2),
+                    Text(timeago.format(DateTime.parse(session.startedAt)),
+                        style: AppTheme.appDarkTheme.textTheme.caption),
+                  ],
+                )),
+                DataCell(
+                  SizedBox(
+                    width: 150,
+                    child: Text(
+                        session.name.isEmpty
+                            ? 'Unnamed'
+                            : session.name.toCapitalized(),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
+                        style: Get.isDarkMode
+                            ? AppTheme.appDarkTheme.textTheme.bodyText2
+                            : AppTheme.appTheme.textTheme.bodyText2),
+                  ),
+                ),
+              ],
+            ))
+        .toList();
   }
 
   Future<List<MuscleActivityComparison>> getAllSensorReportsFromSensorId(
@@ -116,73 +221,6 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
     return listMuscleActivityComparison;
   }
 
-  Widget buildSensorPlacementCard({
-    required String sensorColor,
-    required String muscleName,
-    required String bodyRegionName,
-    String? side,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Get.isDarkMode
-            ? AppTheme.appDarkTheme.colorScheme.surface
-            : AppTheme.appTheme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      width: 320,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: Get.isDarkMode
-                    ? Colors.white.withOpacity(0.05)
-                    : Colors.black.withOpacity(0.05),
-                radius: 22,
-                child: SvgPicture.asset(
-                    'assets/icons/callibri_device-$sensorColor.svg',
-                    width: 16,
-                    semanticsLabel: 'Sensor'),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(bodyRegionName,
-                      style: Get.isDarkMode
-                          ? AppTheme.appDarkTheme.textTheme.bodyText2
-                          : AppTheme.appTheme.textTheme.bodyText2),
-                  Text(
-                    muscleName,
-                    style: Get.isDarkMode
-                        ? AppTheme.appDarkTheme.textTheme.bodyText1
-                        : AppTheme.appTheme.textTheme.bodyText1,
-                  ),
-                  SizedBox(height: 2),
-                  if (side != null) AppMuscleSideIndicator(side: side),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(width: 12),
-          Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                    fit: BoxFit.contain,
-                    image: AssetImage(
-                      'assets/images/sensor_placements/$bodyRegionName/$muscleName.png',
-                    )),
-              ))
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -192,15 +230,186 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
             : AppTheme.appTheme.scaffoldBackgroundColor,
         body: Row(
           children: [
-            SidePanel(
-              notifyParentSessionSelected: (session) async {
-                selectedSession = session;
-                allWorkoutReports = await WorkoutReportOperations()
-                    .getAllWorkoutReportsBySessionId(session);
-                setState(() {});
-              },
-              client: widget.client,
+            // ------------------------------SIDE PANEL
+            // ------------------------------SIDE PANEL
+            // ------------------------------SIDE PANEL
+            Container(
+              width: _sidePanelWidth,
+              padding: const EdgeInsets.only(
+                top: 16,
+                left: 6,
+                right: 6,
+              ),
+              decoration: BoxDecoration(
+                color: Get.isDarkMode
+                    ? AppTheme.appDarkTheme.scaffoldBackgroundColor
+                    : AppTheme.appTheme.scaffoldBackgroundColor,
+                border: Border(
+                  right: BorderSide(
+                      width: 1.0,
+                      color: Get.isDarkMode
+                          ? AppTheme.appDarkTheme.colorScheme.outline
+                          : AppTheme.appTheme.colorScheme.outline),
+                ),
+              ),
+              child: Column(
+                children: [
+                  SizedBox(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            AppIconButton(
+                              size: ButtonSize.big,
+                              svgIconPath: 'arrow-left',
+                              onPressed: Get.back,
+                            ),
+                            const SizedBox(width: 6),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Journal",
+                                    textAlign: TextAlign.left,
+                                    style: Get.isDarkMode
+                                        ? AppTheme
+                                            .appDarkTheme.textTheme.headline1
+                                        : AppTheme
+                                            .appTheme.textTheme.headline1),
+                              ],
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              flex: 1,
+                              child: AppTextFieldSearch(
+                                textEditingController: _textEditingController,
+                                hintText: _allClientSessions.length == 1
+                                    ? '${_allClientSessions.length} session'
+                                    : '${_allClientSessions.length} sessions',
+                                onCancelButtonPressed: () {
+                                  if (_textEditingController.text != '') {
+                                    _searchedClientSessions.clear();
+                                    _textEditingController.text = '';
+                                    FocusManager.instance.primaryFocus
+                                        ?.unfocus();
+                                  } else {
+                                    FocusManager.instance.primaryFocus
+                                        ?.unfocus();
+                                  }
+                                  setState(() {});
+                                },
+                              ),
+                            ),
+                            PopupMenuButton(
+                                initialValue: selectedBodyRegion,
+                                onSelected: (int value) async {
+                                  selectedBodyRegion = value;
+                                  await _getClientSessionsByBodyRegionIdDBAsync(
+                                      bodyRegionId: value);
+                                  setState(() {});
+                                },
+                                constraints: BoxConstraints(minWidth: 200),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                    bottomLeft: Radius.circular(20.0),
+                                    topRight: Radius.circular(20.0),
+                                    bottomRight: Radius.circular(20.0),
+                                  ),
+                                ),
+                                elevation: 0.2,
+                                color: Get.isDarkMode
+                                    ? AppTheme.appDarkTheme.colorScheme.surface
+                                    : AppTheme.appTheme.colorScheme.surface,
+                                position: PopupMenuPosition.under,
+                                offset: Offset(24, 4),
+                                splashRadius: 46,
+                                icon: AppIconButton(
+                                  size: ButtonSize.medium,
+                                  svgIconPath: 'filter',
+                                ),
+                                itemBuilder: (context) => [
+                                      for (var bodyRegion in allBodyRegions)
+                                        PopupMenuItem(
+                                          value: bodyRegion.id,
+                                          child: Text(bodyRegion.name,
+                                              style: Get.isDarkMode
+                                                  ? AppTheme.appDarkTheme
+                                                      .textTheme.bodyText1
+                                                  : AppTheme.appTheme.textTheme
+                                                      .bodyText1),
+                                        ),
+                                    ]),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  // ---MESSAGE ON EMPTY SESSIONS
+                  if (_allClientSessions.isEmpty)
+                    MessageWhenAnySessions(
+                        selectedBodyRegion: selectedBodyRegion, widget: widget),
+                  // ---SHOW SESSIONS TABLE IF THERE ARE SESSIONS:
+                  if (_allClientSessions.isNotEmpty)
+                    Expanded(
+                      child: ListView(
+                        scrollDirection: Axis.vertical,
+                        children: [
+                          SizedBox(height: 8),
+                          AppIconButton(
+                            onPressed: () => Get.to(
+                              () => SessionSetupScreen(client: widget.client),
+                            ),
+                            svgIconPath: 'activity',
+                            text: 'Start new session',
+                          ),
+                          DataTable(
+                            showCheckboxColumn: false,
+                            horizontalMargin: 6,
+                            dataRowHeight: 60,
+                            sortColumnIndex: sortColumnIndex,
+                            sortAscending: isAscending,
+                            columns: [
+                              DataColumn(
+                                tooltip: 'Date when session was created',
+                                label: Text('Date',
+                                    style: Get.isDarkMode
+                                        ? AppTheme
+                                            .appDarkTheme.textTheme.headline5
+                                        : AppTheme
+                                            .appTheme.textTheme.headline5),
+                                onSort: onSort,
+                              ),
+                              DataColumn(
+                                tooltip: "Session's Title",
+                                label: Text('Title',
+                                    style: Get.isDarkMode
+                                        ? AppTheme
+                                            .appDarkTheme.textTheme.headline5
+                                        : AppTheme
+                                            .appTheme.textTheme.headline5),
+                              ),
+                            ],
+                            rows: _textEditingController.text.isNotEmpty
+                                ? getRowsAllSessions(_searchedClientSessions)
+                                : getRowsAllSessions(_allClientSessions),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
             ),
+            // ---------------------------------------SESSION INFO
+            // ---------------------------------------SESSION INFO
+            // ---------------------------------------SESSION INFO
+            // ---------------------------------------SESSION INFO
             Flexible(
               flex: 1,
               child: ListView(
@@ -212,6 +421,12 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Text(
+                              '${widget.client.surname} ${widget.client.name} ${widget.client.patronymic}',
+                              style: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.textTheme.headline2
+                                  : AppTheme.appTheme.textTheme.headline2),
+                          Divider(),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -224,20 +439,16 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                               selectedSession!.startedAt)),
                                       style: Get.isDarkMode
                                           ? AppTheme
-                                              .appDarkTheme.textTheme.headline5
+                                              .appDarkTheme.textTheme.headline6
                                           : AppTheme
-                                              .appTheme.textTheme.headline5),
+                                              .appTheme.textTheme.headline6),
                                   Text(
                                       'Duration: ${getMinutesAndSecondsFromDurationWithSign(duration: Duration(seconds: DateTime.parse(selectedSession!.endedAt).difference(DateTime.parse(selectedSession!.startedAt)).inSeconds))}',
                                       style: Get.isDarkMode
                                           ? AppTheme
-                                              .appDarkTheme.textTheme.headline6
-                                              ?.copyWith(
-                                                  color: Color(0xff878787))
+                                              .appDarkTheme.textTheme.overline
                                           : AppTheme
-                                              .appTheme.textTheme.headline6
-                                              ?.copyWith(
-                                                  color: Color(0xff7a7575))),
+                                              .appTheme.textTheme.overline),
                                 ],
                               ),
                               Wrap(
@@ -248,10 +459,13 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                     iconColor:
                                         Theme.of(context).colorScheme.error,
                                     onPressed: () async {
-                                      setState(() {
-                                        SessionOperations()
-                                            .deleteSession(selectedSession!);
-                                      });
+                                      // DELETES SESSION AND SELECTS LAST RECORDED SESSION:
+                                      SessionOperations()
+                                          .deleteSession(selectedSession!);
+                                      selectedSession = null;
+                                      await _getClientSessionsByBodyRegionIdDBAsync(
+                                          bodyRegionId: 0);
+                                      setState(() {});
                                     },
                                   ),
                                   AppIconButton(
@@ -270,70 +484,56 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 20),
+                          SizedBox(height: 16),
                           Text(
                             selectedSession!.name.isNotEmpty
                                 ? selectedSession!.name.toCapitalized()
                                 : 'Unnamed Session',
                             style: Get.isDarkMode
-                                ? AppTheme.appDarkTheme.textTheme.headline2
-                                : AppTheme.appTheme.textTheme.headline2,
+                                ? AppTheme.appDarkTheme.textTheme.headline1
+                                : AppTheme.appTheme.textTheme.headline1,
                           ),
                           if (selectedSession!.description.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 12),
-                              child: Text(
-                                  selectedSession!.description.toCapitalized(),
-                                  style: Get.isDarkMode
-                                      ? AppTheme.appDarkTheme.textTheme.caption
-                                      : AppTheme.appTheme.textTheme.caption),
-                            ),
+                            Text(selectedSession!.description.toCapitalized(),
+                                style: Get.isDarkMode
+                                    ? AppTheme.appDarkTheme.textTheme.bodyText2
+                                    : AppTheme.appTheme.textTheme.bodyText2),
                           Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    AppResultsSectionHeader(
-                                      text: 'Used sensors',
-                                    ),
-                                    if (allWorkoutReports.isNotEmpty)
-                                      // - USED SENSORS
-                                      FutureBuilder(
-                                          future: getUsedSensors(),
-                                          builder: (context,
-                                              AsyncSnapshot<
-                                                      List<UsedSensorResults>?>
-                                                  snapshot) {
-                                            if (snapshot.connectionState ==
-                                                    ConnectionState.done &&
-                                                snapshot.hasData) {
-                                              return Wrap(
-                                                runSpacing: 12,
-                                                spacing: 12,
-                                                children: [
-                                                  for (var sensor
-                                                      in snapshot.data!)
-                                                    buildSensorPlacementCard(
-                                                      sensorColor: sensor.color,
-                                                      muscleName:
-                                                          sensor.muscleName,
-                                                      bodyRegionName:
-                                                          sensor.bodyRegion,
-                                                      side: sensor.side,
-                                                    )
-                                                ],
-                                              );
-                                            } else {
-                                              return Text('no data');
-                                            }
-                                          }),
-                                    AppResultsSectionHeader(
-                                      text: 'Muscles activity comparison',
-                                    ),
-                                  ],
-                                ),
+                              AppResultsSectionHeader(
+                                text: 'Used sensors',
+                              ),
+                              if (allWorkoutReports.isNotEmpty)
+                                // - USED SENSORS
+                                FutureBuilder(
+                                    future: getUsedSensors(),
+                                    builder: (context,
+                                        AsyncSnapshot<List<UsedSensorResults>?>
+                                            snapshot) {
+                                      if (snapshot.connectionState ==
+                                              ConnectionState.done &&
+                                          snapshot.hasData) {
+                                        return Wrap(
+                                          runSpacing: 12,
+                                          spacing: 12,
+                                          children: [
+                                            for (var sensor in snapshot.data!)
+                                              buildSensorPlacementCard(
+                                                sensorColor: sensor.color,
+                                                muscleName: sensor.muscleName,
+                                                bodyRegionName:
+                                                    sensor.bodyRegion,
+                                                side: sensor.side,
+                                              )
+                                          ],
+                                        );
+                                      } else {
+                                        return Text('no data');
+                                      }
+                                    }),
+                              AppResultsSectionHeader(
+                                text: 'Muscles activity comparison',
                               ),
                               // - MUSCLES ACTIVITY COMPARISON
 
@@ -581,6 +781,36 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
     );
   }
 
+  Future<void> _getAllBodyRegionsDBAsync() async {
+    allBodyRegions = await BodyRegionOperations().getAllBodyRegions();
+    setState(() {});
+  }
+
+  // - All client sessions by body region
+  Future<void> _getClientSessionsByBodyRegionIdDBAsync(
+      {required int bodyRegionId}) async {
+    if (selectedBodyRegion == Constants.allBodyRegions) {
+      _allClientSessions =
+          await SessionOperations().getAllSessionsByClientID(widget.client);
+    } else {
+      _allClientSessions = await SessionOperations()
+          .getAllSessionsByClientIDAndBodyRegionId(
+              client: widget.client, bodyRegionId: selectedBodyRegion);
+    }
+    if (_allClientSessions.isNotEmpty && selectedSession == null) {
+      // On init, select the last realized session and display its report.
+      selectedSession = _allClientSessions.last;
+      allWorkoutReports = await WorkoutReportOperations()
+          .getAllWorkoutReportsBySessionId(selectedSession!);
+      setState(() {});
+    }
+    if (_allClientSessions.isNotEmpty) {
+      _allClientSessions.sort(
+        (a, b) => b.startedAt.compareTo(a.startedAt),
+      );
+    }
+  }
+
   Future<void> getWorkoutReportFromSelectedSession() async {
     if (selectedSession != null) {
       var allRows = await WorkoutReportOperations()
@@ -628,6 +858,60 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
   }
 }
 
+class MessageWhenAnySessions extends StatelessWidget {
+  const MessageWhenAnySessions({
+    Key? key,
+    required this.selectedBodyRegion,
+    required this.widget,
+  }) : super(key: key);
+
+  final int selectedBodyRegion;
+  final ClientHistoryScreen widget;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+        child: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Builder(builder: (context) {
+            if (selectedBodyRegion != null && selectedBodyRegion == 0) {
+              return AppHeaderInfo(
+                title: 'Empty Journal',
+                labelPrimary: "You haven't recorded any session",
+              );
+            } else if (selectedBodyRegion != null && selectedBodyRegion != 0) {
+              return AppHeaderInfo(
+                title: 'Empty',
+                labelPrimary:
+                    'Any session recorded for ${idToBodyRegionString(bodyRegionId: selectedBodyRegion!)} muscles',
+              );
+            }
+            return SizedBox();
+          }),
+          SizedBox(
+            width: 180,
+            // height: 220,
+            child: SvgPicture.asset(
+              'assets/illustrations/empty.svg',
+              width: 180,
+            ),
+          ),
+          SizedBox(height: 24),
+          AppIconButton(
+            onPressed: () => Get.to(
+              () => SessionSetupScreen(client: widget.client),
+            ),
+            svgIconPath: 'activity',
+            text: 'Start new session',
+          ),
+        ],
+      ),
+    ));
+  }
+}
+
 class AppResultsSectionHeader extends StatelessWidget {
   const AppResultsSectionHeader({
     required this.text,
@@ -658,409 +942,69 @@ class AppResultsSectionHeader extends StatelessWidget {
   }
 }
 
-class SidePanel extends StatefulWidget {
-  final Function(Session session) notifyParentSessionSelected;
-  final Client client;
-  const SidePanel({
-    Key? key,
-    required this.notifyParentSessionSelected,
-    required this.client,
-  }) : super(key: key);
-
-  @override
-  State<SidePanel> createState() => _SidePanelState();
-}
-
-class _SidePanelState extends State<SidePanel>
-    with SingleTickerProviderStateMixin {
-  final _sidePanelWidth = 320.0;
-  // Data table variables
-  int sortColumnIndex = 0;
-  bool isAscending = true;
-
-  late TextEditingController _textEditingController;
-
-  Session? selectedSession;
-  int selectedBodyRegion = Constants.allBodyRegions;
-  // Async load data on init:
-  List<Session> _searchedClientSessions = [];
-  List<Session> _allClientSessions = [];
-  List<BodyRegion> allBodyRegions = [];
-
-  late Future initAllSessions;
-  late Future initBodyRegions;
-
-  @override
-  void initState() {
-    initAllSessions = _getClientSessionsByBodyRegionIdDBAsync(bodyRegionId: 0);
-
-    initBodyRegions = _getAllBodyRegionsDBAsync();
-
-    // Text Field for Session Searching
-    _textEditingController = TextEditingController();
-    _textEditingController.addListener(() {
-      filterSessions();
-    });
-
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  filterSessions() {
-    List<Session>? sessions = [];
-    if (_textEditingController.text.isNotEmpty) {
-      sessions.addAll(_allClientSessions.toList());
-      sessions.retainWhere((Session s) {
-        String searchTerm = _textEditingController.text.toLowerCase();
-
-        String title = s.name.toLowerCase();
-
-        return title.contains(searchTerm);
-      });
-      _searchedClientSessions.clear();
-      _searchedClientSessions.addAll(sessions);
-      log(_searchedClientSessions.length.toString());
-
-      setState(() {});
-    }
-  }
-
-  int compareString(bool ascending, String value1, String value2) {
-    return ascending ? value1.compareTo(value2) : value2.compareTo(value1);
-  }
-
-  void onSort(int columnIndex, bool ascending) {
-    log('sorted');
-    if (columnIndex == 0) {
-      _allClientSessions.sort((value1, value2) =>
-          compareString(ascending, value1.startedAt, value2.startedAt));
-    }
-    setState(() {
-      sortColumnIndex = columnIndex;
-      isAscending = ascending;
-    });
-  }
-
-  List<DataRow> getRowsAllSessions(List<Session> sessions) {
-    return sessions
-        .map((Session session) => DataRow(
-              color: MaterialStateColor.resolveWith(
-                (states) {
-                  if (states.isNotEmpty) {
-                    return Get.isDarkMode
-                        ? AppTheme.appDarkTheme.colorScheme.surfaceVariant
-                        : AppTheme.appTheme.colorScheme.surfaceVariant;
-                  } else {
-                    return Get.isDarkMode
-                        ? AppTheme.appDarkTheme.scaffoldBackgroundColor
-                        : AppTheme.appTheme.scaffoldBackgroundColor;
-                  }
-                },
-              ),
-              selected: selectedSession == session,
-              onSelectChanged: (value) {
-                selectedSession = session;
-                widget.notifyParentSessionSelected(selectedSession!);
-                setState(() {});
-              },
-              cells: [
-                DataCell(Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(iso8601StringToDate(session.startedAt),
-                        style: Get.isDarkMode
-                            ? AppTheme.appDarkTheme.textTheme.bodyText2
-                            : AppTheme.appTheme.textTheme.bodyText2),
-                    Text(timeago.format(DateTime.parse(session.startedAt)),
-                        style: AppTheme.appDarkTheme.textTheme.caption),
-                  ],
-                )),
-                DataCell(
-                  SizedBox(
-                    width: 150,
-                    child: Text(
-                        session.name.isEmpty
-                            ? 'Unnamed'
-                            : session.name.toCapitalized(),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        softWrap: false,
-                        style: Get.isDarkMode
-                            ? AppTheme.appDarkTheme.textTheme.bodyText2
-                            : AppTheme.appTheme.textTheme.bodyText2),
-                  ),
-                ),
-              ],
-            ))
-        .toList();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: _sidePanelWidth,
-      padding: const EdgeInsets.only(
-        top: 16,
-        left: 6,
-        right: 6,
-      ),
-      decoration: BoxDecoration(
-        color: Get.isDarkMode
-            ? AppTheme.appDarkTheme.scaffoldBackgroundColor
-            : AppTheme.appTheme.scaffoldBackgroundColor,
-        border: Border(
-          right: BorderSide(
-              width: 1.0,
-              color: Get.isDarkMode
-                  ? AppTheme.appDarkTheme.colorScheme.outline
-                  : AppTheme.appTheme.colorScheme.outline),
-        ),
-      ),
-      child: Column(
-        children: [
-          SizedBox(
-            child: Column(
+Widget buildSensorPlacementCard({
+  required String sensorColor,
+  required String muscleName,
+  required String bodyRegionName,
+  String? side,
+}) {
+  return Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: Get.isDarkMode
+          ? AppTheme.appDarkTheme.colorScheme.surface
+          : AppTheme.appTheme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    width: 320,
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: Get.isDarkMode
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.05),
+              radius: 22,
+              child: SvgPicture.asset(
+                  'assets/icons/callibri_device-$sensorColor.svg',
+                  width: 16,
+                  semanticsLabel: 'Sensor'),
+            ),
+            const SizedBox(width: 12),
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    AppIconButton(
-                      size: ButtonSize.big,
-                      svgIconPath: 'arrow-left',
-                      onPressed: Get.back,
-                    ),
-                    SizedBox(width: 6),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Client's Journal",
-                            textAlign: TextAlign.left,
-                            style: Get.isDarkMode
-                                ? AppTheme.appDarkTheme.textTheme.headline2
-                                : AppTheme.appTheme.textTheme.headline2),
-                        SizedBox(
-                          child: Text(
-                              '${widget.client.surname} ${widget.client.name} ${widget.client.patronymic}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              softWrap: false,
-                              textAlign: TextAlign.right,
-                              style: Get.isDarkMode
-                                  ? AppTheme.appDarkTheme.textTheme.overline
-                                  : AppTheme.appTheme.textTheme.overline),
-                        ),
-                      ],
-                    ),
-                  ],
+                Text(bodyRegionName,
+                    style: Get.isDarkMode
+                        ? AppTheme.appDarkTheme.textTheme.bodyText2
+                        : AppTheme.appTheme.textTheme.bodyText2),
+                Text(
+                  muscleName,
+                  style: Get.isDarkMode
+                      ? AppTheme.appDarkTheme.textTheme.bodyText1
+                      : AppTheme.appTheme.textTheme.bodyText1,
                 ),
-                SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      flex: 1,
-                      child: AppTextFieldSearch(
-                        textEditingController: _textEditingController,
-                        hintText: _allClientSessions.length == 1
-                            ? '${_allClientSessions.length} session'
-                            : '${_allClientSessions.length} sessions',
-                        onCancelButtonPressed: () {
-                          if (_textEditingController.text != '') {
-                            _searchedClientSessions.clear();
-                            _textEditingController.text = '';
-                            FocusManager.instance.primaryFocus?.unfocus();
-                          } else {
-                            FocusManager.instance.primaryFocus?.unfocus();
-                          }
-                          setState(() {});
-                        },
-                      ),
-                    ),
-                    PopupMenuButton(
-                        initialValue: selectedBodyRegion,
-                        onSelected: (int value) async {
-                          selectedBodyRegion = value;
-                          await _getClientSessionsByBodyRegionIdDBAsync(
-                              bodyRegionId: value);
-                          setState(() {});
-                        },
-                        constraints: BoxConstraints(minWidth: 200),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(20.0),
-                            topRight: Radius.circular(20.0),
-                            bottomRight: Radius.circular(20.0),
-                          ),
-                        ),
-                        elevation: 0.2,
-                        color: Get.isDarkMode
-                            ? AppTheme.appDarkTheme.colorScheme.surface
-                            : AppTheme.appTheme.colorScheme.surface,
-                        position: PopupMenuPosition.under,
-                        offset: Offset(24, 4),
-                        splashRadius: 46,
-                        icon: AppIconButton(
-                          size: ButtonSize.medium,
-                          svgIconPath: 'filter',
-                        ),
-                        itemBuilder: (context) => [
-                              for (var bodyRegion in allBodyRegions)
-                                PopupMenuItem(
-                                  value: bodyRegion.id,
-                                  child: Text(bodyRegion.name,
-                                      style: Get.isDarkMode
-                                          ? AppTheme
-                                              .appDarkTheme.textTheme.bodyText1
-                                          : AppTheme
-                                              .appTheme.textTheme.bodyText1),
-                                ),
-                            ]),
-                  ],
-                ),
+                SizedBox(height: 2),
+                if (side != null) AppMuscleSideIndicator(side: side),
               ],
-            ),
-          ),
-          if (_allClientSessions.isEmpty)
-            EmptyJournal(
-                widget: widget, selectedBodyRegion: selectedBodyRegion),
-          if (_allClientSessions.isNotEmpty)
-            Expanded(
-              child: Container(
-                  padding: const EdgeInsets.fromLTRB(6, 0, 6, 0),
-                  child: ListView(
-                    scrollDirection: Axis.vertical,
-                    children: [
-                      SizedBox(height: 8),
-                      AppIconButton(
-                        onPressed: () => Get.to(
-                          () => SessionSetupScreen(client: widget.client),
-                        ),
-                        svgIconPath: 'activity',
-                        text: 'Start new session',
-                      ),
-                      DataTable(
-                        showCheckboxColumn: false,
-                        horizontalMargin: 6,
-                        dataRowHeight: 60,
-                        sortColumnIndex: sortColumnIndex,
-                        sortAscending: isAscending,
-                        columns: [
-                          DataColumn(
-                            tooltip: 'Date when session was created',
-                            label: Text('Date',
-                                style: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.textTheme.headline5
-                                    : AppTheme.appTheme.textTheme.headline5),
-                            onSort: onSort,
-                          ),
-                          DataColumn(
-                            tooltip: "Session's Title",
-                            label: Text('Title',
-                                style: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.textTheme.headline5
-                                    : AppTheme.appTheme.textTheme.headline5),
-                          ),
-                        ],
-                        rows: _textEditingController.text.isNotEmpty
-                            ? getRowsAllSessions(_searchedClientSessions)
-                            : getRowsAllSessions(_allClientSessions),
-                      ),
-                    ],
-                  )),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _getAllBodyRegionsDBAsync() async {
-    allBodyRegions = await BodyRegionOperations().getAllBodyRegions();
-    setState(() {});
-  }
-
-  // - All client sessions by body region
-  Future<void> _getClientSessionsByBodyRegionIdDBAsync(
-      {required int bodyRegionId}) async {
-    if (selectedBodyRegion == Constants.allBodyRegions) {
-      _allClientSessions =
-          await SessionOperations().getAllSessionsByClientID(widget.client);
-    } else {
-      _allClientSessions = await SessionOperations()
-          .getAllSessionsByClientIDAndBodyRegionId(
-              client: widget.client, bodyRegionId: selectedBodyRegion);
-    }
-    if (_allClientSessions.isNotEmpty && selectedSession == null) {
-      selectedSession = _allClientSessions.last;
-      widget.notifyParentSessionSelected(selectedSession!);
-    }
-    if (_allClientSessions.isNotEmpty) {
-      _allClientSessions.sort(
-        (a, b) => b.startedAt.compareTo(a.startedAt),
-      );
-    }
-  }
-}
-
-class EmptyJournal extends StatelessWidget {
-  const EmptyJournal({
-    Key? key,
-    required this.widget,
-    this.selectedBodyRegion,
-  }) : super(key: key);
-
-  final SidePanel widget;
-  final int? selectedBodyRegion;
-
-  @override
-  Widget build(BuildContext context) {
-    {
-      return Expanded(
-          child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Builder(builder: (context) {
-              if (selectedBodyRegion != null && selectedBodyRegion == 0) {
-                return AppHeaderInfo(
-                  title: 'Empty Journal',
-                  labelPrimary: "You haven't recorded any session",
-                );
-              } else if (selectedBodyRegion != null &&
-                  selectedBodyRegion != 0) {
-                return AppHeaderInfo(
-                  title: 'Empty',
-                  labelPrimary:
-                      'Any session recorded for ${idToBodyRegionString(bodyRegionId: selectedBodyRegion!)} muscles',
-                );
-              }
-              return SizedBox();
-            }),
-            SizedBox(
-              width: 180,
-              // height: 220,
-              child: SvgPicture.asset(
-                'assets/illustrations/empty.svg',
-                width: 180,
-              ),
-            ),
-            SizedBox(height: 24),
-            AppIconButton(
-              onPressed: () => Get.to(
-                () => SessionSetupScreen(client: widget.client),
-              ),
-              svgIconPath: 'activity',
-              text: 'Start new session',
             ),
           ],
         ),
-      ));
-    }
-  }
+        SizedBox(width: 12),
+        Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                  fit: BoxFit.contain,
+                  image: AssetImage(
+                    'assets/images/sensor_placements/$bodyRegionName/$muscleName.png',
+                  )),
+            ))
+      ],
+    ),
+  );
 }
