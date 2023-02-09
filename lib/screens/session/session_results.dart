@@ -13,6 +13,7 @@ import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.
 import 'package:neuro_sdk_isolate_example/database/sensor_report_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/session_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/workout_report_operations.dart';
+import 'package:neuro_sdk_isolate_example/screens/home/add_client_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/session/session_monitor_screen.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/utils/build_battery_indicator_icon.dart';
@@ -54,6 +55,8 @@ class SessionResultsScreenState extends State<SessionResultsScreen>
   // Text editing controllers
   late TextEditingController _textEditingControllerTitle;
   late TextEditingController _textEditingControllerDescription;
+  final _formKeyTitle = GlobalKey<FormState>();
+  final _formKeyDescription = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -457,110 +460,57 @@ class SessionResultsScreenState extends State<SessionResultsScreen>
                             'Session duration: ${getMinutesAndSecondsFromDurationWithSign(duration: Duration(seconds: DateTime.parse(widget.sessionEndedAt).difference(DateTime.parse(widget.sessionStartedAt)).inSeconds))}',
                       ),
                       const SizedBox(height: 36),
-                      TextField(
-                        controller: _textEditingControllerTitle,
-                        style: TextStyle(
-                            color:
-                                Get.isDarkMode ? Colors.white : Colors.black),
-                        cursorColor: Colors.grey,
-                        decoration: InputDecoration(
-                          counterStyle: TextStyle(color: Colors.transparent),
-                          fillColor: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.colorScheme.surfaceVariant
-                              : AppTheme.appTheme.colorScheme.surfaceVariant,
-                          filled: true,
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Colors.transparent,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Get.isDarkMode
-                                  ? lighterColorFrom(
-                                      color: AppTheme.appDarkTheme.colorScheme
-                                          .surfaceVariant,
-                                      amount: 0.3)
-                                  : darkerColorFrom(
-                                      color: AppTheme
-                                          .appTheme.colorScheme.surfaceVariant,
-                                      amount: 0.3),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                                color: Color.fromARGB(255, 66, 125, 145)),
-                          ),
-                          hintText: 'Title',
-                          contentPadding: const EdgeInsets.all(24),
-                          hintStyle: const TextStyle(
-                              color: Color(0xff7a7575), fontSize: 18),
-                          prefixIcon: Container(
-                            padding: const EdgeInsets.all(15),
-                            width: 18,
-                            child: Icon(
-                              Icons.title_rounded,
-                              size: 26,
-                              color: Color(0xff7a7575),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 36),
-                      TextField(
-                        controller: _textEditingControllerDescription,
-                        style: TextStyle(
-                            color:
-                                Get.isDarkMode ? Colors.white : Colors.black),
-                        cursorColor: Colors.grey,
-                        decoration: InputDecoration(
-                          counterStyle: TextStyle(color: Colors.transparent),
-                          fillColor: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.colorScheme.surfaceVariant
-                              : AppTheme.appTheme.colorScheme.surfaceVariant,
-                          filled: true,
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Colors.transparent,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Get.isDarkMode
-                                  ? lighterColorFrom(
-                                      color: AppTheme.appDarkTheme.colorScheme
-                                          .surfaceVariant,
-                                      amount: 0.3)
-                                  : darkerColorFrom(
-                                      color: AppTheme
-                                          .appTheme.colorScheme.surfaceVariant,
-                                      amount: 0.3),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                                color: Color.fromARGB(255, 66, 125, 145)),
-                          ),
-                          hintText: 'Description',
-                          contentPadding: const EdgeInsets.all(24),
-                          hintStyle: const TextStyle(
-                              color: Color(0xff7a7575), fontSize: 18),
-                          prefixIcon: Container(
-                            padding: const EdgeInsets.all(15),
-                            width: 18,
-                            child: Icon(
-                              Icons.title_rounded,
-                              size: 26,
-                              color: Color(0xff7a7575),
-                            ),
-                          ),
-                        ),
-                      ),
-
+                      const SizedBox(height: 16),
+                      AppTextField(
+                          textEditingController: _textEditingControllerTitle,
+                          keyboardType: TextInputType.text,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          globalKey: _formKeyTitle,
+                          hint: 'Session Title',
+                          svgIconPath: 'title',
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(80),
+                          ],
+                          validator: (value) {
+                            if (value != null) {
+                              if (value.isEmpty) {
+                                return null;
+                              }
+                              if (value.length > 80) {
+                                return 'Only 80 characters allowed';
+                              } else {
+                                return null;
+                              }
+                            } else {
+                              return null;
+                            }
+                          }),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                          textEditingController:
+                              _textEditingControllerDescription,
+                          keyboardType: TextInputType.text,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          globalKey: _formKeyDescription,
+                          hint: 'Session Description',
+                          svgIconPath: 'description',
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(200),
+                          ],
+                          validator: (value) {
+                            if (value != null) {
+                              if (value.isEmpty) {
+                                return null;
+                              }
+                              if (value.length > 200) {
+                                return 'Only 200 characters allowed';
+                              } else {
+                                return null;
+                              }
+                            } else {
+                              return null;
+                            }
+                          }),
                       const SizedBox(height: 8),
 
                       // RecordVideo(),
@@ -640,6 +590,12 @@ class SessionResultsScreenState extends State<SessionResultsScreen>
 
                                   await SensorReportOperations()
                                       .createSensorReport(sensorReport);
+
+                                  // Update client's last session
+                                  widget.client.lastSession =
+                                      DateTime.now().toIso8601String();
+                                  await clientOperations
+                                      .updateClient(widget.client);
                                 }
                               }
 
