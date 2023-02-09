@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/controllers/services_manager.dart';
 import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
@@ -43,15 +44,8 @@ class GetReadyScreen extends StatelessWidget {
               },
             ),
             Expanded(
-              child: Container(
-                margin: const EdgeInsets.fromLTRB(12, 12, 12, 24),
-                width: 360,
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/devices_turned_on.png'),
-                    fit: BoxFit.contain,
-                  ),
-                ),
+              child: SvgPicture.asset(
+                'assets/illustrations/turn-on.svg',
               ),
             ),
             AppBottom(
@@ -65,6 +59,7 @@ class GetReadyScreen extends StatelessWidget {
                 });
               },
               mainText: 'Start scanning',
+              
               secondaryText: 'Add sensors later',
               secondaryTextColor: Theme.of(context).colorScheme.error,
               onSecondaryButtonPressed: () => Get.off(() => HomeScreen()),
