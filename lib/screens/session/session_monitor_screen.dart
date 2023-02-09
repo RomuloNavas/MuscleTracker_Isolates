@@ -271,12 +271,13 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                         ?.copyWith(
                                                             fontSize: 13)),
                                             AppIconButton(
+                                                size: ButtonSize.big,
                                                 svgIconPath: isRecording
                                                     ? 'stop'
                                                     : 'record',
                                                 iconColor: isRecording
                                                     ? Theme.of(context)
-                                                        .shadowColor
+                                                        .colorScheme.tertiary
                                                     : Theme.of(context)
                                                         .colorScheme
                                                         .error,
@@ -356,6 +357,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                           ?.copyWith(
                                                               fontSize: 13)),
                                               AppIconButton(
+                                                  size: ButtonSize.big,
                                                   svgIconPath: isPaused
                                                       ? 'play'
                                                       : 'pause',
@@ -389,6 +391,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                           ?.copyWith(
                                                               fontSize: 13)),
                                               AppIconButton(
+                                                size: ButtonSize.big,
                                                 svgIconPath: 'play',
                                                 iconColor: Get.isDarkMode
                                                     ? AppTheme.appDarkTheme
