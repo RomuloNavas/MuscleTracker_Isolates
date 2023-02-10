@@ -25,11 +25,13 @@ import 'package:neuro_sdk_isolate_example/widgets/app_client_avatar.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_muscle_side.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class GetxControllerSessionSetup extends GetxController {
   RxList<SensorUsedInSession> allConnectedSensorsUsedInSession =
       <SensorUsedInSession>[].obs;
   SensorUsedInSession? selectedSensor = null;
+  bool isChoosingSide = false.obs();
 }
 
 class SessionSetupScreen extends StatefulWidget {
@@ -121,7 +123,7 @@ class _SessionSetupScreenState extends State<SessionSetupScreen> {
                             children: [
                               Padding(
                                 padding:
-                                    const EdgeInsets.only(left: 65, top: 32),
+                                    const EdgeInsets.only(left: 48, top: 24),
                                 child: Text(
                                     idToBodyRegionString(bodyRegionId: key),
                                     style: Get.isDarkMode
@@ -132,7 +134,7 @@ class _SessionSetupScreenState extends State<SessionSetupScreen> {
                               ),
                               const SizedBox(height: 16),
                               SizedBox(
-                                height: 224 + 24,
+                                height: 190 + 24,
                                 child: ListView.separated(
                                   itemCount: groupedByRegions[key]!.length,
                                   primary: false,
@@ -147,7 +149,7 @@ class _SessionSetupScreenState extends State<SessionSetupScreen> {
                                     if (i == 0) {
                                       return Row(
                                         children: [
-                                          const SizedBox(width: 65),
+                                          const SizedBox(width: 48),
                                           CardSensorPlacementInfo(
                                             cardPlacement: sensorPlacement,
                                             selectedPlacement:
@@ -197,7 +199,7 @@ class _SessionSetupScreenState extends State<SessionSetupScreen> {
                                               });
                                             },
                                           ),
-                                          const SizedBox(width: 65),
+                                          const SizedBox(width: 48),
                                         ],
                                       );
                                     }
@@ -346,56 +348,25 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                 Padding(
                   padding: const EdgeInsets.only(top: 16, left: 12, right: 12),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       AppIconButton(
                         size: ButtonSize.big,
                         svgIconPath: 'arrow-left',
-                        iconColor: Theme.of(context).colorScheme.error,
                         onPressed: () {
                           for (var registeredAndConnectedSensor
                               in _controllerWorkoutSetup
                                   .allConnectedSensorsUsedInSession.value) {
                             registeredAndConnectedSensor.sensor.disconnect();
                           }
-
                           Get.back();
                         },
                       ),
                       SizedBox(width: 6),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('New Session',
-                              maxLines: 2,
-                              textAlign: TextAlign.right,
-                              style: Get.isDarkMode
-                                  ? AppTheme.appDarkTheme.textTheme.headline2
-                                  : AppTheme.appTheme.textTheme.headline2),
-                          SizedBox(
-                            width: _sidePanelWidth - 76 - 6,
-                            child: Text(
-                                '${widget.client.surname} ${widget.client.name} ${widget.client.patronymic}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                softWrap: false,
-                                style: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.textTheme.overline
-                                    : AppTheme.appTheme.textTheme.overline),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                              DateFormat.yMMMd()
-                                  .add_jm()
-                                  .format(DateTime.now()),
-                              style: Get.isDarkMode
-                                  ? AppTheme.appDarkTheme.textTheme.caption
-                                      ?.copyWith(color: Color(0xff878787))
-                                  : AppTheme.appTheme.textTheme.caption
-                                      ?.copyWith(color: Color(0xff7a7575))),
-                        ],
-                      ),
+                      Text('New Session',
+                          style: Get.isDarkMode
+                              ? AppTheme.appDarkTheme.textTheme.headline1
+                              : AppTheme.appTheme.textTheme.headline1),
                     ],
                   ),
                 ),
@@ -764,7 +735,7 @@ class HeaderSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(65, 60, 65, 5),
+      padding: const EdgeInsets.fromLTRB(48, 24, 48, 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -808,6 +779,7 @@ class CardSensorPlacementInfo extends StatelessWidget {
               _controllerWorkoutSetup.selectedSensor!.placement = cardPlacement;
               _controllerWorkoutSetup.allConnectedSensorsUsedInSession
                   .refresh(); //! Important
+              _controllerWorkoutSetup.isChoosingSide = true;
             }
           },
           child: Container(
@@ -878,6 +850,52 @@ class CardSensorPlacementInfo extends StatelessWidget {
                       ],
                     ),
                   ),
+                  if (selectedPlacement.muscleName ==
+                          cardPlacement.muscleName &&
+                      _controllerWorkoutSetup.isChoosingSide == true)
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ZoomTapAnimation(
+                            child: AppMuscleSideIndicator(
+                                side: 'left', size: ButtonSize.big),
+                            onTap: () {
+                              selectedPlacement.side = 'left';
+                              notifyParentSideSelected(selectedPlacement);
+                              if (_controllerWorkoutSetup.selectedSensor !=
+                                  null) {
+                                _controllerWorkoutSetup.selectedSensor!
+                                    .placement = selectedPlacement;
+                                _controllerWorkoutSetup
+                                    .allConnectedSensorsUsedInSession
+                                    .refresh(); //! Important
+                                _controllerWorkoutSetup.isChoosingSide = false;
+                              }
+                            },
+                          ),
+                          const SizedBox(width: 24),
+                          ZoomTapAnimation(
+                            onTap: () {
+                              selectedPlacement.side = 'right';
+                              notifyParentSideSelected(selectedPlacement);
+                              if (_controllerWorkoutSetup.selectedSensor !=
+                                  null) {
+                                _controllerWorkoutSetup.selectedSensor!
+                                    .placement = selectedPlacement;
+                                _controllerWorkoutSetup
+                                    .allConnectedSensorsUsedInSession
+                                    .refresh(); //! Important
+                                _controllerWorkoutSetup.isChoosingSide = false;
+                              }
+                            },
+                            child: AppMuscleSideIndicator(
+                                side: 'right', size: ButtonSize.big),
+                          )
+                        ],
+                      ),
+                    )
                 ],
               ),
             ),
@@ -888,54 +906,6 @@ class CardSensorPlacementInfo extends StatelessWidget {
             style: Get.isDarkMode
                 ? AppTheme.appDarkTheme.textTheme.overline
                 : AppTheme.appTheme.textTheme.overline),
-        if (selectedPlacement.muscleName == cardPlacement.muscleName)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              AppOutlinedButton(
-                child: Text('Left',
-                    style: GoogleFonts.roboto(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 1.2,
-                    )),
-                action: () {
-                  selectedPlacement.side = 'left';
-                  notifyParentSideSelected(selectedPlacement);
-                  if (_controllerWorkoutSetup.selectedSensor != null) {
-                    _controllerWorkoutSetup.selectedSensor!.placement =
-                        selectedPlacement;
-                    _controllerWorkoutSetup.allConnectedSensorsUsedInSession
-                        .refresh(); //! Important
-                  }
-                },
-                color: Color(0xff1727B3),
-                buttonSize: ButtonSize.medium,
-              ),
-              const SizedBox(width: 24),
-              AppOutlinedButton(
-                action: () {
-                  selectedPlacement.side = 'right';
-                  notifyParentSideSelected(selectedPlacement);
-                  if (_controllerWorkoutSetup.selectedSensor != null) {
-                    _controllerWorkoutSetup.selectedSensor!.placement =
-                        selectedPlacement;
-                    _controllerWorkoutSetup.allConnectedSensorsUsedInSession
-                        .refresh(); //! Important
-                  }
-                },
-                color: Color(0xff004457),
-                buttonSize: ButtonSize.medium,
-                child: Text('Right',
-                    style: GoogleFonts.roboto(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 1.2,
-                    )),
-              )
-            ],
-          )
       ],
     );
   }
