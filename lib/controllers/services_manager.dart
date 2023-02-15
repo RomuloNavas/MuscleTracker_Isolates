@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
@@ -16,7 +18,7 @@ class GetxControllerServices extends GetxController {
 
   void requestBluetoothAndGPS() {
     requestBluetooth();
-    Timer(const Duration(seconds: 3), requestGPS);
+    Timer(const Duration(milliseconds: 1550), requestGPS);
   }
 
   void requestBluetooth() async {
@@ -30,12 +32,34 @@ class GetxControllerServices extends GetxController {
   }
 
   void requestGPS() async {
+    PermissionStatus? hasPermission;
     try {
-      await Location.instance.requestPermission();
-      await Location.instance.requestService();
+      hasPermission = await Location.instance.hasPermission();
+      if (hasPermission == PermissionStatus.denied ||
+          hasPermission == PermissionStatus.deniedForever) {
+        try {
+          await Location.instance.requestPermission();
+        } catch (e) {
+          log(e.toString());
+        }
+      }
     } catch (e) {
-      await Geolocator.openLocationSettings();
-      // throw ErrorDescription('Error enabling the GPS $e');
+      log(e.toString());
+    }
+    if (hasPermission == PermissionStatus.granted ||
+        hasPermission == PermissionStatus.grantedLimited) {
+      try {
+        bool isLocationEnabled = await Location.instance.serviceEnabled();
+        if (isLocationEnabled == false) {
+          try {
+            await Geolocator.openLocationSettings();
+          } catch (e) {
+            log('Error by opening location settings');
+          }
+        }
+      } catch (e) {
+        log('Error by asking for permissions');
+      }
     }
   }
 }
