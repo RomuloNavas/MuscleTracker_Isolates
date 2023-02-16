@@ -414,7 +414,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
               flex: 1,
               child: ListView(
                 children: [
-                  if (allWorkoutReports.isNotEmpty && selectedSession != null)
+                  if (selectedSession != null)
                     Container(
                       margin:
                           const EdgeInsets.only(top: 24, left: 16, right: 16),
@@ -493,282 +493,296 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                 ? AppTheme.appDarkTheme.textTheme.headline1
                                 : AppTheme.appTheme.textTheme.headline1,
                           ),
-                          if (selectedSession!.description.isNotEmpty)
-                            Text(selectedSession!.description.toCapitalized(),
-                                style: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.textTheme.bodyText2
-                                    : AppTheme.appTheme.textTheme.bodyText2),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              AppResultsSectionHeader(
-                                text: 'Used sensors',
+                          Text(
+                              selectedSession!.description.isNotEmpty
+                                  ? selectedSession!.description.toCapitalized()
+                                  : 'No description added.',
+                              style: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.textTheme.bodyText2
+                                  : AppTheme.appTheme.textTheme.bodyText2),
+                          if (allWorkoutReports.isEmpty)
+                            Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(height: 24),
+                                  AppHeaderInfo(
+                                    title: 'No data',
+                                    labelPrimary:
+                                        "You haven't recorded any workout through this session.",
+                                  ),
+                                  SizedBox(
+                                    width: 220,
+                                    height: 220,
+                                    child: SvgPicture.asset(
+                                      'assets/illustrations/empty.svg',
+                                      height: 220,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              if (allWorkoutReports.isNotEmpty)
-                                // - USED SENSORS
-                                FutureBuilder(
-                                    future: getUsedSensors(),
-                                    builder: (context,
-                                        AsyncSnapshot<List<UsedSensorResults>?>
-                                            snapshot) {
-                                      if (snapshot.connectionState ==
-                                              ConnectionState.done &&
-                                          snapshot.hasData) {
-                                        return Wrap(
-                                          runSpacing: 12,
-                                          spacing: 12,
-                                          children: [
-                                            for (var sensor in snapshot.data!)
-                                              buildSensorPlacementCard(
-                                                sensorColor: sensor.color,
-                                                muscleName: sensor.muscleName,
-                                                bodyRegionName:
-                                                    sensor.bodyRegion,
-                                                side: sensor.side,
-                                              )
-                                          ],
-                                        );
-                                      } else {
-                                        return Text('no data');
-                                      }
-                                    }),
-                              AppResultsSectionHeader(
-                                text: 'Muscles activity comparison',
-                              ),
-                              // - MUSCLES ACTIVITY COMPARISON
-
-                              FutureBuilder(
-                                future: getUsedSensors(),
-                                builder: (context,
-                                    AsyncSnapshot<List<UsedSensorResults>?>
-                                        snapshotSensorReport) {
-                                  if (snapshotSensorReport.connectionState ==
-                                          ConnectionState.done &&
-                                      snapshotSensorReport.hasData) {
-                                    List<Widget> column = [];
-
-                                    for (var usedSensor
-                                        in snapshotSensorReport.data!) {
-                                      column.add(Container(
-                                        margin:
-                                            const EdgeInsets.only(bottom: 20),
-                                        padding:
-                                            EdgeInsets.fromLTRB(6, 12, 6, 12),
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          color: Get.isDarkMode
-                                              ? AppTheme.appDarkTheme
-                                                  .colorScheme.surface
-                                              : AppTheme
-                                                  .appTheme.colorScheme.surface,
-                                        ),
-                                        child: SizedBox(
-                                          width: double.infinity,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                            ),
+                          if (allWorkoutReports.isNotEmpty)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                AppResultsSectionHeader(
+                                  text: 'Used sensors',
+                                ),
+                                if (allWorkoutReports.isNotEmpty)
+                                  // - USED SENSORS
+                                  FutureBuilder(
+                                      future: getUsedSensors(),
+                                      builder: (context,
+                                          AsyncSnapshot<
+                                                  List<UsedSensorResults>?>
+                                              snapshot) {
+                                        if (snapshot.connectionState ==
+                                                ConnectionState.done &&
+                                            snapshot.hasData) {
+                                          return Wrap(
+                                            runSpacing: 12,
+                                            spacing: 12,
                                             children: [
-                                              buildSensorPlacementCard(
-                                                sensorColor: usedSensor.color,
-                                                muscleName:
-                                                    usedSensor.muscleName,
-                                                bodyRegionName:
-                                                    usedSensor.bodyRegion,
-                                                side: usedSensor.side,
-                                              ),
-                                              FutureBuilder(
-                                                future:
-                                                    getAllSensorReportsFromSensorId(
-                                                        usedSensor.sensorId),
-                                                builder: (context,
-                                                    AsyncSnapshot<
-                                                            List<
-                                                                MuscleActivityComparison>>
-                                                        snapshot) {
-                                                  if (snapshot.connectionState ==
-                                                          ConnectionState
-                                                              .done &&
-                                                      snapshot.hasData) {
-                                                    var listAllSensorValuesFromAvrAmp =
-                                                        <double>[];
-                                                    var listAllSensorValuesFromMaxAmp =
-                                                        <double>[];
-                                                    var listAllSensorValuesFromMinAmp =
-                                                        <double>[];
-                                                    var listAllSensorValuesFromArea =
-                                                        <double>[];
+                                              for (var sensor in snapshot.data!)
+                                                buildSensorPlacementCard(
+                                                  sensorColor: sensor.color,
+                                                  muscleName: sensor.muscleName,
+                                                  bodyRegionName:
+                                                      sensor.bodyRegion,
+                                                  side: sensor.side,
+                                                )
+                                            ],
+                                          );
+                                        } else {
+                                          return Text('no data');
+                                        }
+                                      }),
+                                AppResultsSectionHeader(
+                                  text: 'Muscles activity comparison',
+                                ),
+                                // - MUSCLES ACTIVITY COMPARISON
 
-                                                    for (var muscleActivityComparison
-                                                        in snapshot.data!) {
+                                FutureBuilder(
+                                  future: getUsedSensors(),
+                                  builder: (context,
+                                      AsyncSnapshot<List<UsedSensorResults>?>
+                                          snapshotSensorReport) {
+                                    if (snapshotSensorReport.connectionState ==
+                                            ConnectionState.done &&
+                                        snapshotSensorReport.hasData) {
+                                      List<Widget> column = [];
+
+                                      for (var usedSensor
+                                          in snapshotSensorReport.data!) {
+                                        column.add(Container(
+                                          margin:
+                                              const EdgeInsets.only(bottom: 20),
+                                          padding:
+                                              EdgeInsets.fromLTRB(6, 12, 6, 12),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            color: Get.isDarkMode
+                                                ? AppTheme.appDarkTheme
+                                                    .colorScheme.surface
+                                                : AppTheme.appTheme.colorScheme
+                                                    .surface,
+                                          ),
+                                          child: SizedBox(
+                                            width: double.infinity,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                buildSensorPlacementCard(
+                                                  sensorColor: usedSensor.color,
+                                                  muscleName:
+                                                      usedSensor.muscleName,
+                                                  bodyRegionName:
+                                                      usedSensor.bodyRegion,
+                                                  side: usedSensor.side,
+                                                ),
+                                                FutureBuilder(
+                                                  future:
+                                                      getAllSensorReportsFromSensorId(
+                                                          usedSensor.sensorId),
+                                                  builder: (context,
+                                                      AsyncSnapshot<
+                                                              List<
+                                                                  MuscleActivityComparison>>
+                                                          snapshot) {
+                                                    if (snapshot.connectionState ==
+                                                            ConnectionState
+                                                                .done &&
+                                                        snapshot.hasData) {
+                                                      var listAllSensorValuesFromAvrAmp =
+                                                          <double>[];
+                                                      var listAllSensorValuesFromMaxAmp =
+                                                          <double>[];
+                                                      var listAllSensorValuesFromMinAmp =
+                                                          <double>[];
+                                                      var listAllSensorValuesFromArea =
+                                                          <double>[];
+
+                                                      for (var muscleActivityComparison
+                                                          in snapshot.data!) {
+                                                        listAllSensorValuesFromAvrAmp.add(
+                                                            muscleActivityComparison
+                                                                .sensorReport
+                                                                .avrAmp);
+                                                        listAllSensorValuesFromMaxAmp.add(
+                                                            muscleActivityComparison
+                                                                .sensorReport
+                                                                .maxAmp);
+                                                        listAllSensorValuesFromMinAmp.add(
+                                                            muscleActivityComparison
+                                                                .sensorReport
+                                                                .minAmp);
+                                                        listAllSensorValuesFromArea.add(
+                                                            muscleActivityComparison
+                                                                .sensorReport
+                                                                .area);
+                                                      }
                                                       listAllSensorValuesFromAvrAmp
-                                                          .add(
-                                                              muscleActivityComparison
-                                                                  .sensorReport
-                                                                  .avrAmp);
+                                                          .sort();
                                                       listAllSensorValuesFromMaxAmp
-                                                          .add(
-                                                              muscleActivityComparison
-                                                                  .sensorReport
-                                                                  .maxAmp);
+                                                          .sort();
                                                       listAllSensorValuesFromMinAmp
-                                                          .add(
-                                                              muscleActivityComparison
-                                                                  .sensorReport
-                                                                  .minAmp);
+                                                          .sort();
                                                       listAllSensorValuesFromArea
-                                                          .add(
-                                                              muscleActivityComparison
-                                                                  .sensorReport
-                                                                  .area);
-                                                    }
-                                                    listAllSensorValuesFromAvrAmp
-                                                        .sort();
-                                                    listAllSensorValuesFromMaxAmp
-                                                        .sort();
-                                                    listAllSensorValuesFromMinAmp
-                                                        .sort();
-                                                    listAllSensorValuesFromArea
-                                                        .sort();
-                                                    return Column(
-                                                      children: [
+                                                          .sort();
+                                                      return Column(
+                                                        children: [
 // TABLE
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                      .only(
-                                                                  bottom: 24,
-                                                                  top: 8),
-                                                          child: SizedBox(
-                                                            width:
-                                                                double.infinity,
-                                                            child: DataTable(
-                                                              sortColumnIndex:
-                                                                  sortColumnIndex,
-                                                              sortAscending:
-                                                                  isAscending,
-                                                              horizontalMargin:
-                                                                  10,
-                                                              columnSpacing: 0,
-                                                              dataRowHeight: 60,
-                                                              columns: [
-                                                                DataColumn(
-                                                                    label: Text(
-                                                                        'Exercise name',
-                                                                        style: Get.isDarkMode
-                                                                            ? AppTheme.appDarkTheme.textTheme.headline5
-                                                                            : AppTheme.appTheme.textTheme.headline5)),
-                                                                DataColumn(
-                                                                    label: Text(
-                                                                        'A(avr), µV',
-                                                                        style: Get.isDarkMode
-                                                                            ? AppTheme.appDarkTheme.textTheme.headline5
-                                                                            : AppTheme.appTheme.textTheme.headline5)),
-                                                                DataColumn(
-                                                                    label: Text(
-                                                                        'A(max), µV',
-                                                                        style: Get.isDarkMode
-                                                                            ? AppTheme.appDarkTheme.textTheme.headline5
-                                                                            : AppTheme.appTheme.textTheme.headline5)),
-                                                                DataColumn(
-                                                                    label: Text(
-                                                                        'A(min), µV',
-                                                                        style: Get.isDarkMode
-                                                                            ? AppTheme.appDarkTheme.textTheme.headline5
-                                                                            : AppTheme.appTheme.textTheme.headline5)),
-                                                                DataColumn(
-                                                                    label: Text(
-                                                                        'S, mV*ms',
-                                                                        style: Get.isDarkMode
-                                                                            ? AppTheme.appDarkTheme.textTheme.headline5
-                                                                            : AppTheme.appTheme.textTheme.headline5)),
-                                                              ],
-                                                              rows: [
-                                                                for (var muscleActivityComparison
-                                                                    in snapshot
-                                                                        .data!)
-                                                                  DataRow(
-                                                                    cells: [
-                                                                      DataCell(
-                                                                        Container(
-                                                                          width:
-                                                                              150,
-                                                                          child:
-                                                                              Column(
-                                                                            mainAxisAlignment:
-                                                                                MainAxisAlignment.center,
-                                                                            crossAxisAlignment:
-                                                                                CrossAxisAlignment.start,
-                                                                            children: [
-                                                                              Text(muscleActivityComparison.workoutName, style: Get.isDarkMode ? AppTheme.appDarkTheme.textTheme.bodyText1 : AppTheme.appTheme.textTheme.bodyText1),
-                                                                              Text(getMinutesAndSecondsFromDurationWithSign(duration: Duration(seconds: DateTime.parse(muscleActivityComparison.workoutReport.endedAt).difference(DateTime.parse(muscleActivityComparison.workoutReport.startedAt)).inSeconds)), style: Get.isDarkMode ? AppTheme.appDarkTheme.textTheme.overline : AppTheme.appTheme.textTheme.overline)
-                                                                            ],
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                        .only(
+                                                                    bottom: 24,
+                                                                    top: 8),
+                                                            child: SizedBox(
+                                                              width: double
+                                                                  .infinity,
+                                                              child: DataTable(
+                                                                sortColumnIndex:
+                                                                    sortColumnIndex,
+                                                                sortAscending:
+                                                                    isAscending,
+                                                                horizontalMargin:
+                                                                    10,
+                                                                columnSpacing:
+                                                                    0,
+                                                                dataRowHeight:
+                                                                    60,
+                                                                columns: [
+                                                                  DataColumn(
+                                                                      label: Text(
+                                                                          'Exercise name',
+                                                                          style: Get.isDarkMode
+                                                                              ? AppTheme.appDarkTheme.textTheme.headline5
+                                                                              : AppTheme.appTheme.textTheme.headline5)),
+                                                                  DataColumn(
+                                                                      label: Text(
+                                                                          'A(avr), µV',
+                                                                          style: Get.isDarkMode
+                                                                              ? AppTheme.appDarkTheme.textTheme.headline5
+                                                                              : AppTheme.appTheme.textTheme.headline5)),
+                                                                  DataColumn(
+                                                                      label: Text(
+                                                                          'A(max), µV',
+                                                                          style: Get.isDarkMode
+                                                                              ? AppTheme.appDarkTheme.textTheme.headline5
+                                                                              : AppTheme.appTheme.textTheme.headline5)),
+                                                                  DataColumn(
+                                                                      label: Text(
+                                                                          'A(min), µV',
+                                                                          style: Get.isDarkMode
+                                                                              ? AppTheme.appDarkTheme.textTheme.headline5
+                                                                              : AppTheme.appTheme.textTheme.headline5)),
+                                                                  DataColumn(
+                                                                      label: Text(
+                                                                          'S, mV*ms',
+                                                                          style: Get.isDarkMode
+                                                                              ? AppTheme.appDarkTheme.textTheme.headline5
+                                                                              : AppTheme.appTheme.textTheme.headline5)),
+                                                                ],
+                                                                rows: [
+                                                                  for (var muscleActivityComparison
+                                                                      in snapshot
+                                                                          .data!)
+                                                                    DataRow(
+                                                                      cells: [
+                                                                        DataCell(
+                                                                          Container(
+                                                                            width:
+                                                                                150,
+                                                                            child:
+                                                                                Column(
+                                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                                              children: [
+                                                                                Text(muscleActivityComparison.workoutName, style: Get.isDarkMode ? AppTheme.appDarkTheme.textTheme.bodyText1 : AppTheme.appTheme.textTheme.bodyText1),
+                                                                                Text(getMinutesAndSecondsFromDurationWithSign(duration: Duration(seconds: DateTime.parse(muscleActivityComparison.workoutReport.endedAt).difference(DateTime.parse(muscleActivityComparison.workoutReport.startedAt)).inSeconds)), style: Get.isDarkMode ? AppTheme.appDarkTheme.textTheme.overline : AppTheme.appTheme.textTheme.overline)
+                                                                              ],
+                                                                            ),
                                                                           ),
                                                                         ),
-                                                                      ),
-                                                                      DataCell(
-                                                                        AppDataCellPercentageBox(
-                                                                            cellWidth:
-                                                                                90,
-                                                                            value:
-                                                                                muscleActivityComparison.sensorReport.avrAmp,
-                                                                            maxValue: listAllSensorValuesFromAvrAmp.last),
-                                                                      ),
-                                                                      DataCell(
-                                                                        AppDataCellPercentageBox(
-                                                                            cellWidth:
-                                                                                90,
-                                                                            value:
-                                                                                muscleActivityComparison.sensorReport.maxAmp,
-                                                                            maxValue: listAllSensorValuesFromMaxAmp.last),
-                                                                      ),
-                                                                      DataCell(
-                                                                        AppDataCellPercentageBox(
-                                                                            cellWidth:
-                                                                                90,
-                                                                            value:
-                                                                                muscleActivityComparison.sensorReport.minAmp,
-                                                                            maxValue: listAllSensorValuesFromMinAmp.last),
-                                                                      ),
-                                                                      DataCell(
-                                                                        AppDataCellPercentageBox(
-                                                                            cellWidth:
-                                                                                90,
-                                                                            value:
-                                                                                muscleActivityComparison.sensorReport.area,
-                                                                            maxValue: listAllSensorValuesFromArea.last),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                              ],
+                                                                        DataCell(
+                                                                          AppDataCellPercentageBox(
+                                                                              cellWidth: 90,
+                                                                              value: muscleActivityComparison.sensorReport.avrAmp,
+                                                                              maxValue: listAllSensorValuesFromAvrAmp.last),
+                                                                        ),
+                                                                        DataCell(
+                                                                          AppDataCellPercentageBox(
+                                                                              cellWidth: 90,
+                                                                              value: muscleActivityComparison.sensorReport.maxAmp,
+                                                                              maxValue: listAllSensorValuesFromMaxAmp.last),
+                                                                        ),
+                                                                        DataCell(
+                                                                          AppDataCellPercentageBox(
+                                                                              cellWidth: 90,
+                                                                              value: muscleActivityComparison.sensorReport.minAmp,
+                                                                              maxValue: listAllSensorValuesFromMinAmp.last),
+                                                                        ),
+                                                                        DataCell(
+                                                                          AppDataCellPercentageBox(
+                                                                              cellWidth: 90,
+                                                                              value: muscleActivityComparison.sensorReport.area,
+                                                                              maxValue: listAllSensorValuesFromArea.last),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                ],
+                                                              ),
                                                             ),
                                                           ),
-                                                        ),
-                                                      ],
-                                                    );
-                                                  } else {
-                                                    return Text('Nothing');
-                                                  }
-                                                },
-                                              ),
-                                            ],
+                                                        ],
+                                                      );
+                                                    } else {
+                                                      return Text('Nothing');
+                                                    }
+                                                  },
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ));
-                                    }
+                                        ));
+                                      }
 
-                                    return Column(
-                                      children: column,
-                                    );
-                                  } else {
-                                    return Text(snapshotSensorReport
-                                        .connectionState
-                                        .toString());
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
+                                      return Column(
+                                        children: column,
+                                      );
+                                    } else {
+                                      return Text(snapshotSensorReport
+                                          .connectionState
+                                          .toString());
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
                         ],
                       ),
                     ),
@@ -994,16 +1008,17 @@ Widget buildSensorPlacementCard({
           ],
         ),
         SizedBox(width: 12),
-        Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                  fit: BoxFit.contain,
-                  image: AssetImage(
-                    'assets/images/sensor_placements/$bodyRegionName/$muscleName.png',
-                  )),
-            ))
+        if (bodyRegionName != 'Not assigned')
+          Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    fit: BoxFit.contain,
+                    image: AssetImage(
+                      'assets/images/sensor_placements/$bodyRegionName/$muscleName.png',
+                    )),
+              ))
       ],
     ),
   );

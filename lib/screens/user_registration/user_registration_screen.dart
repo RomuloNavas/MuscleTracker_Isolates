@@ -33,11 +33,11 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
     ],
     [
       'assets/images/login/login_3.png',
-      'A Bluetooth powered system that connects the sensor to your tablet or mobile'
+      'A Bluetooth powered system that connects the sensor to your tablet or mobile.'
     ],
     [
       'assets/images/login/login_4.png',
-      'Registering muscles myoelectrical activity while exercising'
+      'Register muscles myoelectrical activity while exercising, save and track your progress.'
     ],
   };
 

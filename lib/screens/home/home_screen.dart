@@ -60,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<RegisteredSensor> _allRegisteredSensors = [];
 
   bool _isLoading = true;
+  bool _isLoadingSensors = true;
 
   final SearchController _searchController = SearchController();
   late StreamSubscription _subscription;
@@ -325,73 +326,49 @@ class _HomeScreenState extends State<HomeScreen> {
                                       Theme.of(context).colorScheme.secondary,
                                   svgIconPath: 'sensor',
                                 ),
-                              if (_allRegisteredSensors.isNotEmpty)
-                                Builder(
-                                  builder: (context) {
-                                    return ZoomTapAnimation(
-                                      onTap: () async {
-                                        setState(() {
-                                          _isLoading = true;
-                                        });
-                                        _searchController.startScanner();
-                                        await Future.delayed(
-                                            Duration(seconds: 2));
-                                        _searchController.stopScanner();
-                                        _searchController.startScanner();
-                                        await Future.delayed(
-                                            Duration(seconds: 2));
-                                        _searchController.stopScanner();
-
-                                        _initRegisteredSensorsDBAsync();
-                                      },
-                                      child: Row(
+                              if (_allRegisteredSensors.isNotEmpty &&
+                                  _isLoadingSensors == true)
+                                CircularProgressIndicator(),
+                              if (_allRegisteredSensors.isNotEmpty &&
+                                  _isLoadingSensors == false)
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    for (var registeredSensor
+                                        in _allRegisteredSensors)
+                                      Column(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
+                                            MainAxisAlignment.center,
                                         children: [
-                                          for (var registeredSensor
-                                              in _allRegisteredSensors)
-                                            Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                CircleAvatar(
-                                                  backgroundColor:
-                                                      Get.isDarkMode
-                                                          ? lighterColorFrom(
-                                                              color: AppTheme
-                                                                  .appDarkTheme
-                                                                  .colorScheme
-                                                                  .surface,
-                                                              amount: 0.05)
-                                                          : lighterColorFrom(
-                                                              color: AppTheme
-                                                                  .appTheme
-                                                                  .colorScheme
-                                                                  .surface,
-                                                              amount: 0.05),
-                                                  child: SvgPicture.asset(
-                                                      'assets/icons/callibri_device-${registeredSensor.color}.svg',
-                                                      width: 16,
-                                                      semanticsLabel:
-                                                          'Callibri icon'),
-                                                ),
-                                                const SizedBox(height: 6),
-                                                if (registeredSensor.battery !=
-                                                    null)
-                                                  AppBatteryIndicator(
-                                                      appBatteryIndicatorLabelPosition:
-                                                          AppBatteryIndicatorLabelPosition
-                                                              .inside,
-                                                      batteryLevel:
-                                                          registeredSensor
-                                                              .battery!)
-                                              ],
-                                            ),
+                                          CircleAvatar(
+                                            backgroundColor: Get.isDarkMode
+                                                ? lighterColorFrom(
+                                                    color: AppTheme.appDarkTheme
+                                                        .colorScheme.surface,
+                                                    amount: 0.05)
+                                                : lighterColorFrom(
+                                                    color: AppTheme.appTheme
+                                                        .colorScheme.surface,
+                                                    amount: 0.05),
+                                            child: SvgPicture.asset(
+                                                'assets/icons/callibri_device-${registeredSensor.color}.svg',
+                                                width: 16,
+                                                semanticsLabel:
+                                                    'Callibri icon'),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          if (registeredSensor.battery != null)
+                                            AppBatteryIndicator(
+                                                appBatteryIndicatorLabelPosition:
+                                                    AppBatteryIndicatorLabelPosition
+                                                        .inside,
+                                                batteryLevel:
+                                                    registeredSensor.battery!)
                                         ],
                                       ),
-                                    );
-                                  },
-                                ),
+                                  ],
+                                )
                             ],
                           ),
                         ),
@@ -565,6 +542,19 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Future<List<RegisteredSensor?>> getRegisteredSensors() async {
+  //   var user = await userOperations.getLoggedInUser();
+  //   int? userId;
+  //   List<RegisteredSensor> registeredSensor = [];
+  //   if (user != null) {
+  //     registeredSensor =
+  //         await RegisteredSensorOperations().getRegisteredSensorsByUser(user);
+  //   }
+  //   _allRegisteredSensors = registeredSensor;
+  //   _isLoadingSensors = false;
+  //   return registeredSensor;
+  // }
+
   Future<void> _initRegisteredSensorsDBAsync() async {
     if (_foundSensorsWithCallback.isNotEmpty) {
       List<SensorInfo> allRegisteredAndDiscoveredSensors = [];
@@ -608,10 +598,15 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       _foundSensorsWithCallback.clear();
     }
-    var registeredSensors =
-        await RegisteredSensorOperations().getAllRegisteredSensors();
-    _allRegisteredSensors = registeredSensors;
-
+    var user = await userOperations.getLoggedInUser();
+    int? userId;
+    List<RegisteredSensor> registeredSensor = [];
+    if (user != null) {
+      registeredSensor =
+          await RegisteredSensorOperations().getRegisteredSensorsByUser(user);
+    }
+    _allRegisteredSensors = registeredSensor;
+    _isLoadingSensors = false;
     setState(() {});
   }
 
@@ -800,6 +795,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                 svgFileName: 'sensor',
                                 onPressed: () => Get.to(() => SearchScreen()),
                               ),
+                            if (_allRegisteredSensors.isNotEmpty)
+                              AppBottomSheetButton(
+                                text:
+                                    'Check sensors battery (First you need to turn on your sensors!)',
+                                svgFileName: 'battery-2',
+                                onPressed: () async {
+                                  setState(() {
+                                    _isLoadingSensors = true;
+                                  });
+                                  _searchController.startScanner();
+                                  await Future.delayed(Duration(seconds: 2));
+                                  _searchController.stopScanner();
+                                  _searchController.startScanner();
+                                  await Future.delayed(Duration(seconds: 2));
+                                  _searchController.stopScanner();
+
+                                  _initRegisteredSensorsDBAsync();
+                                },
+                              ),
                             AppBottomSheetButton(
                               text: 'Log out',
                               svgFileName: 'log-out',
@@ -877,11 +891,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           AppBottomSheetButton(
                             text: 'Delete client',
                             svgFileName: 'user-minus',
-                            onPressed: () async {
-                              await clientOperations.deleteClient(client);
-                              await _getRegisteredClientsDBAsync();
-                              setState(() {});
-                              Navigator.pop(context);
+                            onPressed: () {
+                              showAlertDialog(context);
+                              // await clientOperations.deleteClient(client);
+                              // await _getRegisteredClientsDBAsync();
+                              // setState(() {});
+                              // Navigator.pop(context);
                             },
                           ),
                         ],
@@ -891,5 +906,122 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           );
         });
+  }
+
+  showAlertDialog(BuildContext context) {
+    // set up the buttons
+    Widget cancelButton = AppIconButton(
+      buttonType: ButtonType.outlinedButton,
+      backgroundColor: Colors.transparent,
+      textColor: Theme.of(context).colorScheme.secondary,
+      text: 'Cancel',
+      onPressed: () {},
+    );
+    Widget continueButton = AppIconButton(
+      svgIconPath: 'trash',
+      backgroundColor: Colors.red,
+      text: 'Delete',
+      onPressed: () {},
+    );
+
+    // set up the AlertDialog
+    Dialog alert = Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Theme.of(context).colorScheme.surfaceVariant,
+          // border: Border.all(
+          //   color: Theme.of(context).colorScheme.outline,
+          //   width: 1,
+          // ),
+        ),
+        height: 220,
+        width: 450,
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.only(top: 24, bottom: 20, right: 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: CircleAvatar(
+                        backgroundColor: AppTheme.appDarkTheme.colorScheme.error
+                            .withOpacity(0.3),
+                        radius: 22,
+                        child: SvgPicture.asset('assets/icons/ui/trash.svg',
+                            width: 24,
+                            color: AppTheme.appDarkTheme.colorScheme.error),
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Delete client',
+                            style: Get.isDarkMode
+                                ? AppTheme.appDarkTheme.textTheme.headline4
+                                : AppTheme.appTheme.textTheme.headline4),
+                        SizedBox(
+                          width: 450 - (12 * 1) - (16 * 2) - 24 - 22,
+                          child: Text(
+                            "Are you sure you want to delete this client?\nAll client's data will be permanently removed. This action cannot be undone.",
+                            style: Get.isDarkMode
+                                ? AppTheme.appDarkTheme.textTheme.bodyText1
+                                : AppTheme.appTheme.textTheme.bodyText1,
+                          ),
+                        )
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              height: 72,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.only(
+                  bottomRight: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
+                ),
+              ),
+              child: SizedBox.expand(
+                child: Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      cancelButton,
+                      continueButton,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+
+      // title: Text("AlertDialog"),
+      // content: Text(
+      //     "Would you like to continue learning how to use Flutter alerts?"),
+      // actions: [
+      //   cancelButton,
+      //   continueButton,
+      // ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 }

@@ -46,7 +46,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
   Timer? _timerAddCerosToDisconnectedDevice;
 
   bool envelopeStarted = false;
-  String sessionStartedAt = "Signal haven't been initialized";
+  late String _sessionStartedAt;
   String sessionEndedAt = "Session haven't finished";
 
   bool isRecording = false;
@@ -86,11 +86,11 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
 
   @override
   void initState() {
+    super.initState();
     initAllExercises = _getAllExercises();
-
+    _sessionStartedAt = DateTime.now().toIso8601String();
     _scrollController = FixedExtentScrollController();
 
-    super.initState();
     Wakelock.enable();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
@@ -195,6 +195,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                     log('Disconnecting from: ${widget.allSensorsUsedInSession[i].sensor.name}');
                                     widget.allSensorsUsedInSession[i].sensor
                                         .disconnect();
+                                    widget.allSensorsUsedInSession[i].sensor.dispose();
                                   }
                                   await Future.delayed(Duration(seconds: 1));
 
@@ -225,7 +226,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                       client: widget.client,
                                       usedSensors: usedSensors,
                                       completedWorkouts: _completedWorkouts,
-                                      sessionStartedAt: sessionStartedAt,
+                                      sessionStartedAt: _sessionStartedAt,
                                       sessionEndedAt: sessionEndedAt,
                                     );
                                   });
@@ -277,7 +278,8 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                     : 'record',
                                                 iconColor: isRecording
                                                     ? Theme.of(context)
-                                                        .colorScheme.tertiary
+                                                        .colorScheme
+                                                        .tertiary
                                                     : Theme.of(context)
                                                         .colorScheme
                                                         .error,
@@ -403,7 +405,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                 onPressed: () async {
                                                   if (envelopeStarted ==
                                                       false) {
-                                                    sessionStartedAt =
+                                                    _sessionStartedAt =
                                                         DateTime.now()
                                                             .toIso8601String();
                                                     log('ENVELOPE STARTED');

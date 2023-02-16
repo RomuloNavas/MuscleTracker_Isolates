@@ -19,6 +19,7 @@ import 'package:neuro_sdk_isolate_example/theme.dart';
 import 'package:neuro_sdk_isolate_example/utils/build_battery_indicator_icon.dart';
 import 'package:neuro_sdk_isolate_example/utils/build_from_sensor.dart';
 import 'package:neuro_sdk_isolate_example/utils/global_utils.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_bottom.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_client_avatar.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
@@ -312,19 +313,7 @@ class SessionResultsScreenState extends State<SessionResultsScreen>
         title: const Text('Results from session'),
         titleSpacing: 32.0,
         automaticallyImplyLeading: false,
-        actions: [
-          // Container(
-          //   margin: const EdgeInsets.only(right: 16),
-          //   child: IconButton(
-          //     icon: Icon(Icons.done),
-          //     tooltip: 'Save and close',
-          //     onPressed: () {
-          //       Get.off(() => HomeScreen());
-          //       // handle the press
-          //     },
-          //   ),
-          // ),
-        ],
+        actions: [],
       ),
       body: SafeArea(
         child: Center(
@@ -335,132 +324,123 @@ class SessionResultsScreenState extends State<SessionResultsScreen>
                   width: Get.size.width > 800 ? 720 : Get.size.width - 32,
                   child: Column(
                     children: [
-                      SizedBox(height: 64),
-                      Text('Muscles activity comparison',
-                          style: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.textTheme.headline1
-                              : AppTheme.appTheme.textTheme.headline1),
-                      const SizedBox(height: 36),
+                      if (widget.completedWorkouts.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 36, top: 48),
+                          child: Text('Muscles activity comparison',
+                              style: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.textTheme.headline1
+                                  : AppTheme.appTheme.textTheme.headline1),
+                        ),
 
-                      for (var i = 0; i < widget.usedSensors.length; i++)
-                        Column(
-                          children: [
-                            const SizedBox(height: 24),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    margin: EdgeInsets.only(left: 8),
-                                    color: Get.isDarkMode
-                                        ? AppTheme
-                                            .appDarkTheme.colorScheme.surface
-                                        : AppTheme.appTheme.colorScheme.surface,
-                                    height: 8,
-                                    // width: 240,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Row(
+                      if (widget.completedWorkouts.isNotEmpty)
+                        for (var i = 0; i < widget.usedSensors.length; i++)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 20),
+                            padding: EdgeInsets.fromLTRB(6, 12, 6, 12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: Get.isDarkMode
+                                  ? AppTheme.appDarkTheme.colorScheme.surface
+                                  : AppTheme.appTheme.colorScheme.surface,
+                            ),
+                            child: Column(
+                              children: [
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      // Text(
-                                      //   '${i+ 1}',
-                                      //   style: Get.isDarkMode
-                                      //       ? AppTheme.appDarkTheme.textTheme
-                                      //           .headline1
-                                      //       : AppTheme
-                                      //           .appTheme.textTheme.headline1,
-                                      // ),
-                                      const SizedBox(width: 12),
-                                      CircleAvatar(
-                                        backgroundColor: Get.isDarkMode
+                                      Container(
+                                        margin: EdgeInsets.only(left: 8),
+                                        color: Get.isDarkMode
                                             ? AppTheme.appDarkTheme.colorScheme
                                                 .surface
                                             : AppTheme
                                                 .appTheme.colorScheme.surface,
-                                        radius: 22,
-                                        child: SvgPicture.asset(
-                                            'assets/icons/callibri_device-${widget.usedSensors[i].color}.svg',
-                                            width: 16,
-                                            semanticsLabel: 'Battery'),
+                                        height: 8,
+                                        // width: 240,
                                       ),
-                                      const SizedBox(width: 12),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                      const SizedBox(height: 16),
+                                      Row(
                                         children: [
-                                          Text(
-                                              idToBodyRegionString(
-                                                  bodyRegionId: widget
-                                                      .usedSensors[i]
-                                                      .sensorPlacement
-                                                      .bodyRegionId),
-                                              style: Get.isDarkMode
-                                                  ? AppTheme.appDarkTheme
-                                                      .textTheme.caption
-                                                      ?.copyWith(
-                                                          color: const Color(
-                                                              0xff878787))
-                                                  : AppTheme.appTheme.textTheme
-                                                      .caption
-                                                      ?.copyWith(
-                                                          color: const Color(
-                                                              0xff444547))),
-                                          Text(
-                                            widget.usedSensors[i]
-                                                .sensorPlacement.muscleName,
-                                            style: Get.isDarkMode
-                                                ? AppTheme.appDarkTheme
-                                                    .textTheme.bodyText1
-                                                : AppTheme.appTheme.textTheme
-                                                    .bodyText1,
+                                          const SizedBox(width: 12),
+                                          CircleAvatar(
+                                            backgroundColor: Get.isDarkMode
+                                                ? Colors.white.withOpacity(0.05)
+                                                : Colors.black
+                                                    .withOpacity(0.05),
+                                            radius: 22,
+                                            child: SvgPicture.asset(
+                                                'assets/icons/callibri_device-${widget.usedSensors[i].color}.svg',
+                                                width: 16,
+                                                semanticsLabel: 'Sensor'),
                                           ),
-                                          if (widget.usedSensors[i]
-                                                  .sensorPlacement.side !=
-                                              null)
-                                            AppMuscleSideIndicator(
-                                                side: widget.usedSensors[i]
-                                                    .sensorPlacement.side!)
+                                          const SizedBox(width: 12),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                  idToBodyRegionString(
+                                                      bodyRegionId: widget
+                                                          .usedSensors[i]
+                                                          .sensorPlacement
+                                                          .bodyRegionId),
+                                                  style: Get.isDarkMode
+                                                      ? AppTheme.appDarkTheme
+                                                          .textTheme.caption
+                                                          ?.copyWith(
+                                                              color: const Color(
+                                                                  0xff878787))
+                                                      : AppTheme.appTheme
+                                                          .textTheme.caption
+                                                          ?.copyWith(
+                                                              color: const Color(
+                                                                  0xff444547))),
+                                              Text(
+                                                widget.usedSensors[i]
+                                                    .sensorPlacement.muscleName,
+                                                style: Get.isDarkMode
+                                                    ? AppTheme.appDarkTheme
+                                                        .textTheme.bodyText1
+                                                    : AppTheme.appTheme
+                                                        .textTheme.bodyText1,
+                                              ),
+                                              if (widget.usedSensors[i]
+                                                      .sensorPlacement.side !=
+                                                  null)
+                                                AppMuscleSideIndicator(
+                                                    side: widget.usedSensors[i]
+                                                        .sensorPlacement.side!)
+                                            ],
+                                          )
                                         ],
-                                      )
+                                      ),
                                     ],
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: buildDataTable(
+                                      usedSensor: widget.usedSensors[i],
+                                      tableCompletedWorkouts:
+                                          widget.completedWorkouts),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 8),
-                            SizedBox(
-                              width: double.infinity,
-                              child: buildDataTable(
-                                  usedSensor: widget.usedSensors[i],
-                                  tableCompletedWorkouts:
-                                      widget.completedWorkouts),
-                            ),
-                            const SizedBox(height: 24),
-                          ],
-                        ),
-                      const SizedBox(height: 64),
-                      Center(
-                        child: Text(
-                          'Session Notes',
-                          style: Get.isDarkMode
-                              ? AppTheme.appDarkTheme.textTheme.headline1
-                              : AppTheme.appTheme.textTheme.headline1,
-                        ),
-                        // (1) general information about the session; (2) narrative about the session; and (3) the type of referrals made during the session.
-                      ),
-                      const SizedBox(height: 36),
-                      ContactCircleAvatar(
-                        radius: 32,
-                      ),
+                          ),
+
+                      // RecordVideo(),
                       AppHeaderInfo(
                         title:
                             '${widget.client.name} ${widget.client.surname} ${widget.client.patronymic}',
                         labelPrimary:
                             'Session duration: ${getMinutesAndSecondsFromDurationWithSign(duration: Duration(seconds: DateTime.parse(widget.sessionEndedAt).difference(DateTime.parse(widget.sessionStartedAt)).inSeconds))}',
                       ),
-                      const SizedBox(height: 36),
-                      const SizedBox(height: 16),
+
                       AppTextField(
                           textEditingController: _textEditingControllerTitle,
                           keyboardType: TextInputType.text,
@@ -511,127 +491,93 @@ class SessionResultsScreenState extends State<SessionResultsScreen>
                               return null;
                             }
                           }),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 24),
+                      AppBottom(
+                        onPressed: () async {
+                          var clientOperations = ClientOperations();
+                          var sessionOperations = SessionOperations();
+                          var workoutReportOperations =
+                              WorkoutReportOperations();
 
-                      // RecordVideo(),
-                      const SizedBox(height: 48),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8, top: 16),
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.7,
-                          child: AppFilledButton(
-                            onPressed: () async {
-                              var clientOperations = ClientOperations();
-                              var sessionOperations = SessionOperations();
-                              var workoutReportOperations =
-                                  WorkoutReportOperations();
+                          /// Save Session to DB and get the added session (row) ID
+                          var completedSession = Session(
+                            startedAt: widget.sessionStartedAt,
+                            endedAt: widget.sessionEndedAt,
+                            name: _textEditingControllerTitle.text,
+                            description: _textEditingControllerDescription.text,
+                            clientId: widget.client.id,
+                            bodyRegionId: widget
+                                .usedSensors.first.sensorPlacement.bodyRegionId,
+                          );
 
-                              /// Save Session to DB and get the added session (row) ID
-                              var completedSession = Session(
-                                startedAt: widget.sessionStartedAt,
-                                endedAt: widget.sessionEndedAt,
-                                name: _textEditingControllerTitle.text,
-                                description:
-                                    _textEditingControllerDescription.text,
-                                clientId: widget.client.id,
-                                bodyRegionId: widget.usedSensors.first
-                                    .sensorPlacement.bodyRegionId,
+                          var idOfLastAddedSession = await sessionOperations
+                              .createSession(completedSession);
+
+                          /// Inserts a WorkoutReport to the DB and gets it ID.
+                          for (var workout in widget.completedWorkouts) {
+                            var workoutReport = WorkoutReport(
+                              startedAt: workout.startedAt!.toIso8601String(),
+                              endedAt: workout.finishedAt!.toIso8601String(),
+                              sessionId: idOfLastAddedSession,
+                              workoutId: workout.exercise.id ??= 0,
+                            );
+                            var idOfLastAddedWorkoutReport =
+                                await workoutReportOperations
+                                    .createWorkoutReport(workoutReport);
+
+                            ///  Inserts a SensorReport for each used sensor
+                            for (var sensor in widget.usedSensors) {
+                              var registeredUsedSensor =
+                                  await RegisteredSensorOperations()
+                                      .getRegisteredSensorByAddress(
+                                          sensor.address);
+
+                              int? sensorPlacementOfRegisteredAndUsedSensor =
+                                  widget
+                                      .usedSensors
+                                      .firstWhere((s) =>
+                                          s.address ==
+                                          registeredUsedSensor!.address)
+                                      .sensorPlacement
+                                      .id;
+
+                              final sensorReport = SensorReport(
+                                maxAmp: workout.getMaxAmpInVFromSensor(
+                                    sensorAddress: sensor.address),
+                                minAmp: workout.getMinAmpInVFromSensor(
+                                    sensorAddress: sensor.address),
+                                avrAmp: workout.getAvrAmpInVFromSensor(
+                                    sensorAddress: sensor.address),
+                                area: workout.getAreaFromSensor(
+                                    sensorAddress: sensor.address),
+                                registeredSensorId: registeredUsedSensor!.id!,
+                                workoutReportId: idOfLastAddedWorkoutReport,
+                                placementId:
+                                    sensorPlacementOfRegisteredAndUsedSensor,
+                                side: sensor.sensorPlacement.side,
                               );
 
-                              var idOfLastAddedSession = await sessionOperations
-                                  .createSession(completedSession);
+                              await SensorReportOperations()
+                                  .createSensorReport(sensorReport);
 
-                              /// Inserts a WorkoutReport to the DB and gets it ID.
-                              for (var workout in widget.completedWorkouts) {
-                                var workoutReport = WorkoutReport(
-                                  startedAt:
-                                      workout.startedAt!.toIso8601String(),
-                                  endedAt:
-                                      workout.finishedAt!.toIso8601String(),
-                                  sessionId: idOfLastAddedSession,
-                                  workoutId: workout.exercise.id ??= 0,
-                                );
-                                var idOfLastAddedWorkoutReport =
-                                    await workoutReportOperations
-                                        .createWorkoutReport(workoutReport);
+                              // Update client's last session
+                              widget.client.lastSession =
+                                  DateTime.now().toIso8601String();
+                              await clientOperations
+                                  .updateClient(widget.client);
+                            }
+                          }
 
-                                ///  Inserts a SensorReport for each used sensor
-                                for (var sensor in widget.usedSensors) {
-                                  var registeredUsedSensor =
-                                      await RegisteredSensorOperations()
-                                          .getRegisteredSensorByAddress(
-                                              sensor.address);
-
-                                  int?
-                                      sensorPlacementOfRegisteredAndUsedSensor =
-                                      widget.usedSensors
-                                          .firstWhere((s) =>
-                                              s.address ==
-                                              registeredUsedSensor!.address)
-                                          .sensorPlacement
-                                          .id;
-
-                                  final sensorReport = SensorReport(
-                                    maxAmp: workout.getMaxAmpInVFromSensor(
-                                        sensorAddress: sensor.address),
-                                    minAmp: workout.getMinAmpInVFromSensor(
-                                        sensorAddress: sensor.address),
-                                    avrAmp: workout.getAvrAmpInVFromSensor(
-                                        sensorAddress: sensor.address),
-                                    area: workout.getAreaFromSensor(
-                                        sensorAddress: sensor.address),
-                                    registeredSensorId:
-                                        registeredUsedSensor!.id!,
-                                    workoutReportId: idOfLastAddedWorkoutReport,
-                                    placementId:
-                                        sensorPlacementOfRegisteredAndUsedSensor,
-                                    side: sensor.sensorPlacement.side,
-                                  );
-
-                                  await SensorReportOperations()
-                                      .createSensorReport(sensorReport);
-
-                                  // Update client's last session
-                                  widget.client.lastSession =
-                                      DateTime.now().toIso8601String();
-                                  await clientOperations
-                                      .updateClient(widget.client);
-                                }
-                              }
-
-                              Get.off(
-                                () => const HomeScreen(),
-                              );
-                            },
-                            backgroundColor: Get.isDarkMode
-                                ? AppTheme.appDarkTheme.colorScheme.primary
-                                : AppTheme.appTheme.colorScheme.primary,
-                            text: 'Save and close',
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 40, top: 8),
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.7,
-                          child: TextButton(
-                              onPressed: () {
-                                Get.off(() => const HomeScreen());
-                              },
-                              child: Text(
-                                'Close without saving',
-                                style: Get.isDarkMode
-                                    ? AppTheme.appDarkTheme.textTheme.button
-                                        ?.copyWith(
-                                            color: AppTheme
-                                                .appDarkTheme.colorScheme.error)
-                                    : AppTheme.appTheme.textTheme.button
-                                        ?.copyWith(
-                                            color: AppTheme
-                                                .appTheme.colorScheme.error),
-                              )),
-                        ),
-                      ),
+                          Get.off(
+                            () => const HomeScreen(),
+                          );
+                        },
+                        mainText: 'Save and close',
+                        secondaryText: 'Close without saving',
+                        secondaryTextColor: Theme.of(context).colorScheme.error,
+                        onSecondaryButtonPressed: () =>
+                            Get.off(() => const HomeScreen()),
+                      )
                     ],
                   ),
                 ),

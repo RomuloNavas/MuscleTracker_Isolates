@@ -63,11 +63,6 @@ class RegisteredSensorOperations {
       return null;
     }
   }
-
-  deleteAllRegisteredSensors() async {
-    final db = await dbProvider.database;
-    await db.delete('registeredSensor');
-  }
 }
 
 // - REGISTERED SENSOR MODEL

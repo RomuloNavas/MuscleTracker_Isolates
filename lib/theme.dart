@@ -7,8 +7,6 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   // 'appBarHeight' = 80,
   static ThemeData appTheme = ThemeData.light().copyWith(
-
-
     colorScheme: ColorScheme.fromSwatch().copyWith(
         primary: const Color(0xff5181b8),
         secondary:
@@ -46,7 +44,6 @@ class AppTheme {
   );
 
   static ThemeData appDarkTheme = ThemeData.dark().copyWith(
-  
     colorScheme: ColorScheme.fromSwatch().copyWith(
       primary: const Color(0xff5181b8),
       secondary: const Color(0xff148dc6),
@@ -89,7 +86,7 @@ class AppTheme {
         fontSize: 26,
         color: Color(0xff242a2f),
         letterSpacing: 0.3,
-        height: 0.9,
+        height: 1.1,
         fontWeight: FontWeight.w600),
     headline2: TextStyle(
         fontFamily: 'oceanwide',
@@ -151,7 +148,7 @@ class AppTheme {
         fontSize: 26,
         color: Color(0xffeeeeee),
         letterSpacing: 0.3,
-        height: 0.9,
+        height: 1.1,
         fontWeight: FontWeight.w600),
     headline2: TextStyle(
         fontFamily: 'oceanwide',

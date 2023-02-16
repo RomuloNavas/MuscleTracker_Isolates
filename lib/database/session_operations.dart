@@ -1,3 +1,4 @@
+import 'dart:developer';
 
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/database.dart';
@@ -27,9 +28,14 @@ class SessionOperations {
     }
   }
 
-  deleteSession(Session session) async {
+  Future<void> deleteSession(Session session) async {
     final db = await dbProvider.database;
-    await db.delete('session', where: 'sessionId = ?', whereArgs: [session.id]);
+    try {
+      await db
+          .delete('session', where: 'sessionId = ?', whereArgs: [session.id]);
+    } catch (e) {
+      log(e.toString(), name: 'SESSION OPERATIONS DELETE');
+    }
   }
 
   Future<List<Session>> getAllSessions() async {

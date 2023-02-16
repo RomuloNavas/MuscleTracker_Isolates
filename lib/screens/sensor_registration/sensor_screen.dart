@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
@@ -54,7 +56,7 @@ class _SensorScreenState extends State<SensorScreen> {
           children: [
             const AppHeaderInfo(
               title: 'The Serial Numbers must coincide with your sensors',
-              labelPrimary: "Tap on the cards below to localize your sensors",
+              labelPrimary: "You can find it at the front back of your sensor",
             ),
             Expanded(
               child: ListView.builder(
@@ -77,148 +79,132 @@ class _SensorScreenState extends State<SensorScreen> {
                         child: Material(
                           color: Colors.transparent,
                           borderRadius: BorderRadius.circular(16),
-                          child: InkWell(
-                            onTap: () =>
-                                _findSensor(widget.listConnectedSensor[index]),
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 16, top: 16, right: 16, bottom: 16),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Image.asset(
-                                        'assets/images/callibri_${listSensorsToRegister[index].color}.png',
-                                        semanticLabel: 'Sensor Icon}',
-                                        height: 44,
-                                      ),
-                                      const SizedBox(width: 3),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Callibri ${listSensorsToRegister[index].color}',
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                left: 16, top: 16, right: 16, bottom: 16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Image.asset(
+                                      'assets/images/callibri_${listSensorsToRegister[index].color}.png',
+                                      semanticLabel: 'Sensor Icon}',
+                                      height: 44,
+                                    ),
+                                    const SizedBox(width: 3),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Callibri ${listSensorsToRegister[index].color}',
+                                          style: Get.isDarkMode
+                                              ? AppTheme.appDarkTheme.textTheme
+                                                  .bodyText1
+                                              : AppTheme
+                                                  .appTheme.textTheme.bodyText1,
+                                        ),
+                                        RichText(
+                                          text: TextSpan(
                                             style: Get.isDarkMode
                                                 ? AppTheme.appDarkTheme
-                                                    .textTheme.bodyText1
-                                                : AppTheme.appTheme.textTheme
-                                                    .bodyText1,
+                                                    .textTheme.caption
+                                                : AppTheme
+                                                    .appTheme.textTheme.caption,
+                                            children: <TextSpan>[
+                                              const TextSpan(
+                                                  text: 'Serial Number: '),
+                                              TextSpan(
+                                                  text: listSensorsToRegister[
+                                                          index]
+                                                      .serialNumber,
+                                                  style: Get.isDarkMode
+                                                      ? AppTheme.appDarkTheme
+                                                          .textTheme.caption
+                                                          ?.copyWith(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600)
+                                                      : AppTheme.appTheme
+                                                          .textTheme.caption
+                                                          ?.copyWith(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600)),
+                                            ],
                                           ),
-                                          RichText(
-                                            text: TextSpan(
-                                              style: Get.isDarkMode
-                                                  ? AppTheme.appDarkTheme
-                                                      .textTheme.caption
-                                                  : AppTheme.appTheme.textTheme
-                                                      .caption,
-                                              children: <TextSpan>[
-                                                const TextSpan(
-                                                    text: 'Serial Number: '),
-                                                TextSpan(
-                                                    text: listSensorsToRegister[
-                                                            index]
-                                                        .serialNumber,
-                                                    style: Get.isDarkMode
-                                                        ? AppTheme.appDarkTheme
-                                                            .textTheme.caption
-                                                            ?.copyWith(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600)
-                                                        : AppTheme.appTheme
-                                                            .textTheme.caption
-                                                            ?.copyWith(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600)),
-                                              ],
-                                            ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    FutureBuilder(
+                                        future: widget
+                                            .listConnectedSensor[index]
+                                            .battery
+                                            .value,
+                                        builder: (context,
+                                            AsyncSnapshot<int> snapshot) {
+                                          if (snapshot.connectionState ==
+                                                  ConnectionState.done &&
+                                              snapshot.hasData) {
+                                            return AppBatteryIndicator(
+                                                appBatteryIndicatorLabelPosition:
+                                                    AppBatteryIndicatorLabelPosition
+                                                        .left,
+                                                batteryLevel: snapshot.data!);
+                                          } else {
+                                            return SizedBox();
+                                          }
+                                        }),
+                                    const SizedBox(width: 8),
+                                    PopupMenuButton(
+                                        constraints:
+                                            BoxConstraints(minWidth: 220),
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(20.0),
                                           ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      FutureBuilder(
-                                          future: widget
-                                              .listConnectedSensor[index]
-                                              .battery
-                                              .value,
-                                          builder: (context,
-                                              AsyncSnapshot<int> snapshot) {
-                                            if (snapshot.connectionState ==
-                                                    ConnectionState.done &&
-                                                snapshot.hasData) {
-                                              return AppBatteryIndicator(
-                                                  appBatteryIndicatorLabelPosition:
-                                                      AppBatteryIndicatorLabelPosition
-                                                          .left,
-                                                  batteryLevel: snapshot.data!);
-                                            } else {
-                                              return SizedBox();
-                                            }
-                                          }),
-                                      const SizedBox(width: 8),
-                                      PopupMenuButton(
-                                          constraints:
-                                              BoxConstraints(minWidth: 220),
-                                          shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(20.0),
-                                            ),
-                                          ),
-                                          elevation: 0.2,
+                                        ),
+                                        elevation: 0.2,
+                                        color: Get.isDarkMode
+                                            ? AppTheme.appDarkTheme.colorScheme
+                                                .surface
+                                            : AppTheme
+                                                .appTheme.colorScheme.surface,
+                                        position: PopupMenuPosition.under,
+                                        offset: Offset(0, 12),
+                                        // position: PopupMenuPosition.over,
+                                        // offset: Offset(48, -10),
+                                        splashRadius: 26,
+                                        icon: Icon(
+                                          Icons.more_vert,
                                           color: Get.isDarkMode
-                                              ? AppTheme.appDarkTheme
-                                                  .colorScheme.surface
-                                              : AppTheme
-                                                  .appTheme.colorScheme.surface,
-                                          position: PopupMenuPosition.under,
-                                          offset: Offset(0, 12),
-                                          // position: PopupMenuPosition.over,
-                                          // offset: Offset(48, -10),
-                                          splashRadius: 26,
-                                          icon: Icon(
-                                            Icons.more_vert,
-                                            color: Get.isDarkMode
-                                                ? Color(0xffdcdcdc)
-                                                : Colors.black,
-                                          ),
-                                          itemBuilder: (context) => [
-                                                PopupMenuItem(
-                                                    onTap: () => _findSensor(
-                                                        widget.listConnectedSensor[
-                                                            index]),
-                                                    child:
-                                                        const AppPopMenuItemChild(
-                                                      title: 'Find sensor',
-                                                      iconData:
-                                                          Icons.emoji_objects,
-                                                    )),
-                                                PopupMenuItem(
-                                                    onTap: () {
-                                                      listSensorsToRegister
-                                                          .removeAt(index);
-                                                      setState(() {});
-                                                    },
-                                                    child: AppPopMenuItemChild(
-                                                      title: 'Remove sensor',
-                                                      iconData:
-                                                          Icons.delete_outline,
-                                                      iconColor:
-                                                          Theme.of(context)
-                                                              .colorScheme
-                                                              .error,
-                                                    )),
-                                              ])
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                              ? Color(0xffdcdcdc)
+                                              : Colors.black,
+                                        ),
+                                        itemBuilder: (context) => [
+                                              PopupMenuItem(
+                                                  onTap: () {
+                                                    listSensorsToRegister
+                                                        .removeAt(index);
+                                                    setState(() {});
+                                                  },
+                                                  child: AppPopMenuItemChild(
+                                                    title: 'Remove sensor',
+                                                    iconData:
+                                                        Icons.delete_outline,
+                                                    iconColor: Theme.of(context)
+                                                        .colorScheme
+                                                        .error,
+                                                  )),
+                                            ])
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -237,11 +223,14 @@ class _SensorScreenState extends State<SensorScreen> {
                       .insertNewSensor(sensorToRegister);
                 }
                 for (var connectedSensor in widget.listConnectedSensor) {
+                  log('Disconnect');
                   connectedSensor.disconnect();
+                  log('Dispose');
+                  connectedSensor.dispose();
                 }
 
                 Get.off(
-                  () => HomeScreen(),
+                  () => const HomeScreen(),
                 );
               },
               mainText: 'Save ${widget.listConnectedSensor.length} sensors',
@@ -292,6 +281,11 @@ class _SensorScreenState extends State<SensorScreen> {
       allConnectedSensorToRegister.add(registeredSensor);
     }
     listSensorsToRegister = allConnectedSensorToRegister;
+    for (var connectedSensor in widget.listConnectedSensor) {
+      Future.delayed(const Duration(milliseconds: 100));
+      connectedSensor.disconnect();
+      log('Disconnect');
+    }
     _isLoading = false;
     setState(() {});
   }

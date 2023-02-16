@@ -11,6 +11,12 @@ enum ButtonSize {
   big,
 }
 
+enum ButtonType {
+  textButton,
+  outlinedButton,
+  filledButton,
+}
+
 class AppFilledButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
@@ -72,49 +78,6 @@ class AppFilledButton extends StatelessWidget {
   }
 }
 
-class AppOutlinedButton extends StatelessWidget {
-  const AppOutlinedButton(
-      {Key? key,
-      required this.child,
-      required this.action,
-      required this.color,
-      this.buttonSize})
-      : super(key: key);
-
-  final Widget child;
-  final VoidCallback action;
-  final Color color;
-  final ButtonSize? buttonSize;
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: action,
-      style: ButtonStyle(
-        // Border Color
-        side: MaterialStateProperty.all(BorderSide(width: 1, color: color)),
-        overlayColor: MaterialStateProperty.all(color.withOpacity(0.3)),
-        minimumSize: MaterialStateProperty.all(buttonSize == ButtonSize.medium
-            ? const Size(0, 32)
-            : buttonSize == ButtonSize.big
-                ? const Size(0, 48)
-                : const Size(0, 16)),
-        shadowColor: MaterialStateProperty.all(
-            darkerColorFrom(color: color, amount: 0.5)),
-        //Color when button is pressed
-        // splashFactory: NoSplash.splashFactory,
-        // Text color
-        foregroundColor: MaterialStateProperty.all(color),
-        surfaceTintColor:
-            MaterialStateProperty.all(AppTheme.appTheme.primaryColorDark),
-        backgroundColor: MaterialStateProperty.all(color.withOpacity(0.3)),
-        shape: MaterialStateProperty.all(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0))),
-      ),
-      child: child,
-    );
-  }
-}
-
 class AppTextButton extends StatelessWidget {
   const AppTextButton({
     Key? key,
@@ -167,21 +130,26 @@ class AppTextButton extends StatelessWidget {
 class AppIconButton extends StatelessWidget {
   const AppIconButton({
     Key? key,
-    required this.svgIconPath,
+    this.svgIconPath,
     this.onPressed,
     this.iconColor,
+    this.textColor,
+    this.borderColor,
     this.text,
     this.backgroundColor,
     this.size,
-  })  : 
-        super(key: key);
+    this.buttonType,
+  }) : super(key: key);
 
   final Function()? onPressed;
   final String? text;
   final Color? backgroundColor;
   final Color? iconColor;
-  final String svgIconPath;
+  final Color? textColor;
+  final Color? borderColor;
+  final String? svgIconPath;
   final ButtonSize? size;
+  final ButtonType? buttonType;
 
   @override
   Widget build(BuildContext context) {
@@ -208,18 +176,20 @@ class AppIconButton extends StatelessWidget {
                     ? 44
                     : 40,
             child: Center(
-              child: SvgPicture.asset(
-                'assets/icons/ui/$svgIconPath.svg',
-                width: size == ButtonSize.big
-                    ? 32
-                    : size == ButtonSize.medium
-                        ? 24
-                        : 20,
-                color: iconColor ??
-                    (Get.isDarkMode
-                        ? AppTheme.appDarkTheme.colorScheme.tertiary
-                        : AppTheme.appTheme.colorScheme.tertiary),
-              ),
+              child: svgIconPath != null
+                  ? SvgPicture.asset(
+                      'assets/icons/ui/$svgIconPath.svg',
+                      width: size == ButtonSize.big
+                          ? 32
+                          : size == ButtonSize.medium
+                              ? 24
+                              : 20,
+                      color: iconColor ??
+                          (Get.isDarkMode
+                              ? AppTheme.appDarkTheme.colorScheme.tertiary
+                              : AppTheme.appTheme.colorScheme.tertiary),
+                    )
+                  : null,
             ),
           ),
         );
@@ -233,10 +203,22 @@ class AppIconButton extends StatelessWidget {
             scaleCurve: Curves.decelerate,
             opacityCurve: Curves.fastOutSlowIn,
             child: Container(
-              width: 220,
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              width: size == ButtonSize.big
+                  ? 240
+                  : size == ButtonSize.medium
+                      ? 160
+                      : size == ButtonSize.small
+                          ? 120
+                          : 240,
               height: 48,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  width: 2,
+                  color:
+                      borderColor != null ? borderColor! : Colors.transparent,
+                ),
                 color:
                     backgroundColor ?? (Theme.of(context).colorScheme.primary),
               ),
@@ -246,13 +228,14 @@ class AppIconButton extends StatelessWidget {
                   children: [
                     Text(text!,
                         style: AppTheme.appDarkTheme.textTheme.button
-                            ?.copyWith(color: Colors.white)),
-                    const SizedBox(width: 8),
-                    SvgPicture.asset(
-                      'assets/icons/ui/$svgIconPath.svg',
-                      width: 24,
-                      color: Colors.white,
-                    ),
+                            ?.copyWith(color: textColor ?? (Colors.white))),
+                    if (svgIconPath != null) const SizedBox(width: 8),
+                    if (svgIconPath != null)
+                      SvgPicture.asset(
+                        'assets/icons/ui/$svgIconPath.svg',
+                        width: 24,
+                        color: Colors.white,
+                      ),
                   ],
                 ),
               ),

@@ -6,13 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
 import 'package:neuro_sdk_isolate_example/database/body_region_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/placement_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
+import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/search_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/session/session_monitor_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/controllers/search_controller.dart';
@@ -80,164 +79,164 @@ class _SessionSetupScreenState extends State<SessionSetupScreen> {
           children: [
             SidePanelWorkoutSetup(
                 client: widget.client, selectedPlacement: _selectedPlacement),
-            Flexible(
-              flex: 1,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Builder(
-                      builder: (context) {
-                        List<Map<String, dynamic>> data = [];
-                        for (var i = 0; i < allPlacementsInJson.length; i++) {
-                          var map = Map<String, dynamic>();
-                          map['placementId'] =
-                              allPlacementsInJson[i]["placementId"];
-                          map['placementMuscleName'] =
-                              allPlacementsInJson[i]["placementMuscleName"];
-                          map['FK_Placement_bodyRegionId'] =
-                              allPlacementsInJson[i]
-                                  ["FK_Placement_bodyRegionId"];
-                          map['placementAction'] =
-                              allPlacementsInJson[i]["placementAction"];
-                          map['placementMuscleInsertions'] =
-                              allPlacementsInJson[i]
-                                  ["placementMuscleInsertions"];
-                          map['placementLocationDescription'] =
-                              allPlacementsInJson[i]
-                                  ["placementLocationDescription"];
-                          map['placementBehavioralTest'] =
-                              allPlacementsInJson[i]["placementBehavioralTest"];
+            // Flexible(
+            //   flex: 1,
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       Expanded(
+            //         child: Builder(
+            //           builder: (context) {
+            //             List<Map<String, dynamic>> data = [];
+            //             for (var i = 0; i < allPlacementsInJson.length; i++) {
+            //               var map = Map<String, dynamic>();
+            //               map['placementId'] =
+            //                   allPlacementsInJson[i]["placementId"];
+            //               map['placementMuscleName'] =
+            //                   allPlacementsInJson[i]["placementMuscleName"];
+            //               map['FK_Placement_bodyRegionId'] =
+            //                   allPlacementsInJson[i]
+            //                       ["FK_Placement_bodyRegionId"];
+            //               map['placementAction'] =
+            //                   allPlacementsInJson[i]["placementAction"];
+            //               map['placementMuscleInsertions'] =
+            //                   allPlacementsInJson[i]
+            //                       ["placementMuscleInsertions"];
+            //               map['placementLocationDescription'] =
+            //                   allPlacementsInJson[i]
+            //                       ["placementLocationDescription"];
+            //               map['placementBehavioralTest'] =
+            //                   allPlacementsInJson[i]["placementBehavioralTest"];
 
-                          data.add(map);
-                        }
+            //               data.add(map);
+            //             }
 
-                        var groupedByRegions = groupBy(data,
-                            (Map obj) => obj['FK_Placement_bodyRegionId']);
+            //             var groupedByRegions = groupBy(data,
+            //                 (Map obj) => obj['FK_Placement_bodyRegionId']);
 
-                        List<Widget> listOfColumns = [];
-                        listOfColumns.add(const HeaderSearchBar());
-                        groupedByRegions.forEach((key, value) {
-                          listOfColumns.add(Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding:
-                                    const EdgeInsets.only(left: 48, top: 24),
-                                child: Text(
-                                    idToBodyRegionString(bodyRegionId: key),
-                                    style: Get.isDarkMode
-                                        ? AppTheme
-                                            .appDarkTheme.textTheme.headline3
-                                        : AppTheme
-                                            .appTheme.textTheme.headline3),
-                              ),
-                              const SizedBox(height: 16),
-                              SizedBox(
-                                height: 190 + 24,
-                                child: ListView.separated(
-                                  itemCount: groupedByRegions[key]!.length,
-                                  primary: false,
-                                  scrollDirection: Axis.horizontal,
-                                  separatorBuilder: (context, index) =>
-                                      const SizedBox(width: 16),
-                                  itemBuilder: (context, i) {
-                                    Placement sensorPlacement =
-                                        Placement.fromMap(
-                                            groupedByRegions[key]![i]);
+            //             List<Widget> listOfColumns = [];
+            //             listOfColumns.add(const HeaderSearchBar());
+            //             groupedByRegions.forEach((key, value) {
+            //               listOfColumns.add(Column(
+            //                 crossAxisAlignment: CrossAxisAlignment.start,
+            //                 children: [
+            //                   Padding(
+            //                     padding:
+            //                         const EdgeInsets.only(left: 48, top: 12),
+            //                     child: Text(
+            //                         idToBodyRegionString(bodyRegionId: key),
+            //                         style: Get.isDarkMode
+            //                             ? AppTheme
+            //                                 .appDarkTheme.textTheme.headline3
+            //                             : AppTheme
+            //                                 .appTheme.textTheme.headline3),
+            //                   ),
+            //                   const SizedBox(height: 16),
+            //                   SizedBox(
+            //                     height: 190 + 24,
+            //                     child: ListView.separated(
+            //                       itemCount: groupedByRegions[key]!.length,
+            //                       primary: false,
+            //                       scrollDirection: Axis.horizontal,
+            //                       separatorBuilder: (context, index) =>
+            //                           const SizedBox(width: 16),
+            //                       itemBuilder: (context, i) {
+            //                         Placement sensorPlacement =
+            //                             Placement.fromMap(
+            //                                 groupedByRegions[key]![i]);
 
-                                    if (i == 0) {
-                                      return Row(
-                                        children: [
-                                          const SizedBox(width: 48),
-                                          CardSensorPlacementInfo(
-                                            cardPlacement: sensorPlacement,
-                                            selectedPlacement:
-                                                _selectedPlacement ??
-                                                    (Placement(
-                                                        muscleName:
-                                                            'Not assigned')),
-                                            notifyParentPlacementSelected:
-                                                (Placement placement) {
-                                              setState(() {
-                                                _selectedPlacement = placement;
-                                              });
-                                            },
-                                            notifyParentSideSelected:
-                                                (Placement placementWithSide) {
-                                              setState(() {
-                                                _selectedPlacement =
-                                                    placementWithSide;
-                                              });
-                                            },
-                                          )
-                                        ],
-                                      );
-                                    }
-                                    if (i ==
-                                        groupedByRegions[key]!.length - 1) {
-                                      return Row(
-                                        children: [
-                                          CardSensorPlacementInfo(
-                                            cardPlacement: sensorPlacement,
-                                            selectedPlacement:
-                                                _selectedPlacement ??
-                                                    (Placement(
-                                                        muscleName:
-                                                            'Not assigned')),
-                                            notifyParentPlacementSelected:
-                                                (Placement placement) {
-                                              setState(() {
-                                                _selectedPlacement = placement;
-                                              });
-                                            },
-                                            notifyParentSideSelected:
-                                                (Placement placementWithSide) {
-                                              setState(() {
-                                                _selectedPlacement =
-                                                    placementWithSide;
-                                              });
-                                            },
-                                          ),
-                                          const SizedBox(width: 48),
-                                        ],
-                                      );
-                                    }
+            //                         if (i == 0) {
+            //                           return Row(
+            //                             children: [
+            //                               const SizedBox(width: 48),
+            //                               CardSensorPlacementInfo(
+            //                                 cardPlacement: sensorPlacement,
+            //                                 selectedPlacement:
+            //                                     _selectedPlacement ??
+            //                                         (Placement(
+            //                                             muscleName:
+            //                                                 'Not assigned')),
+            //                                 notifyParentPlacementSelected:
+            //                                     (Placement placement) {
+            //                                   setState(() {
+            //                                     _selectedPlacement = placement;
+            //                                   });
+            //                                 },
+            //                                 notifyParentSideSelected:
+            //                                     (Placement placementWithSide) {
+            //                                   setState(() {
+            //                                     _selectedPlacement =
+            //                                         placementWithSide;
+            //                                   });
+            //                                 },
+            //                               )
+            //                             ],
+            //                           );
+            //                         }
+            //                         if (i ==
+            //                             groupedByRegions[key]!.length - 1) {
+            //                           return Row(
+            //                             children: [
+            //                               CardSensorPlacementInfo(
+            //                                 cardPlacement: sensorPlacement,
+            //                                 selectedPlacement:
+            //                                     _selectedPlacement ??
+            //                                         (Placement(
+            //                                             muscleName:
+            //                                                 'Not assigned')),
+            //                                 notifyParentPlacementSelected:
+            //                                     (Placement placement) {
+            //                                   setState(() {
+            //                                     _selectedPlacement = placement;
+            //                                   });
+            //                                 },
+            //                                 notifyParentSideSelected:
+            //                                     (Placement placementWithSide) {
+            //                                   setState(() {
+            //                                     _selectedPlacement =
+            //                                         placementWithSide;
+            //                                   });
+            //                                 },
+            //                               ),
+            //                               const SizedBox(width: 48),
+            //                             ],
+            //                           );
+            //                         }
 
-                                    return CardSensorPlacementInfo(
-                                      cardPlacement: sensorPlacement,
-                                      selectedPlacement: _selectedPlacement ??
-                                          (Placement(
-                                              muscleName: 'Not assigned')),
-                                      notifyParentPlacementSelected:
-                                          (Placement placement) {
-                                        setState(() {
-                                          _selectedPlacement = placement;
-                                        });
-                                      },
-                                      notifyParentSideSelected:
-                                          (Placement placementWithSide) {
-                                        setState(() {
-                                          _selectedPlacement =
-                                              placementWithSide;
-                                        });
-                                      },
-                                    );
-                                  },
-                                ),
-                              )
-                            ],
-                          ));
-                        });
-                        return ListView(
-                          children: listOfColumns,
-                        );
-                      },
-                    ),
-                  )
-                ],
-              ),
-            ),
+            //                         return CardSensorPlacementInfo(
+            //                           cardPlacement: sensorPlacement,
+            //                           selectedPlacement: _selectedPlacement ??
+            //                               (Placement(
+            //                                   muscleName: 'Not assigned')),
+            //                           notifyParentPlacementSelected:
+            //                               (Placement placement) {
+            //                             setState(() {
+            //                               _selectedPlacement = placement;
+            //                             });
+            //                           },
+            //                           notifyParentSideSelected:
+            //                               (Placement placementWithSide) {
+            //                             setState(() {
+            //                               _selectedPlacement =
+            //                                   placementWithSide;
+            //                             });
+            //                           },
+            //                         );
+            //                       },
+            //                     ),
+            //                   )
+            //                 ],
+            //               ));
+            //             });
+            //             return ListView(
+            //               children: listOfColumns,
+            //             );
+            //           },
+            //         ),
+            //       )
+            //     ],
+            //   ),
+            // ),
           ],
         ),
       ),
@@ -275,6 +274,7 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
   List<SensorInfo> _allRegisteredAndFoundSensors = [];
   // List<SensorUsedInSession> _allRegisteredAndConnectedSensors = [];
   late Future<void> initRegisteredAndAvailableSensors;
+  var registeredSensorOperations = RegisteredSensorOperations();
 
   @override
   void initState() {
@@ -284,8 +284,9 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
   }
 
   void initController() async {
-    var registeredSensors =
-        await RegisteredSensorOperations().getAllRegisteredSensors();
+    var loggedUser = await UserOperations().getLoggedInUser();
+    var registeredSensors = await registeredSensorOperations
+        .getRegisteredSensorsByUser(loggedUser!);
     _allRegisteredSensors = registeredSensors;
 
     await _searchController.init();
@@ -435,176 +436,43 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                     .allConnectedSensorsUsedInSession.isNotEmpty)
                   Container(
                     width: _sidePanelWidth,
-                    child: Column(
-                      children: [
-                        for (int i = 0;
-                            i <
+                    child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: 2,
+                        itemBuilder: (context, index) => SensorSetPlacementCard(
+                              currentSensor: _controllerWorkoutSetup
+                                  .allConnectedSensorsUsedInSession[index],
+                              onPressedRemovePlacement: () {
                                 _controllerWorkoutSetup
-                                    .allConnectedSensorsUsedInSession.length;
-                            i++)
-                          Container(
-                            height: 80,
-                            width: _sidePanelWidth,
-                            decoration: BoxDecoration(
-                              color: _controllerWorkoutSetup
-                                      .allConnectedSensorsUsedInSession[i]
-                                      .isSelectedToAssignPlacement
-                                  ? Get.isDarkMode
-                                      ? Colors.white.withOpacity(0.1)
-                                      : Colors.black.withOpacity(0.1)
-                                  : Colors.transparent,
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  var listConnectedSensorsUsedInSession =
-                                      _controllerWorkoutSetup
-                                          .allConnectedSensorsUsedInSession;
-                                  // Unselects all sensors
-                                  for (var sensor
-                                      in listConnectedSensorsUsedInSession
-                                          .value) {
-                                    sensor.isSelectedToAssignPlacement = false;
-                                  }
-                                  //selects the chosen sensor
-                                  listConnectedSensorsUsedInSession[i]
-                                      .isSelectedToAssignPlacement = true;
+                                    .allConnectedSensorsUsedInSession[index]
+                                    .placement = null;
 
-                                  _controllerWorkoutSetup.selectedSensor =
-                                      listConnectedSensorsUsedInSession[i];
-                                  setState(() {});
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      right: 12, left: 12, top: 8, bottom: 8),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        children: [
-                                          CircleAvatar(
-                                            backgroundColor: _controllerWorkoutSetup
-                                                    .allConnectedSensorsUsedInSession[
-                                                        i]
-                                                    .isSelectedToAssignPlacement
-                                                ? Colors.white
-                                                : Colors.transparent,
-                                            radius: 22,
-                                            child: CircleAvatar(
-                                              backgroundColor: Get.isDarkMode
-                                                  ? Colors.white
-                                                      .withOpacity(0.1)
-                                                  : Colors.black
-                                                      .withOpacity(0.1),
-                                              child: SvgPicture.asset(
-                                                  'assets/icons/callibri_device-${_controllerWorkoutSetup.allConnectedSensorsUsedInSession[i].color}.svg',
-                                                  width: 16,
-                                                  semanticsLabel: 'Battery'),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          AppBatteryIndicator(
-                                              batteryLevel: _controllerWorkoutSetup
-                                                  .allConnectedSensorsUsedInSession[
-                                                      i]
-                                                  .battery!,
-                                              appBatteryIndicatorLabelPosition:
-                                                  AppBatteryIndicatorLabelPosition
-                                                      .inside)
-                                        ],
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              _controllerWorkoutSetup
-                                                          .allConnectedSensorsUsedInSession[
-                                                              i]
-                                                          .placement ==
-                                                      null
-                                                  ? 'Not assigned'
-                                                  : idToBodyRegionString(
-                                                      bodyRegionId:
-                                                          _controllerWorkoutSetup
-                                                              .allConnectedSensorsUsedInSession[
-                                                                  i]
-                                                              .placement!
-                                                              .bodyRegionId),
-                                              style: Get.isDarkMode
-                                                  ? AppTheme.appDarkTheme
-                                                      .textTheme.caption
-                                                      ?.copyWith(
-                                                          color: const Color(
-                                                              0xff878787))
-                                                  : AppTheme.appTheme.textTheme
-                                                      .caption
-                                                      ?.copyWith(
-                                                      color: const Color(
-                                                          0xff444547),
-                                                    ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                                _controllerWorkoutSetup
-                                                            .allConnectedSensorsUsedInSession[
-                                                                i]
-                                                            .placement ==
-                                                        null
-                                                    ? 'Not assigned'
-                                                    : _controllerWorkoutSetup
-                                                        .allConnectedSensorsUsedInSession[
-                                                            i]
-                                                        .placement!
-                                                        .muscleName,
-                                                style: Get.isDarkMode
-                                                    ? AppTheme.appDarkTheme
-                                                        .textTheme.bodyText1
-                                                    : AppTheme.appTheme
-                                                        .textTheme.bodyText1),
-                                            const SizedBox(height: 2),
-                                            if (_controllerWorkoutSetup
-                                                    .allConnectedSensorsUsedInSession[
-                                                        i]
-                                                    .placement
-                                                    ?.side !=
-                                                null)
-                                              AppMuscleSideIndicator(
-                                                  side: _controllerWorkoutSetup
-                                                      .allConnectedSensorsUsedInSession[
-                                                          i]
-                                                      .placement!
-                                                      .side!)
-                                          ],
-                                        ),
-                                      ),
-                                      AppIconButton(
-                                        svgIconPath: 'trash',
-                                        onPressed: () {
-                                          _controllerWorkoutSetup
-                                              .allConnectedSensorsUsedInSession[
-                                                  i]
-                                              .placement = null;
+                                setState(() {});
+                              },
+                              onPressedSensor: () {
+                                var listConnectedSensorsUsedInSession =
+                                    _controllerWorkoutSetup
+                                        .allConnectedSensorsUsedInSession;
+                                // Unselects all sensors
+                                for (var sensor
+                                    in listConnectedSensorsUsedInSession
+                                        .value) {
+                                  sensor.isSelectedToAssignPlacement = false;
+                                }
+                                //selects the chosen sensor
+                                listConnectedSensorsUsedInSession[index]
+                                    .isSelectedToAssignPlacement = true;
 
-                                          setState(() {});
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
+                                _controllerWorkoutSetup.selectedSensor =
+                                    listConnectedSensorsUsedInSession[index];
+                                setState(() {});
+                              },
+                              sidePanelWidth: _sidePanelWidth,
+                              isSelectedToAssignPlacement:
+                                  _controllerWorkoutSetup
+                                      .allConnectedSensorsUsedInSession[index]
+                                      .isSelectedToAssignPlacement,
+                            )),
                   ),
 
                 // - Start searching button
@@ -622,20 +490,17 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                         'assets/illustrations/turn-on.svg',
                         height: 180,
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       AppBottom(
                           onPressed: () async {
                             setState(() {
                               _isLoading = true;
                             });
                             _searchController.startScanner();
-                            await Future.delayed(Duration(seconds: 2));
+                            await Future.delayed(const Duration(seconds: 2));
                             _searchController.stopScanner();
                             _searchController.startScanner();
-                            await Future.delayed(Duration(seconds: 4));
-                            _searchController.stopScanner();
-                            _searchController.startScanner();
-                            await Future.delayed(Duration(seconds: 6));
+                            await Future.delayed(const Duration(seconds: 4));
                             _searchController.stopScanner();
 
                             _initRegisteredSensorsDBAsync();
@@ -689,28 +554,45 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
 
       for (var info in _allRegisteredAndFoundSensors) {
         log('CONNECTING...');
-        var connectedSensor = await Sensor.create(info);
+        Sensor? connectedSensor;
+        try {
+          connectedSensor = await Sensor.create(info);
+          log('CONNECTED');
+        } catch (e) {
+          log(e.toString(), name: 'session setup');
+        }
+        if (connectedSensor != null) {
+          final int connectedSensorBattery =
+              await connectedSensor.battery.value;
+          final CallibriColorType connectedSensorColor =
+              await connectedSensor.color.value;
+          final String connectedSensorAddress =
+              await connectedSensor.address.value;
 
-        final int connectedSensorBattery = await connectedSensor.battery.value;
-        final CallibriColorType connectedSensorColor =
-            await connectedSensor.color.value;
-        final String connectedSensorAddress =
-            await connectedSensor.address.value;
+          var registeredSensor = await registeredSensorOperations
+              .getRegisteredSensorByAddress(connectedSensorAddress);
+          registeredSensor?.battery = connectedSensorBattery;
+          registeredSensorOperations.updateRegisteredSensorBatteryByAddress(
+              connectedSensorAddress, registeredSensor!);
 
-        registeredAndConnectedSensors.add(
-          SensorUsedInSession(
-              battery: connectedSensorBattery,
-              color: buildColorNameFromSensor(
-                  rawSensorNameAndColor: '$connectedSensorColor'),
-              address: connectedSensorAddress,
-              isSelectedToAssignPlacement: false,
-              sensor: connectedSensor,
-              listEnvSamplesValuesForGraphic: [0],
-              envelopeValuesForAnalytics: EnvelopeValuesForAnalytics(
-                  address: info.address, listEnvSamplesValuesForStatistics: []),
-              chartData: [ChartSampleData(x: 0, y: 0)],
-              columnChartData: []),
-        );
+          registeredAndConnectedSensors.add(
+            SensorUsedInSession(
+                battery: connectedSensorBattery,
+                color: buildColorNameFromSensor(
+                    rawSensorNameAndColor: '$connectedSensorColor'),
+                address: connectedSensorAddress,
+                isSelectedToAssignPlacement: false,
+                sensor: connectedSensor,
+                listEnvSamplesValuesForGraphic: [0],
+                envelopeValuesForAnalytics: EnvelopeValuesForAnalytics(
+                    address: info.address,
+                    listEnvSamplesValuesForStatistics: []),
+                chartData: [ChartSampleData(x: 0, y: 0)],
+                columnChartData: []),
+          );
+        } else {
+          log("Could't connect");
+        }
       }
       _controllerWorkoutSetup.allConnectedSensorsUsedInSession.value =
           registeredAndConnectedSensors;
@@ -720,6 +602,110 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
     }
     _isLoading = false;
     setState(() {});
+  }
+}
+
+class SensorSetPlacementCard extends StatelessWidget {
+  final double sidePanelWidth;
+  final Function() onPressedSensor;
+  final Function() onPressedRemovePlacement;
+  bool isSelectedToAssignPlacement;
+  SensorUsedInSession currentSensor;
+  SensorSetPlacementCard({
+    required this.currentSensor,
+    required this.sidePanelWidth,
+    required this.isSelectedToAssignPlacement,
+    required this.onPressedSensor,
+    required this.onPressedRemovePlacement,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ZoomTapAnimation(
+      onTap: onPressedSensor,
+      child: Container(
+        height: 80,
+        width: sidePanelWidth,
+        decoration: BoxDecoration(
+          color: isSelectedToAssignPlacement
+              ? Get.isDarkMode
+                  ? Colors.white.withOpacity(0.1)
+                  : Colors.black.withOpacity(0.1)
+              : Colors.transparent,
+        ),
+        child: Padding(
+          padding:
+              const EdgeInsets.only(right: 12, left: 12, top: 8, bottom: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  CircleAvatar(
+                    backgroundColor: isSelectedToAssignPlacement
+                        ? Colors.white
+                        : Colors.transparent,
+                    radius: 22,
+                    child: CircleAvatar(
+                      backgroundColor: Get.isDarkMode
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.black.withOpacity(0.1),
+                      child: SvgPicture.asset(
+                          'assets/icons/callibri_device-${currentSensor.color}.svg',
+                          width: 16,
+                          semanticsLabel: 'Battery'),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  AppBatteryIndicator(
+                      batteryLevel: currentSensor.battery!,
+                      appBatteryIndicatorLabelPosition:
+                          AppBatteryIndicatorLabelPosition.inside)
+                ],
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      currentSensor.placement == null
+                          ? 'Not assigned'
+                          : idToBodyRegionString(
+                              bodyRegionId:
+                                  currentSensor.placement!.bodyRegionId),
+                      style: Get.isDarkMode
+                          ? AppTheme.appDarkTheme.textTheme.caption
+                              ?.copyWith(color: const Color(0xff878787))
+                          : AppTheme.appTheme.textTheme.caption?.copyWith(
+                              color: const Color(0xff444547),
+                            ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                        currentSensor.placement == null
+                            ? 'Not assigned'
+                            : currentSensor.placement!.muscleName,
+                        style: Get.isDarkMode
+                            ? AppTheme.appDarkTheme.textTheme.bodyText1
+                            : AppTheme.appTheme.textTheme.bodyText1),
+                    const SizedBox(height: 2),
+                    if (currentSensor.placement?.side != null)
+                      AppMuscleSideIndicator(
+                          side: currentSensor.placement!.side!)
+                  ],
+                ),
+              ),
+              AppIconButton(
+                  svgIconPath: 'trash', onPressed: onPressedRemovePlacement),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -808,14 +794,10 @@ class CardSensorPlacementInfo extends StatelessWidget {
                             ])),
               child: Stack(
                 children: [
-                  const Positioned(
-                    left: 8,
-                    top: 8,
-                    child: Icon(
-                      Icons.help_rounded,
-                      color: Color(0xff767676),
-                    ),
-                  ),
+                  // const Positioned(
+                  //     left: 0,
+                  //     top: 0,
+                  //     child: AppIconButton(svgIconPath: 'info')),
                   Positioned(
                     bottom: 0,
                     child: Container(

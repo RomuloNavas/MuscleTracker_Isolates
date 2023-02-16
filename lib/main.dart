@@ -1,5 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:location/location.dart';
 import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
 import 'package:neuro_sdk_isolate_example/database/body_region_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
@@ -11,6 +15,7 @@ import 'package:neuro_sdk_isolate_example/screens/home/home_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/search_screen.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate_example/theme.dart';
+import 'package:neuro_sdk_isolate_example/widgets/app_buttons.dart';
 
 import 'screens/user_registration/user_registration_screen.dart';
 
@@ -55,6 +60,7 @@ class _MyAppState extends State<MyApp> {
       // themeMode: ThemeMode.system,
       theme: AppTheme.appTheme,
       darkTheme: AppTheme.appDarkTheme,
+   
       home: Builder(
         builder: (context) {
           if (_isLoading)
@@ -77,7 +83,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _initAppDBAsync() async {
     final loggedUser = await UserOperations().getLoggedInUser();
-    if (loggedUser!=null) {
+    if (loggedUser != null) {
       _loggedUser = loggedUser;
       _registeredSensors = await registeredSensorOperations
           .getRegisteredSensorsByUser(_loggedUser!);
