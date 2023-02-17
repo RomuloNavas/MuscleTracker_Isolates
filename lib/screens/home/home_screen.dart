@@ -804,11 +804,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   setState(() {
                                     _isLoadingSensors = true;
                                   });
+
                                   _searchController.startScanner();
-                                  await Future.delayed(Duration(seconds: 2));
-                                  _searchController.stopScanner();
-                                  _searchController.startScanner();
-                                  await Future.delayed(Duration(seconds: 2));
+                                  await Future.delayed(
+                                      const Duration(seconds: 4));
                                   _searchController.stopScanner();
 
                                   _initRegisteredSensorsDBAsync();

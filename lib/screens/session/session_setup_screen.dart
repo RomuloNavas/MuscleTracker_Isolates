@@ -497,9 +497,6 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                               _isLoading = true;
                             });
                             _searchController.startScanner();
-                            await Future.delayed(const Duration(seconds: 2));
-                            _searchController.stopScanner();
-                            _searchController.startScanner();
                             await Future.delayed(const Duration(seconds: 4));
                             _searchController.stopScanner();
 
