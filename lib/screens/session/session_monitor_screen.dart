@@ -195,7 +195,8 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                     log('Disconnecting from: ${widget.allSensorsUsedInSession[i].sensor.name}');
                                     widget.allSensorsUsedInSession[i].sensor
                                         .disconnect();
-                                    widget.allSensorsUsedInSession[i].sensor.dispose();
+                                    widget.allSensorsUsedInSession[i].sensor
+                                        .dispose();
                                   }
                                   await Future.delayed(Duration(seconds: 1));
 
@@ -482,11 +483,17 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                                       seconds:
                                                                           2),
                                                                   () {
-                                                                disconnectedSensor
-                                                                    .sensor
-                                                                    .executeCommand(
-                                                                        SensorCommand
-                                                                            .startEnvelope);
+                                                                try {
+                                                                  disconnectedSensor
+                                                                      .sensor
+                                                                      .executeCommand(
+                                                                          SensorCommand
+                                                                              .startEnvelope);
+                                                                } catch (e) {
+                                                                  log("Couldn't start envelope of sensor ${disconnectedSensor.sensor.name}: $e",
+                                                                      name:
+                                                                          'session_monitor_screen.dart');
+                                                                }
                                                               });
                                                             }
                                                           }
@@ -1301,7 +1308,12 @@ void _startCallibriEnvelopeCallback(
           sensorUsedInSession.signalForCheckingSensorState++;
         }
       });
-      sensorUsedInSession.sensor.executeCommand(SensorCommand.startEnvelope);
+      try {
+        sensorUsedInSession.sensor.executeCommand(SensorCommand.startEnvelope);
+      } catch (e) {
+        log("Couldn't start envelope of sensor ${sensorUsedInSession.sensor.name}: $e",
+            name: 'session_monitor_screen.dart');
+      }
     } else {
       log("${sensorUsedInSession.address} doesn't support envelope");
     }
