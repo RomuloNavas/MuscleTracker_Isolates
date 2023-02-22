@@ -22,7 +22,7 @@ class SensorScreen extends StatefulWidget {
 }
 
 class _SensorScreenState extends State<SensorScreen> {
-  List<RegisteredSensor> listSensorsToRegister = [];
+  List<RegisteredSensor> listSensorsInRegistrationQueue = [];
   bool _isLoading = false;
 
   late Future connectedSensorMinimalInfo;
@@ -30,7 +30,7 @@ class _SensorScreenState extends State<SensorScreen> {
   @override
   void initState() {
     super.initState();
-    connectedSensorMinimalInfo = _getConnectedSensorInfo();
+    connectedSensorMinimalInfo = _addConnecterSensorsToRegistrationQueue();
   }
 
   @override
@@ -60,7 +60,7 @@ class _SensorScreenState extends State<SensorScreen> {
             ),
             Expanded(
               child: ListView.builder(
-                itemCount: listSensorsToRegister.length,
+                itemCount: listSensorsInRegistrationQueue.length,
                 itemBuilder: (context, index) {
                   return Padding(
                     padding:
@@ -88,7 +88,7 @@ class _SensorScreenState extends State<SensorScreen> {
                                 Row(
                                   children: [
                                     Image.asset(
-                                      'assets/images/callibri_${listSensorsToRegister[index].color}.png',
+                                      'assets/images/callibri_${listSensorsInRegistrationQueue[index].color}.png',
                                       semanticLabel: 'Sensor Icon}',
                                       height: 44,
                                     ),
@@ -98,7 +98,7 @@ class _SensorScreenState extends State<SensorScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Callibri ${listSensorsToRegister[index].color}',
+                                          'Callibri ${listSensorsInRegistrationQueue[index].color}',
                                           style: Get.isDarkMode
                                               ? AppTheme.appDarkTheme.textTheme
                                                   .bodyText1
@@ -116,9 +116,10 @@ class _SensorScreenState extends State<SensorScreen> {
                                               const TextSpan(
                                                   text: 'Serial Number: '),
                                               TextSpan(
-                                                  text: listSensorsToRegister[
-                                                          index]
-                                                      .serialNumber,
+                                                  text:
+                                                      listSensorsInRegistrationQueue[
+                                                              index]
+                                                          .serialNumber,
                                                   style: Get.isDarkMode
                                                       ? AppTheme.appDarkTheme
                                                           .textTheme.caption
@@ -188,11 +189,9 @@ class _SensorScreenState extends State<SensorScreen> {
                                         ),
                                         itemBuilder: (context) => [
                                               PopupMenuItem(
-                                                  onTap: () {
-                                                    listSensorsToRegister
-                                                        .removeAt(index);
-                                                    setState(() {});
-                                                  },
+                                                  onTap: () =>
+                                                      _removeSensorFromRegistrationQueue(
+                                                          index: index),
                                                   child: AppPopMenuItemChild(
                                                     title: 'Remove sensor',
                                                     iconData:
@@ -218,20 +217,8 @@ class _SensorScreenState extends State<SensorScreen> {
               onPressed: () async {
                 _isLoading = true;
                 setState(() {});
-                for (var sensorToRegister in listSensorsToRegister) {
-                  await RegisteredSensorOperations()
-                      .insertNewSensor(sensorToRegister);
-                }
-                for (var connectedSensor in widget.listConnectedSensor) {
-                  log('Disconnect');
-                  connectedSensor.disconnect();
-                  log('Dispose');
-                  connectedSensor.dispose();
-                }
-
-                Get.off(
-                  () => const HomeScreen(),
-                );
+                await _saveSensorsInDataBase();
+                _openHomeScreen();
               },
               mainText: 'Save ${widget.listConnectedSensor.length} sensors',
               secondaryText: 'Repeat search of sensors',
@@ -241,52 +228,64 @@ class _SensorScreenState extends State<SensorScreen> {
         ));
   }
 
-  _findSensor(Sensor sensor) async {
-    // First check if the sensor is connected.
-    SensorState sensorState = await sensor.state.value;
-
-    if (sensorState == SensorState.inRange) {
-      // If the sensor is connected, execute the command findMe
-      await sensor.executeCommand(SensorCommand.findMe);
+  Future<void> _saveSensorsInDataBase() async {
+    await RegisteredSensorOperations().updateUserUsedSensors();
+    for (var sensorToRegister in listSensorsInRegistrationQueue) {
+      await RegisteredSensorOperations().insertNewSensor(sensorToRegister);
     }
   }
 
-  Future<void> _getConnectedSensorInfo() async {
-    List<RegisteredSensor> allConnectedSensorToRegister = [];
-    for (var sensor in widget.listConnectedSensor) {
-      var serialNumber = await sensor.serialNumber.value;
-      var address = await sensor.address.value;
-      var color = await sensor.color.value;
-      var gain = await sensor.gain.value;
-      var dataOffset = await sensor.dataOffset.value;
-      var adcInput = await sensor.adcInput.value;
-      var hardwareFilters = await sensor.hardwareFilters.value;
-      var samplingFrequency = await sensor.samplingFrequency.value;
+  void _openHomeScreen() {
+    Get.off(() => const HomeScreen());
 
-      var user = await UserOperations().getLoggedInUser();
-      var userId = user!.id;
-      var battery = await sensor.battery.value;
+    setState(() {});
+  }
+
+  void _removeSensorFromRegistrationQueue({required int index}) {
+    listSensorsInRegistrationQueue.removeAt(index);
+
+    setState(() {});
+  }
+
+  Future<void> _addConnecterSensorsToRegistrationQueue() async {
+    List<RegisteredSensor> listSensorsToRegister = [];
+    for (var sensor in widget.listConnectedSensor) {
+      late final String serialNumber;
+      late final String address;
+      late final CallibriColorType color;
+      late final User? user;
+      late final int? userId;
+      late final int battery;
+
+      serialNumber = await sensor.serialNumber.value;
+      address = await sensor.address.value;
+      color = await sensor.color.value;
+      user = await UserOperations().getLoggedInUser();
+      userId = user!.id;
+      battery = await sensor.battery.value;
+
       var registeredSensor = RegisteredSensor(
         serialNumber: serialNumber,
         address: address,
         color: buildColorNameFromSensor(rawSensorNameAndColor: '$color'),
-        gain: '$gain',
-        dataOffset: '$dataOffset',
-        adcInput: '$adcInput',
-        hardwareFilters: '$hardwareFilters',
-        samplingFrequency: '$samplingFrequency',
         userId: userId!,
         battery: battery,
+        isBeingUsed: 1,
       );
-      allConnectedSensorToRegister.add(registeredSensor);
+      listSensorsToRegister.add(registeredSensor);
+      await Future.delayed(const Duration(milliseconds: 100));
+      log('disconnecting');
+      _disconnectFromSensors(sensor);
     }
-    listSensorsToRegister = allConnectedSensorToRegister;
-    for (var connectedSensor in widget.listConnectedSensor) {
-      Future.delayed(const Duration(milliseconds: 100));
-      connectedSensor.disconnect();
-      log('Disconnect');
-    }
+    listSensorsInRegistrationQueue = listSensorsToRegister;
+
     _isLoading = false;
     setState(() {});
+  }
+
+  void _disconnectFromSensors(Sensor connectedSensor) {
+      connectedSensor.disconnect();
+    
+  
   }
 }
