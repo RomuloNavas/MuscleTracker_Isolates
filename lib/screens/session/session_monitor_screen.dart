@@ -40,10 +40,12 @@ class SessionMonitorScreen extends StatefulWidget {
 }
 
 class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
-  Timer? _timerUpdateChart;
-  Timer? _timerUpdateConnectionStatus;
-  Timer? _timerReconnect;
-  Timer? _timerAddCerosToDisconnectedDevice;
+  static Timer? _timerUpdateChart;
+  static Timer? _timerUpdateConnectionStatus;
+  static Timer? _timerReconnect;
+  static Timer? _timerAddCerosToDisconnectedDevice;
+  static Timer? _timerSyncEnvValuesForAnalytics;
+  static Timer? _timerAreSensorsConnected;
 
   bool envelopeStarted = false;
   late String _sessionStartedAt;
@@ -100,15 +102,21 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
 
   @override
   void dispose() {
+    Wakelock.disable();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: [SystemUiOverlay.bottom]);
     super.dispose();
+  }
+
+  @override
+  void deactivate() {
+    log('Deactivating....');
     _timerAddCerosToDisconnectedDevice?.cancel();
     _timerReconnect?.cancel();
     _timerUpdateChart?.cancel();
     _timerUpdateConnectionStatus?.cancel();
-    log('TIMER CANCELLED');
-    Wakelock.disable();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-        overlays: [SystemUiOverlay.bottom]);
+    log('Timers canceled');
+    super.deactivate();
   }
 
   final ScrollController scrollController = ScrollController();
@@ -163,23 +171,13 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                   _isSessionFinished = true;
                                   sessionEndedAt =
                                       DateTime.now().toIso8601String();
-
-                                  _timerReconnect?.cancel();
-                                  _timerAddCerosToDisconnectedDevice?.cancel();
-                                  _timerUpdateChart?.cancel();
-                                  _timerUpdateConnectionStatus?.cancel();
-
-                                  log('TIMERS SET TO NULL');
-                                  _timerReconnect = null;
-                                  _timerAddCerosToDisconnectedDevice = null;
-                                  _timerUpdateChart = null;
-                                  _timerUpdateConnectionStatus = null;
+                                  _cancelAllTimers();
 
                                   for (var i = 0;
                                       i < widget.allSensorsUsedInSession.length;
                                       i++) {
                                     await Future.delayed(
-                                        const Duration(milliseconds: 800));
+                                        const Duration(milliseconds: 400));
 
                                     widget.allSensorsUsedInSession[i].sensor
                                         .executeCommand(
@@ -222,6 +220,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                     );
                                     usedSensors.add(sensorInfoForResults);
                                   }
+
                                   Get.off(() {
                                     return SessionResultsScreen(
                                       client: widget.client,
@@ -289,7 +288,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                     isRecording = !isRecording;
                                                   });
                                                   if (isRecording) {
-                                                    log('RECORDING');
+                                                    // log('RECORDING');
                                                     _currentWorkout = Workout(
                                                         exercise:
                                                             _selectedExercise,
@@ -409,7 +408,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                     _sessionStartedAt =
                                                         DateTime.now()
                                                             .toIso8601String();
-                                                    log('ENVELOPE STARTED');
+                                                    // log('ENVELOPE STARTED');
                                                     setState(() {
                                                       envelopeStarted = true;
                                                     });
@@ -450,119 +449,14 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                       });
                                                     }
 
-                                                    // - Reconnect timer
-                                                    void startTimerReconnect() {
-                                                      if (_isSessionFinished ==
-                                                          false) {
-                                                        // Will try to reconnect to sensor each 30 seconds
-                                                        log('STARTED: RECONNECT  startTimerReconnect ');
-
-                                                        _timerReconnect =
-                                                            Timer.periodic(
-                                                                const Duration(
-                                                                    seconds:
-                                                                        20),
-                                                                (timerTryToReconnect) {
-                                                          log('startTimerReconnect ');
-                                                          if (_isSessionFinished ==
-                                                              false) {
-                                                            List<SensorUsedInSession>
-                                                                listOfDisconnectedSensors =
-                                                                widget
-                                                                    .allSensorsUsedInSession
-                                                                    .where((s) =>
-                                                                        s.isConnected ==
-                                                                        false)
-                                                                    .toList();
-
-                                                            for (var disconnectedSensor
-                                                                in listOfDisconnectedSensors) {
-                                                              disconnectedSensor
-                                                                  .sensor
-                                                                  .connect();
-
-                                                              Future.delayed(
-                                                                  const Duration(
-                                                                      seconds:
-                                                                          2),
-                                                                  () {
-                                                                try {
-                                                                  disconnectedSensor
-                                                                      .sensor
-                                                                      .executeCommand(
-                                                                          SensorCommand
-                                                                              .startEnvelope);
-                                                                } catch (e) {
-                                                                  log("Couldn't start envelope of sensor ${disconnectedSensor.sensor.name}: $e",
-                                                                      name:
-                                                                          'session_monitor_screen.dart');
-                                                                }
-                                                              });
-                                                            }
-                                                          }
-                                                        });
-                                                      }
-                                                    }
-
-                                                    void
-                                                        stopReconnectingTimer() {
-                                                      // log('RECONNECTING TIMER CANCELED');
-                                                      _timerReconnect?.cancel();
-                                                    }
-
-                                                    void
-                                                        stopTimerAddCerosToDisconnectedDevice() {
-                                                      // log('TIMER ADD 0 CANCELED');
-                                                      _timerAddCerosToDisconnectedDevice
-                                                          ?.cancel();
-                                                    }
-
-                                                    // -  Adds ceros (0) to sensor.listEnvSamplesValues when sensor it is disconnected
-                                                    void
-                                                        startTimerAddCerosToDisconnectedDevice() {
-                                                      if (_isSessionFinished ==
-                                                          false) {
-                                                        log('STARTED _timerAddCerosToDisconnectedDevice');
-
-                                                        _timerAddCerosToDisconnectedDevice =
-                                                            Timer.periodic(
-                                                                const Duration(
-                                                                    milliseconds:
-                                                                        30),
-                                                                (addCeroTimerInside) {
-                                                          log('startTimerAddCerosToDisconnectedDevice ');
-                                                          List<SensorUsedInSession>
-                                                              listOfDisconnectedSensors =
-                                                              widget
-                                                                  .allSensorsUsedInSession
-                                                                  .where((s) =>
-                                                                      s.envelopeValuesForAnalytics
-                                                                          .isConnected ==
-                                                                      false)
-                                                                  .toList();
-
-                                                          for (var disconnectedSensor
-                                                              in listOfDisconnectedSensors) {
-                                                            disconnectedSensor
-                                                                .listEnvSamplesValuesForGraphic
-                                                                .add(0);
-                                                            disconnectedSensor
-                                                                .envelopeValuesForAnalytics
-                                                                .listEnvSamplesValuesForStatistics
-                                                                .add(0);
-                                                          }
-                                                        });
-                                                      }
-                                                    }
-
                                                     // -Timer that checks if sensors are connected. When a sensor is disconnected starts functions to add ceros and reconnect to device
-                                                    log('STARTED Timer that checks if sensors are connected. When a sensor is disconnected starts functions to add ceros and reconnect to device');
-
-                                                    Timer.periodic(
+                                                    // log('STARTED: IS CONNECTED?');
+                                                    _timerAreSensorsConnected =
+                                                        Timer.periodic(
                                                       const Duration(
                                                           milliseconds: 225),
                                                       (_timer) {
-                                                        log('Timer that checks if sensors are connected');
+                                                        // log('IS CONNECTED?');
 
                                                         for (SensorUsedInSession sensorUsedInSession
                                                             in widget
@@ -610,12 +504,15 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                     );
 
                                                     // - Timer to synchronize EnvValues for Analytics
-                                                    Timer.periodic(
-                                                        const Duration(
-                                                            milliseconds: 200),
-                                                        (Timer
-                                                            timerSyncEnvValues) {
-                                                      log('Timer to synchronize EnvValues for Analytics');
+
+                                                    // log('STARTED: SYNC ENV VALUES');
+                                                    _timerSyncEnvValuesForAnalytics =
+                                                        Timer.periodic(
+                                                            const Duration(
+                                                                milliseconds:
+                                                                    200), (Timer
+                                                                timerSyncEnvValues) {
+                                                      // log('SYNC ENV VALUES');
                                                       final sensorsEnvelopeValuesForAnalytics =
                                                           List.generate(
                                                               widget
@@ -964,6 +861,109 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
     );
   }
 
+  void _cancelAllTimers() {
+    if (_timerUpdateChart != null) {
+      _timerUpdateChart!.cancel();
+      _timerUpdateChart = null;
+      log('CANCELED TIMER: _timerUpdateChart');
+    }
+    if (_timerUpdateConnectionStatus != null) {
+      _timerUpdateConnectionStatus!.cancel();
+      _timerUpdateConnectionStatus = null;
+      log('CANCELED TIMER: _timerUpdateConnectionStatus');
+    }
+    if (_timerReconnect != null) {
+      _timerReconnect!.cancel();
+      _timerReconnect = null;
+      log('CANCELED TIMER: _timerReconnect');
+    }
+    if (_timerAddCerosToDisconnectedDevice != null) {
+      _timerAddCerosToDisconnectedDevice!.cancel();
+      _timerAddCerosToDisconnectedDevice = null;
+      log('CANCELED TIMER: _timerAddCerosToDisconnectedDevice');
+    }
+
+    if (_timerSyncEnvValuesForAnalytics != null) {
+      _timerSyncEnvValuesForAnalytics!.cancel();
+      _timerSyncEnvValuesForAnalytics = null;
+      log('CANCELED TIMER: _timerSyncEnvValuesForAnalytics');
+    }
+    if (_timerAreSensorsConnected != null) {
+      _timerAreSensorsConnected!.cancel();
+      _timerAreSensorsConnected = null;
+      log('CANCELED TIMER: _timerAreSensorsConnected');
+    }
+  }
+
+  // -  Adds ceros (0) to sensor.listEnvSamplesValues when sensor is disconnected
+  void startTimerAddCerosToDisconnectedDevice() {
+    if (_isSessionFinished == false) {
+      // log('STARTED _timerAddCerosToDisconnectedDevice');
+
+      _timerAddCerosToDisconnectedDevice = Timer.periodic(
+          const Duration(milliseconds: 30), (addCeroTimerInside) {
+        // log('timerAddCerosToDisconnectedDevice');
+        List<SensorUsedInSession> listOfDisconnectedSensors = widget
+            .allSensorsUsedInSession
+            .where((s) => s.envelopeValuesForAnalytics.isConnected == false)
+            .toList();
+
+        for (var disconnectedSensor in listOfDisconnectedSensors) {
+          disconnectedSensor.listEnvSamplesValuesForGraphic.add(0);
+          disconnectedSensor
+              .envelopeValuesForAnalytics.listEnvSamplesValuesForStatistics
+              .add(0);
+        }
+      });
+    }
+  }
+
+  // - Reconnect timer: Will try to reconnect to sensor each 20 seconds
+  void startTimerReconnect() {
+    if (_isSessionFinished == false) {
+      // log('STARTED: RECONNECT');
+
+      _timerReconnect =
+          Timer.periodic(const Duration(seconds: 20), (timerTryToReconnect) {
+        // log('RECONNECT');
+        if (_isSessionFinished == false) {
+          List<SensorUsedInSession> listOfDisconnectedSensors = widget
+              .allSensorsUsedInSession
+              .where((s) => s.isConnected == false)
+              .toList();
+
+          for (var disconnectedSensor in listOfDisconnectedSensors) {
+            disconnectedSensor.sensor.connect();
+
+            Future.delayed(const Duration(seconds: 2), () {
+              try {
+                disconnectedSensor.sensor
+                    .executeCommand(SensorCommand.startEnvelope);
+              } catch (e) {
+                log("Couldn't start envelope of sensor ${disconnectedSensor.sensor.name}: $e",
+                    name: 'session_monitor_screen.dart');
+              }
+            });
+          }
+        }
+      });
+    }
+  }
+
+  void stopReconnectingTimer() {
+    if (_timerReconnect != null) {
+      // log('RECONNECTING TIMER CANCELED');
+      _timerReconnect!.cancel();
+    } else {
+      // log('RECONNECTING IS NULL');
+    }
+  }
+
+  void stopTimerAddCerosToDisconnectedDevice() {
+    log('TIMER ADD 0 CANCELED');
+    _timerAddCerosToDisconnectedDevice?.cancel();
+  }
+
   Future<void> _getAllExercises() async {
     var receivedData = await ExerciseOperations().getAllWorkouts();
     allExercises = List.from(receivedData.toList());
@@ -981,10 +981,10 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
   }
 
   startTimerUpdateChart() {
-    log('RUNNING startTimerUpdateChart');
+    // log('STARTED: UPDATE CHART');
     _timerUpdateChart =
         Timer.periodic(const Duration(milliseconds: 25), (timer) {
-      log('startTimerUpdateChart ');
+      // log('UPDATE CHART');
 
       // if (isPaused == true) {
       //   timer.cancel();
