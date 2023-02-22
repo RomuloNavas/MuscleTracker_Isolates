@@ -10,18 +10,18 @@ import 'package:geolocator/geolocator.dart';
 class GetxControllerServices extends GetxController {
   bool? isBluetoothEnable;
 
-  Future<bool?> checkIfBluetoothIsEnabled() async {
-    final currentBluetoothStatus =
-        isBluetoothEnable = await FlutterBluetoothSerial.instance.isEnabled;
-    return currentBluetoothStatus;
+  Future<bool> areRequiredServicesEnabled() async {
+    bool isLocationEnabled = await Location.instance.serviceEnabled();
+    bool? isBluetoothEnabled = await FlutterBluetoothSerial.instance.isEnabled;
+    return isLocationEnabled && isBluetoothEnabled == true;
   }
 
-  void requestBluetoothAndGPS() {
-    requestBluetooth();
-    Timer(const Duration(milliseconds: 1550), requestGPS);
+  Future<void> requestServices() async {
+    await requestBluetooth();
+    Timer(const Duration(milliseconds: 1250), requestGPS);
   }
 
-  void requestBluetooth() async {
+  Future<void> requestBluetooth() async {
     try {
       if (isBluetoothEnable == false || isBluetoothEnable == null) {
         await FlutterBluetoothSerial.instance.requestEnable();
@@ -44,7 +44,7 @@ class GetxControllerServices extends GetxController {
         }
       }
     } catch (e) {
-      log(e.toString());
+      log(e.toString(), name: 'services_manager - requestGPS');
     }
     if (hasPermission == PermissionStatus.granted ||
         hasPermission == PermissionStatus.grantedLimited) {

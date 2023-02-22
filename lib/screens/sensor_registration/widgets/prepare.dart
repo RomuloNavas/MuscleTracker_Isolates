@@ -23,49 +23,46 @@ class GetReadyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            FutureBuilder(
-              future: UserOperations().getLoggedInUser(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done &&
-                    snapshot.hasData) {
-                  return AppHeaderInfo(
-                    title:
-                        "Welcome ${snapshot.data!.name}! Let's add your Callibri sensors",
-                    labelPrimary: 'Please, turn on your sensors.',
-                  );
-                } else {
-                  return SizedBox();
-                }
-              },
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          FutureBuilder(
+            future: UserOperations().getLoggedInUser(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done &&
+                  snapshot.hasData) {
+                return AppHeaderInfo(
+                  title:
+                      "Welcome ${snapshot.data!.name}! Let's add your Callibri sensors",
+                  labelPrimary: 'Please, turn on your sensors.',
+                );
+              } else {
+                return SizedBox();
+              }
+            },
+          ),
+          Expanded(
+            child: SvgPicture.asset(
+              'assets/illustrations/turn-on.svg',
             ),
-            Expanded(
-              child: SvgPicture.asset(
-                'assets/illustrations/turn-on.svg',
-              ),
-            ),
-            AppBottom(
-              onPressed: () {
-                FlutterBluetoothSerial.instance.isEnabled.then((value) {
-                  if (value == true) {
-                    notifyParentStartDiscovery();
-                  } else {
-                    servicesManager.requestBluetoothAndGPS();
-                  }
-                });
-              },
-              mainText: 'Start scanning',
-              
-              secondaryText: 'Add sensors later',
-              secondaryTextColor: Theme.of(context).colorScheme.error,
-              onSecondaryButtonPressed: () => Get.off(() => HomeScreen()),
-            )
-          ],
-        ),
+          ),
+          AppBottom(
+            onPressed: () async {
+              bool areServicesEnabled =
+                  await servicesManager.areRequiredServicesEnabled();
+              if (areServicesEnabled) {
+                notifyParentStartDiscovery();
+              } else {
+                servicesManager.requestServices();
+              }
+            },
+            mainText: 'Start scanning',
+            secondaryText: 'Add sensors later',
+            secondaryTextColor: Theme.of(context).colorScheme.error,
+            onSecondaryButtonPressed: () => Get.off(() => HomeScreen()),
+          )
+        ],
       ),
     );
   }

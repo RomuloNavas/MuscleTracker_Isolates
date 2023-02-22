@@ -41,7 +41,6 @@ class _SearchScreenState extends State<SearchScreen> {
   void initState() {
     super.initState();
     initController();
-    _getxServicesManager.requestBluetoothAndGPS();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
   }
