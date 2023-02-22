@@ -455,12 +455,15 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                       if (_isSessionFinished ==
                                                           false) {
                                                         // Will try to reconnect to sensor each 30 seconds
+                                                        log('STARTED: RECONNECT  startTimerReconnect ');
+
                                                         _timerReconnect =
                                                             Timer.periodic(
                                                                 const Duration(
                                                                     seconds:
                                                                         20),
                                                                 (timerTryToReconnect) {
+                                                          log('startTimerReconnect ');
                                                           if (_isSessionFinished ==
                                                               false) {
                                                             List<SensorUsedInSession>
@@ -519,13 +522,15 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                         startTimerAddCerosToDisconnectedDevice() {
                                                       if (_isSessionFinished ==
                                                           false) {
+                                                        log('STARTED _timerAddCerosToDisconnectedDevice');
+
                                                         _timerAddCerosToDisconnectedDevice =
                                                             Timer.periodic(
                                                                 const Duration(
                                                                     milliseconds:
                                                                         30),
                                                                 (addCeroTimerInside) {
-                                                          log('STARTED _timerAddCerosToDisconnectedDevice');
+                                                          log('startTimerAddCerosToDisconnectedDevice ');
                                                           List<SensorUsedInSession>
                                                               listOfDisconnectedSensors =
                                                               widget
@@ -551,10 +556,14 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                     }
 
                                                     // -Timer that checks if sensors are connected. When a sensor is disconnected starts functions to add ceros and reconnect to device
+                                                    log('STARTED Timer that checks if sensors are connected. When a sensor is disconnected starts functions to add ceros and reconnect to device');
+
                                                     Timer.periodic(
                                                       const Duration(
                                                           milliseconds: 225),
                                                       (_timer) {
+                                                        log('Timer that checks if sensors are connected');
+
                                                         for (SensorUsedInSession sensorUsedInSession
                                                             in widget
                                                                 .allSensorsUsedInSession) {
@@ -606,6 +615,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                             milliseconds: 200),
                                                         (Timer
                                                             timerSyncEnvValues) {
+                                                      log('Timer to synchronize EnvValues for Analytics');
                                                       final sensorsEnvelopeValuesForAnalytics =
                                                           List.generate(
                                                               widget
@@ -847,10 +857,6 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                                               .bodyText1),
                                                 ),
                                             ]),
-                                    // AppIconButtonBig(
-                                    //     icon32px: const Icon(Icons.expand_more,
-                                    //         size: 32, color: Colors.white),
-                                    //     onPressed: () => null)
                                   ],
                                 ),
                               ),
@@ -978,6 +984,8 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
     log('RUNNING startTimerUpdateChart');
     _timerUpdateChart =
         Timer.periodic(const Duration(milliseconds: 25), (timer) {
+      log('startTimerUpdateChart ');
+
       // if (isPaused == true) {
       //   timer.cancel();
       // }
@@ -993,13 +1001,6 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
 
       if (smallestListLength.first > 0) {
         for (var s in widget.allSensorsUsedInSession) {
-          // ---- THIS CODE UPDATES THE COLUMN CHART
-          // s.columnChartData.first =
-          //     ChartSampleData(x: 0, y: s.listEnvSamplesValuesForGraphic.last);
-          // // - Update column chart
-          // s.columnChartSeriesController?.updateDataSource(updatedDataIndex: 0);
-          // ---- THIS CODE UPDATES THE COLUMN CHART
-
           if (s.chartData.length >= 100) {
             s.chartData.removeRange(0, smallestListLength.first);
             for (int i = 0; i < smallestListLength.first; i++) {
@@ -1026,12 +1027,6 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
               addedDataIndexes: indexes,
               updatedDataIndexes: removedIndexes,
             );
-            // // - Update column chart
-            // s.columnChartSeriesController?.updateDataSource(
-            //   removedDataIndexes: removedIndexes,
-            //   addedDataIndexes: indexes,
-            //   updatedDataIndexes: removedIndexes,
-            // );
             s.listEnvSamplesValuesForGraphic.clear();
           } else {
             if (s.chartData.isNotEmpty) {
@@ -1058,11 +1053,6 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
               s.chartSeriesController?.updateDataSource(
                 addedDataIndexes: indexes,
               );
-              // // - Update column chart
-              // s.columnChartSeriesController?.updateDataSource(
-              //   addedDataIndexes: indexes,
-              // );
-
               s.listEnvSamplesValuesForGraphic.clear();
             }
           }
@@ -1165,70 +1155,6 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
             borderWidth: 4,
           ),
         ),
-        // ---------------- COLUMN CHART --------------------
-        // ---------------- COLUMN CHART --------------------
-        // ---------------- COLUMN CHART --------------------
-        // Container(
-        //   padding: const EdgeInsets.only(top: 34),
-        //   height: (MediaQuery.of(context).size.height /
-        //           listSensorsUsedInSession.length) -
-        //       (32 / listSensorsUsedInSession.length) -
-        //       16,
-        //   width: columnChartWidth,
-        //   child: SfCartesianChart(
-        //     margin: const EdgeInsets.all(0), // Fill all width
-
-        //     series: <ChartSeries>[
-        //       ColumnSeries<ChartSampleData, int>(
-        //         onRendererCreated: (controller) => connectedSensorUsedInSession
-        //             .columnChartSeriesController = controller,
-        //         dataSource: connectedSensorUsedInSession.columnChartData,
-        //         xValueMapper: (ChartSampleData chartData, _) => 0,
-        //         yValueMapper: (ChartSampleData chartData, _) => chartData.y,
-        //         // Map the data label text for each point from the data source
-
-        //         dataLabelMapper: (ChartSampleData sales, _) =>
-        //             '${(sales.y * 1000000).toInt()}',
-        //         dataLabelSettings: const DataLabelSettings(
-        //             labelAlignment: ChartDataLabelAlignment.bottom,
-        //             labelIntersectAction: LabelIntersectAction.none,
-        //             labelPosition: ChartDataLabelPosition.outside,
-        //             isVisible: true,
-        //             textStyle: TextStyle(fontSize: 16)),
-        //         color: buildColorFromCallibriColorType(
-        //             connectedSensorUsedInSession.sensor.colorCallibri),
-        //         // pointColorMapper: (ChartSampleData sales, _) {
-        //         //   if (sales.y >= maxV[maxVIndex] * 0.9) {
-        //         //     return Color.fromARGB(255, 242, 112, 94);
-        //         //   }
-        //         //   if (sales.y >= maxV[maxVIndex] * 0.5) {
-        //         //     return Color.fromARGB(255, 244, 164, 88);
-        //         //   } else {
-        //         //     return Color.fromARGB(255, 244, 241, 101);
-        //         //   }
-        //         // },
-        //         // trackColor: Get.isDarkMode
-        //         //     ? AppTheme.appDarkTheme.scaffoldBackgroundColor
-        //         //     : const Color(0xffF2F3F5),
-        //         width: 1, // Fill all width
-        //         isTrackVisible: false,
-        //       )
-        //     ],
-        //     plotAreaBorderColor: Get.isDarkMode
-        //         ? AppTheme.appDarkTheme.colorScheme.outline
-        //         : const Color(
-        //             0xff7a7575), // Thick line, the last one at the top
-        //     primaryXAxis: NumericAxis(
-        //       isVisible: false,
-        //     ),
-        //     primaryYAxis: NumericAxis(
-        //       minimum: 0,
-        //       maximum: maxV[maxVIndex],
-        //       isVisible: false,
-        //       rangePadding: ChartRangePadding.none,
-        //     ),
-        //   ),
-        // )
       ],
     );
   }
