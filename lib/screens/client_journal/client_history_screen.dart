@@ -97,8 +97,8 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
     super.initState();
     initAllSessions = _getClientSessionsByBodyRegionIdDBAsync(bodyRegionId: 0);
     initBodyRegions = _getAllBodyRegionsDBAsync();
-    initCurrentSelectedSession = getWorkoutReportFromSelectedSession();
-    initUsedSensors = getUsedSensors();
+    initCurrentSelectedSession = _getWorkoutReportFromSelectedSession();
+    initUsedSensors = _getUsedSensors();
     // Text Field for Session Searching
     _textEditingController = TextEditingController();
     _textEditingController.addListener(() {
@@ -300,7 +300,10 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                   // ---MESSAGE ON EMPTY SESSIONS
                   if (_allClientSessions.isEmpty)
                     MessageWhenAnySessions(
-                        selectedBodyRegion: selectedBodyRegion, widget: widget),
+                      notifyButtonPressed: _startSession,
+                      selectedBodyRegion: selectedBodyRegion,
+                      widget: widget,
+                    ),
                   // ---SHOW SESSIONS TABLE IF THERE ARE SESSIONS:
 
                   if (_allClientSessions.isNotEmpty)
@@ -308,29 +311,23 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                       child: Stack(
                         children: [
                           Positioned(
-                              bottom: 12,
+                              bottom: 16,
                               right: 6,
-                              child: Container(
-                                height: 56,
-                                width: 56,
-                                child: Material(
-                                  type: MaterialType.transparency,
-                                  child: Ink(
-                                    decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: InkWell(
-                                      borderRadius:
-                                          BorderRadius.circular(500.0),
-                                      onTap: () {},
-                                      child: Center(
-                                        child: SvgPicture.asset(
-                                          'assets/icons/ui/plus-circle.svg',
-                                          color: Colors.white,
-                                          height: 32,
-                                        ),
-                                      ),
+                              child: ZoomTapAnimation(
+                                onTap: _startSession,
+                                child: Container(
+                                  height: 56,
+                                  width: 56,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        AppTheme.appTheme.colorScheme.secondary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: SvgPicture.asset(
+                                      'assets/icons/ui/plus.svg',
+                                      color: Colors.white,
+                                      height: 32,
                                     ),
                                   ),
                                 ),
@@ -526,7 +523,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                 if (allWorkoutReports.isNotEmpty)
                                   // - USED SENSORS
                                   FutureBuilder(
-                                      future: getUsedSensors(),
+                                      future: _getUsedSensors(),
                                       builder: (context,
                                           AsyncSnapshot<
                                                   List<UsedSensorResults>?>
@@ -558,7 +555,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                 // - MUSCLES ACTIVITY COMPARISON
 
                                 FutureBuilder(
-                                  future: getUsedSensors(),
+                                  future: _getUsedSensors(),
                                   builder: (context,
                                       AsyncSnapshot<List<UsedSensorResults>?>
                                           snapshotSensorReport) {
@@ -789,6 +786,10 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
     );
   }
 
+  void _startSession() {
+    Get.to(() => SessionSetupScreen(client: widget.client));
+  }
+
   Future<void> _getAllBodyRegionsDBAsync() async {
     allBodyRegions = await BodyRegionOperations().getAllBodyRegions();
     setState(() {});
@@ -819,7 +820,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
     }
   }
 
-  Future<void> getWorkoutReportFromSelectedSession() async {
+  Future<void> _getWorkoutReportFromSelectedSession() async {
     if (selectedSession != null) {
       var allRows = await WorkoutReportOperations()
           .getAllWorkoutReportsBySessionId(selectedSession!);
@@ -830,7 +831,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
     setState(() {});
   }
 
-  Future<List<UsedSensorResults>?> getUsedSensors() async {
+  Future<List<UsedSensorResults>?> _getUsedSensors() async {
     List<UsedSensorResults> listUsedSensors = [];
     List<WorkoutReport> allWorkoutReports;
     if (selectedSession != null) {
@@ -862,6 +863,8 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
 
       allUsedSensors = listUsedSensors;
       return listUsedSensors;
+    } else {
+      return null;
     }
   }
 }
@@ -870,10 +873,12 @@ class MessageWhenAnySessions extends StatelessWidget {
   const MessageWhenAnySessions({
     Key? key,
     required this.selectedBodyRegion,
+    required this.notifyButtonPressed,
     required this.widget,
   }) : super(key: key);
 
   final int selectedBodyRegion;
+  final Function() notifyButtonPressed;
   final ClientHistoryScreen widget;
 
   @override
@@ -908,9 +913,7 @@ class MessageWhenAnySessions extends StatelessWidget {
           ),
           SizedBox(height: 24),
           AppIconButton(
-            onPressed: () => Get.to(
-              () => SessionSetupScreen(client: widget.client),
-            ),
+            onPressed: notifyButtonPressed,
             svgIconPath: 'activity',
             text: 'Start new session',
           ),
