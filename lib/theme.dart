@@ -13,8 +13,8 @@ class AppTheme {
             const Color(0xff148dc6), // Color got the overflow glow effect
         /// Used just for icons
         tertiary: const Color(0xff22272f),
-        surface: const Color(0xffe0e1e2), // card color
-        surfaceVariant: const Color(0xffe8e9ea),
+        surface: Color.fromARGB(255, 239, 241, 244), // card color
+        surfaceVariant: Color.fromARGB(255, 220, 223, 229),
         error: const Color(0xffff3a2e),
         outline: const Color(0xffe7e8ec),
         shadow:
@@ -29,7 +29,7 @@ class AppTheme {
         Colors.transparent, // Color by default of separation lines in tables
     useMaterial3: false,
     textTheme: appTextTheme,
-    scaffoldBackgroundColor: const Color(0xfff2f3f5),
+    scaffoldBackgroundColor: const Color(0xfffefefe),
     hoverColor: const Color.fromARGB(255, 0, 0,
         0), // `InkWell` → Background color on tap. && `Button` → Background color on tap.
     buttonColor: const Color(0xffd3d5d7),
@@ -82,35 +82,35 @@ class AppTheme {
 
   static TextTheme appTextTheme = TextTheme(
     headline1: TextStyle(
-        fontFamily: 'oceanwide',
+        fontFamily: 'gotham',
         fontSize: 26,
         color: Color(0xff242a2f),
         letterSpacing: 0.3,
         height: 1.1,
         fontWeight: FontWeight.w600),
     headline2: TextStyle(
-        fontFamily: 'oceanwide',
+        fontFamily: 'gotham',
         fontSize: 24,
         color: Color(0xff242a2f),
         fontWeight: FontWeight.w600),
     headline3: TextStyle(
-        fontFamily: 'oceanwide',
+        fontFamily: 'gotham',
         fontSize: 22,
         color: Color(0xff242a2f),
         fontWeight: FontWeight.w500),
     headline4: TextStyle(
-        fontFamily: 'oceanwide',
+        fontFamily: 'gotham',
         fontSize: 20,
         color: Color(0xff242a2f),
         fontWeight: FontWeight.w500),
     headline5: TextStyle(
-        fontFamily: 'oceanwide',
+        fontFamily: 'gotham',
         fontSize: 18,
         fontWeight: FontWeight.w500,
         letterSpacing: 0.4,
         color: Colors.black),
     headline6: TextStyle(
-        fontFamily: 'oceanwide',
+        fontFamily: 'gotham',
         fontSize: 16,
         fontWeight: FontWeight.w500,
         letterSpacing: 0.4,
@@ -144,35 +144,35 @@ class AppTheme {
 
   static TextTheme appTextThemeDark = TextTheme(
     headline1: TextStyle(
-        fontFamily: 'oceanwide',
+        fontFamily: 'gotham',
         fontSize: 26,
         color: Color(0xffeeeeee),
         letterSpacing: 0.3,
         height: 1.1,
         fontWeight: FontWeight.w600),
     headline2: TextStyle(
-        fontFamily: 'oceanwide',
+        fontFamily: 'gotham',
         fontSize: 24,
         color: Color(0xffeeeeee),
         fontWeight: FontWeight.w600),
     headline3: TextStyle(
-        fontFamily: 'oceanwide',
+        fontFamily: 'gotham',
         fontSize: 22,
         color: Color(0xffcecece),
         fontWeight: FontWeight.w500),
     headline4: TextStyle(
-        fontFamily: 'oceanwide',
+        fontFamily: 'gotham',
         fontSize: 20,
         color: Color(0xffcecece),
         fontWeight: FontWeight.w500),
     headline5: TextStyle(
-        fontFamily: 'oceanwide',
+        fontFamily: 'gotham',
         fontSize: 18,
         fontWeight: FontWeight.w500,
         letterSpacing: 0.4,
         color: Color(0xffcecece)),
     headline6: TextStyle(
-        fontFamily: 'oceanwide',
+        fontFamily: 'gotham',
         fontSize: 16,
         fontWeight: FontWeight.w500,
         letterSpacing: 0.4,

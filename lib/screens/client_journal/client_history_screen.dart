@@ -28,6 +28,7 @@ import 'package:neuro_sdk_isolate_example/widgets/app_header.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_muscle_side.dart';
 import 'package:neuro_sdk_isolate_example/widgets/app_text_field.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class UsedSensorResults {
   UsedSensorResults({
@@ -72,6 +73,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
   // Data table variables
   int sortColumnIndex = 0;
   bool isAscending = true;
+  int selectedSessionIndex = 0;
 
   late TextEditingController _textEditingController;
 
@@ -139,62 +141,6 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
     });
   }
 
-  List<DataRow> getRowsAllSessions(List<Session> sessions) {
-    return sessions
-        .map((Session session) => DataRow(
-              color: MaterialStateColor.resolveWith(
-                (states) {
-                  if (states.isNotEmpty) {
-                    return Get.isDarkMode
-                        ? AppTheme.appDarkTheme.colorScheme.surfaceVariant
-                        : AppTheme.appTheme.colorScheme.surfaceVariant;
-                  } else {
-                    return Get.isDarkMode
-                        ? AppTheme.appDarkTheme.scaffoldBackgroundColor
-                        : AppTheme.appTheme.scaffoldBackgroundColor;
-                  }
-                },
-              ),
-              selected: selectedSession == session,
-              onSelectChanged: (value) async {
-                selectedSession = session;
-                allWorkoutReports = await WorkoutReportOperations()
-                    .getAllWorkoutReportsBySessionId(session);
-                setState(() {});
-              },
-              cells: [
-                DataCell(Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(iso8601StringToDate(session.startedAt),
-                        style: Get.isDarkMode
-                            ? AppTheme.appDarkTheme.textTheme.bodyText2
-                            : AppTheme.appTheme.textTheme.bodyText2),
-                    Text(timeago.format(DateTime.parse(session.startedAt)),
-                        style: AppTheme.appDarkTheme.textTheme.caption),
-                  ],
-                )),
-                DataCell(
-                  SizedBox(
-                    width: 150,
-                    child: Text(
-                        session.name.isEmpty
-                            ? 'Unnamed'
-                            : session.name.toCapitalized(),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        softWrap: false,
-                        style: Get.isDarkMode
-                            ? AppTheme.appDarkTheme.textTheme.bodyText2
-                            : AppTheme.appTheme.textTheme.bodyText2),
-                  ),
-                ),
-              ],
-            ))
-        .toList();
-  }
-
   Future<List<MuscleActivityComparison>> getAllSensorReportsFromSensorId(
       int sensorId) async {
     List<MuscleActivityComparison> listMuscleActivityComparison = [];
@@ -232,7 +178,6 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
           children: [
             // ------------------------------SIDE PANEL
             // ------------------------------SIDE PANEL
-            // ------------------------------SIDE PANEL
             Container(
               width: _sidePanelWidth,
               padding: const EdgeInsets.only(
@@ -242,8 +187,8 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
               ),
               decoration: BoxDecoration(
                 color: Get.isDarkMode
-                    ? AppTheme.appDarkTheme.scaffoldBackgroundColor
-                    : AppTheme.appTheme.scaffoldBackgroundColor,
+                    ? AppTheme.appDarkTheme.colorScheme.surfaceVariant
+                    : AppTheme.appTheme.colorScheme.surfaceVariant,
                 border: Border(
                   right: BorderSide(
                       width: 1.0,
@@ -270,13 +215,14 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Journal",
+                                Text(
+                                    '${widget.client.name} ${widget.client.patronymic}',
                                     textAlign: TextAlign.left,
                                     style: Get.isDarkMode
                                         ? AppTheme
-                                            .appDarkTheme.textTheme.headline1
+                                            .appDarkTheme.textTheme.headline4
                                         : AppTheme
-                                            .appTheme.textTheme.headline1),
+                                            .appTheme.textTheme.headline4),
                               ],
                             ),
                           ],
@@ -356,49 +302,104 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                     MessageWhenAnySessions(
                         selectedBodyRegion: selectedBodyRegion, widget: widget),
                   // ---SHOW SESSIONS TABLE IF THERE ARE SESSIONS:
+
                   if (_allClientSessions.isNotEmpty)
                     Expanded(
-                      child: ListView(
-                        scrollDirection: Axis.vertical,
+                      child: Stack(
                         children: [
-                          SizedBox(height: 8),
-                          AppIconButton(
-                            onPressed: () => Get.to(
-                              () => SessionSetupScreen(client: widget.client),
-                            ),
-                            svgIconPath: 'activity',
-                            text: 'Start new session',
-                          ),
-                          DataTable(
-                            showCheckboxColumn: false,
-                            horizontalMargin: 6,
-                            dataRowHeight: 60,
-                            sortColumnIndex: sortColumnIndex,
-                            sortAscending: isAscending,
-                            columns: [
-                              DataColumn(
-                                tooltip: 'Date when session was created',
-                                label: Text('Date',
-                                    style: Get.isDarkMode
-                                        ? AppTheme
-                                            .appDarkTheme.textTheme.headline5
-                                        : AppTheme
-                                            .appTheme.textTheme.headline5),
-                                onSort: onSort,
-                              ),
-                              DataColumn(
-                                tooltip: "Session's Title",
-                                label: Text('Title',
-                                    style: Get.isDarkMode
-                                        ? AppTheme
-                                            .appDarkTheme.textTheme.headline5
-                                        : AppTheme
-                                            .appTheme.textTheme.headline5),
-                              ),
-                            ],
-                            rows: _textEditingController.text.isNotEmpty
-                                ? getRowsAllSessions(_searchedClientSessions)
-                                : getRowsAllSessions(_allClientSessions),
+                          Positioned(
+                              bottom: 12,
+                              right: 6,
+                              child: Container(
+                                height: 56,
+                                width: 56,
+                                child: Material(
+                                  type: MaterialType.transparency,
+                                  child: Ink(
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: InkWell(
+                                      borderRadius:
+                                          BorderRadius.circular(500.0),
+                                      onTap: () {},
+                                      child: Center(
+                                        child: SvgPicture.asset(
+                                          'assets/icons/ui/plus-circle.svg',
+                                          color: Colors.white,
+                                          height: 32,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )),
+                          ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: _textEditingController.text.isNotEmpty
+                                ? _searchedClientSessions.length
+                                : _allClientSessions.length,
+                            scrollDirection: Axis.vertical,
+                            itemBuilder: (context, index) {
+                              var session = _allClientSessions[index];
+
+                              return ZoomTapAnimation(
+                                onTap: () async {
+                                  selectedSessionIndex = index;
+                                  selectedSession = session;
+
+                                  allWorkoutReports =
+                                      await WorkoutReportOperations()
+                                          .getAllWorkoutReportsBySessionId(
+                                              session);
+                                  setState(() {});
+                                },
+                                child: Container(
+                                  width: _sidePanelWidth - 24,
+                                  height: 64,
+                                  margin: EdgeInsets.only(top: 4),
+                                  padding: EdgeInsets.symmetric(horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(4),
+                                    color: selectedSessionIndex == index
+                                        ? Get.isDarkMode
+                                            ? AppTheme.appDarkTheme.colorScheme
+                                                .surface
+                                            : AppTheme
+                                                .appTheme.colorScheme.surface
+                                        : Get.isDarkMode
+                                            ? AppTheme.appDarkTheme.colorScheme
+                                                .surfaceVariant
+                                            : AppTheme.appTheme.colorScheme
+                                                .surfaceVariant,
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                          session.name.isEmpty
+                                              ? 'Unnamed'
+                                              : session.name,
+                                          softWrap: false,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: Get.isDarkMode
+                                              ? AppTheme.appDarkTheme.textTheme
+                                                  .bodyText1
+                                              : AppTheme.appTheme.textTheme
+                                                  .bodyText1),
+                                      Text(
+                                          timeago.format(DateTime.parse(
+                                              session.startedAt)),
+                                          style: AppTheme
+                                              .appDarkTheme.textTheme.overline),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -406,8 +407,6 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                 ],
               ),
             ),
-            // ---------------------------------------SESSION INFO
-            // ---------------------------------------SESSION INFO
             // ---------------------------------------SESSION INFO
             // ---------------------------------------SESSION INFO
             Flexible(
@@ -421,11 +420,6 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                              '${widget.client.surname} ${widget.client.name} ${widget.client.patronymic}',
-                              style: Get.isDarkMode
-                                  ? AppTheme.appDarkTheme.textTheme.headline2
-                                  : AppTheme.appTheme.textTheme.headline2),
                           Divider(),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -490,8 +484,8 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                 ? selectedSession!.name.toCapitalized()
                                 : 'Unnamed Session',
                             style: Get.isDarkMode
-                                ? AppTheme.appDarkTheme.textTheme.headline1
-                                : AppTheme.appTheme.textTheme.headline1,
+                                ? AppTheme.appDarkTheme.textTheme.headline2
+                                : AppTheme.appTheme.textTheme.headline2,
                           ),
                           Text(
                               selectedSession!.description.isNotEmpty
@@ -946,9 +940,9 @@ class AppResultsSectionHeader extends StatelessWidget {
           Expanded(
             child: Text(text,
                 style: Get.isDarkMode
-                    ? AppTheme.appDarkTheme.textTheme.headline4
+                    ? AppTheme.appDarkTheme.textTheme.headline5
                         ?.copyWith(color: Colors.white)
-                    : AppTheme.appTheme.textTheme.headline4),
+                    : AppTheme.appTheme.textTheme.headline5),
           ),
         ],
       ),
