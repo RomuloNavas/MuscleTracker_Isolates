@@ -12,6 +12,7 @@ import 'package:neuro_sdk_isolate_example/database/client_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/placement_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
 import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
+import 'package:neuro_sdk_isolate_example/screens/client_journal/client_history_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/search_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/session/session_monitor_screen.dart';
 import 'package:neuro_sdk_isolate_example/screens/sensor_registration/controllers/search_controller.dart';
@@ -49,11 +50,11 @@ class _SessionSetupScreenState extends State<SessionSetupScreen> {
 
   // Async load data on init:
   List<Map<String, Object?>> allPlacementsInJson = [];
-  late Future initAllPlacementsInJson;
+  // late Future initAllPlacementsInJson;
 
   @override
   void initState() {
-    initAllPlacementsInJson = _getAppPlacementsInJson();
+    // initAllPlacementsInJson = _getAppPlacementsInJson();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
     super.initState();
@@ -243,11 +244,11 @@ class _SessionSetupScreenState extends State<SessionSetupScreen> {
     );
   }
 
-  Future<void> _getAppPlacementsInJson() async {
-    var receivedData = await PlacementOperations().getAllPlacementsInJson();
-    allPlacementsInJson = List.from(receivedData.toList());
-    setState(() {});
-  }
+  // Future<void> _getAppPlacementsInJson() async {
+  //   var receivedData = await PlacementOperations().getAllPlacementsInJson();
+  //   allPlacementsInJson = List.from(receivedData.toList());
+  //   setState(() {});
+  // }
 }
 
 class SidePanelWorkoutSetup extends StatefulWidget {
@@ -286,7 +287,7 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
   void initController() async {
     var loggedUser = await UserOperations().getLoggedInUser();
     var registeredSensors = await registeredSensorOperations
-        .getRegisteredSensorsByUser(loggedUser!);
+        .getRegisteredSensorsUsedByUser(loggedUser!);
     _allRegisteredSensors = registeredSensors;
 
     await _searchController.init();
@@ -314,11 +315,15 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
 
   @override
   void dispose() {
-    super.dispose();
+    _allRegisteredAndFoundSensors.clear();
+    _allRegisteredSensors.clear();
+    _searchController.dispose();
+    _subscription.cancel();
     _subscription.cancel();
     _searchController.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
+    super.dispose();
   }
 
   @override
@@ -358,8 +363,10 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                           for (var registeredAndConnectedSensor
                               in _controllerWorkoutSetup
                                   .allConnectedSensorsUsedInSession.value) {
+                            log('Disconnecting');
                             registeredAndConnectedSensor.sensor.disconnect();
                           }
+
                           Get.back();
                         },
                       ),
@@ -432,48 +439,49 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
                               'Connect to your registered Callibri sensors');
                     },
                   ),
-                if (_controllerWorkoutSetup
-                    .allConnectedSensorsUsedInSession.isNotEmpty)
-                  Container(
-                    width: _sidePanelWidth,
-                    child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: 2,
-                        itemBuilder: (context, index) => SensorSetPlacementCard(
-                              currentSensor: _controllerWorkoutSetup
-                                  .allConnectedSensorsUsedInSession[index],
-                              onPressedRemovePlacement: () {
-                                _controllerWorkoutSetup
-                                    .allConnectedSensorsUsedInSession[index]
-                                    .placement = null;
+                // if (_controllerWorkoutSetup
+                //     .allConnectedSensorsUsedInSession.isNotEmpty)
+                //   Container(
+                //     width: _sidePanelWidth,
+                //     child: ListView.builder(
+                //         shrinkWrap: true,
+                //         itemCount: _controllerWorkoutSetup
+                //             .allConnectedSensorsUsedInSession.length,
+                //         itemBuilder: (context, index) => SensorSetPlacementCard(
+                //               currentSensor: _controllerWorkoutSetup
+                //                   .allConnectedSensorsUsedInSession[index],
+                //               onPressedRemovePlacement: () {
+                //                 _controllerWorkoutSetup
+                //                     .allConnectedSensorsUsedInSession[index]
+                //                     .placement = null;
 
-                                setState(() {});
-                              },
-                              onPressedSensor: () {
-                                var listConnectedSensorsUsedInSession =
-                                    _controllerWorkoutSetup
-                                        .allConnectedSensorsUsedInSession;
-                                // Unselects all sensors
-                                for (var sensor
-                                    in listConnectedSensorsUsedInSession
-                                        .value) {
-                                  sensor.isSelectedToAssignPlacement = false;
-                                }
-                                //selects the chosen sensor
-                                listConnectedSensorsUsedInSession[index]
-                                    .isSelectedToAssignPlacement = true;
+                //                 setState(() {});
+                //               },
+                //               onPressedSensor: () {
+                //                 var listConnectedSensorsUsedInSession =
+                //                     _controllerWorkoutSetup
+                //                         .allConnectedSensorsUsedInSession;
+                //                 // Unselects all sensors
+                //                 for (var sensor
+                //                     in listConnectedSensorsUsedInSession
+                //                         .value) {
+                //                   sensor.isSelectedToAssignPlacement = false;
+                //                 }
+                //                 //selects the chosen sensor
+                //                 listConnectedSensorsUsedInSession[index]
+                //                     .isSelectedToAssignPlacement = true;
 
-                                _controllerWorkoutSetup.selectedSensor =
-                                    listConnectedSensorsUsedInSession[index];
-                                setState(() {});
-                              },
-                              sidePanelWidth: _sidePanelWidth,
-                              isSelectedToAssignPlacement:
-                                  _controllerWorkoutSetup
-                                      .allConnectedSensorsUsedInSession[index]
-                                      .isSelectedToAssignPlacement,
-                            )),
-                  ),
+                //                 _controllerWorkoutSetup.selectedSensor =
+                //                     listConnectedSensorsUsedInSession[index];
+                //                 setState(() {});
+                //               },
+                //               sidePanelWidth: _sidePanelWidth,
+                //               isSelectedToAssignPlacement:
+                //                   _controllerWorkoutSetup
+                //                       .allConnectedSensorsUsedInSession[index]
+                //                       .isSelectedToAssignPlacement,
+                //             )),
+                //   ),
 
                 // - Start searching button
                 if (_isLoading)
@@ -549,44 +557,21 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
       // List with the registered sensors to which we will connect
       List<SensorUsedInSession> registeredAndConnectedSensors = [];
 
-      for (var info in _allRegisteredAndFoundSensors) {
+      for (var sensorInfo in _allRegisteredAndFoundSensors) {
         log('CONNECTING...');
         Sensor? connectedSensor;
         try {
-          connectedSensor = await Sensor.create(info);
+          connectedSensor = await Sensor.create(sensorInfo);
           log('CONNECTED');
         } catch (e) {
-          log(e.toString(), name: 'session setup');
+          log(e.toString(),
+              name:
+                  'session_setup_screen - _initRegisteredSensorsDBAsync, - Could not connect to sensor.');
         }
         if (connectedSensor != null) {
-          final int connectedSensorBattery =
-              await connectedSensor.battery.value;
-          final CallibriColorType connectedSensorColor =
-              await connectedSensor.color.value;
-          final String connectedSensorAddress =
-              await connectedSensor.address.value;
-
-          var registeredSensor = await registeredSensorOperations
-              .getRegisteredSensorByAddress(connectedSensorAddress);
-          registeredSensor?.battery = connectedSensorBattery;
-          registeredSensorOperations.updateRegisteredSensorBatteryByAddress(
-              connectedSensorAddress, registeredSensor!);
-
-          registeredAndConnectedSensors.add(
-            SensorUsedInSession(
-                battery: connectedSensorBattery,
-                color: buildColorNameFromSensor(
-                    rawSensorNameAndColor: '$connectedSensorColor'),
-                address: connectedSensorAddress,
-                isSelectedToAssignPlacement: false,
-                sensor: connectedSensor,
-                listEnvSamplesValuesForGraphic: [0],
-                envelopeValuesForAnalytics: EnvelopeValuesForAnalytics(
-                    address: info.address,
-                    listEnvSamplesValuesForStatistics: []),
-                chartData: [ChartSampleData(x: 0, y: 0)],
-                columnChartData: []),
-          );
+          var sensorUsedInSession = await _startSensorUsedInSessionClass(
+              connectedSensor: connectedSensor);
+          registeredAndConnectedSensors.add(sensorUsedInSession);
         } else {
           log("Could't connect");
         }
@@ -600,111 +585,138 @@ class _SidePanelWorkoutSetupState extends State<SidePanelWorkoutSetup> {
     _isLoading = false;
     setState(() {});
   }
-}
 
-class SensorSetPlacementCard extends StatelessWidget {
-  final double sidePanelWidth;
-  final Function() onPressedSensor;
-  final Function() onPressedRemovePlacement;
-  bool isSelectedToAssignPlacement;
-  SensorUsedInSession currentSensor;
-  SensorSetPlacementCard({
-    required this.currentSensor,
-    required this.sidePanelWidth,
-    required this.isSelectedToAssignPlacement,
-    required this.onPressedSensor,
-    required this.onPressedRemovePlacement,
-    Key? key,
-  }) : super(key: key);
+  Future<SensorUsedInSession> _startSensorUsedInSessionClass(
+      {required Sensor connectedSensor}) async {
+    final int connectedSensorBattery = await connectedSensor.battery.value;
+    final CallibriColorType connectedSensorColor =
+        await connectedSensor.color.value;
+    final String connectedSensorAddress = await connectedSensor.address.value;
 
-  @override
-  Widget build(BuildContext context) {
-    return ZoomTapAnimation(
-      onTap: onPressedSensor,
-      child: Container(
-        height: 80,
-        width: sidePanelWidth,
-        decoration: BoxDecoration(
-          color: isSelectedToAssignPlacement
-              ? Get.isDarkMode
-                  ? Colors.white.withOpacity(0.1)
-                  : Colors.black.withOpacity(0.1)
-              : Colors.transparent,
-        ),
-        child: Padding(
-          padding:
-              const EdgeInsets.only(right: 12, left: 12, top: 8, bottom: 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  CircleAvatar(
-                    backgroundColor: isSelectedToAssignPlacement
-                        ? Colors.white
-                        : Colors.transparent,
-                    radius: 22,
-                    child: CircleAvatar(
-                      backgroundColor: Get.isDarkMode
-                          ? Colors.white.withOpacity(0.1)
-                          : Colors.black.withOpacity(0.1),
-                      child: SvgPicture.asset(
-                          'assets/icons/callibri_device-${currentSensor.color}.svg',
-                          width: 16,
-                          semanticsLabel: 'Battery'),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  AppBatteryIndicator(
-                      batteryLevel: currentSensor.battery!,
-                      appBatteryIndicatorLabelPosition:
-                          AppBatteryIndicatorLabelPosition.inside)
-                ],
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      currentSensor.placement == null
-                          ? 'Not assigned'
-                          : idToBodyRegionString(
-                              bodyRegionId:
-                                  currentSensor.placement!.bodyRegionId),
-                      style: Get.isDarkMode
-                          ? AppTheme.appDarkTheme.textTheme.caption
-                              ?.copyWith(color: const Color(0xff878787))
-                          : AppTheme.appTheme.textTheme.caption?.copyWith(
-                              color: const Color(0xff444547),
-                            ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                        currentSensor.placement == null
-                            ? 'Not assigned'
-                            : currentSensor.placement!.muscleName,
-                        style: Get.isDarkMode
-                            ? AppTheme.appDarkTheme.textTheme.bodyText1
-                            : AppTheme.appTheme.textTheme.bodyText1),
-                    const SizedBox(height: 2),
-                    if (currentSensor.placement?.side != null)
-                      AppMuscleSideIndicator(
-                          side: currentSensor.placement!.side!)
-                  ],
-                ),
-              ),
-              AppIconButton(
-                  svgIconPath: 'trash', onPressed: onPressedRemovePlacement),
-            ],
-          ),
-        ),
-      ),
-    );
+    var registeredSensor = await registeredSensorOperations
+        .getRegisteredSensorByAddress(connectedSensorAddress);
+    registeredSensor?.battery = connectedSensorBattery;
+    registeredSensorOperations.updateRegisteredSensorBattery(registeredSensor!);
+
+    return SensorUsedInSession(
+        battery: connectedSensorBattery,
+        color: buildColorNameFromSensor(
+            rawSensorNameAndColor: '$connectedSensorColor'),
+        address: connectedSensorAddress,
+        isSelectedToAssignPlacement: false,
+        sensor: connectedSensor,
+        listEnvSamplesValuesForGraphic: [0],
+        envelopeValuesForAnalytics: EnvelopeValuesForAnalytics(
+            address: connectedSensorAddress,
+            listEnvSamplesValuesForStatistics: []),
+        chartData: [ChartSampleData(x: 0, y: 0)],
+        columnChartData: []);
   }
 }
+
+// class SensorSetPlacementCard extends StatelessWidget {
+//   final double sidePanelWidth;
+//   final Function() onPressedSensor;
+//   final Function() onPressedRemovePlacement;
+//   bool isSelectedToAssignPlacement;
+//   SensorUsedInSession currentSensor;
+//   SensorSetPlacementCard({
+//     required this.currentSensor,
+//     required this.sidePanelWidth,
+//     required this.isSelectedToAssignPlacement,
+//     required this.onPressedSensor,
+//     required this.onPressedRemovePlacement,
+//     Key? key,
+//   }) : super(key: key);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return ZoomTapAnimation(
+//       onTap: onPressedSensor,
+//       child: Container(
+//         height: 80,
+//         width: sidePanelWidth,
+//         decoration: BoxDecoration(
+//           color: isSelectedToAssignPlacement
+//               ? Get.isDarkMode
+//                   ? Colors.white.withOpacity(0.1)
+//                   : Colors.black.withOpacity(0.1)
+//               : Colors.transparent,
+//         ),
+//         child: Padding(
+//           padding:
+//               const EdgeInsets.only(right: 12, left: 12, top: 8, bottom: 8),
+//           child: Row(
+//             crossAxisAlignment: CrossAxisAlignment.center,
+//             children: [
+//               Column(
+//                 mainAxisAlignment: MainAxisAlignment.spaceAround,
+//                 children: [
+//                   CircleAvatar(
+//                     backgroundColor: isSelectedToAssignPlacement
+//                         ? Colors.white
+//                         : Colors.transparent,
+//                     radius: 22,
+//                     child: CircleAvatar(
+//                       backgroundColor: Get.isDarkMode
+//                           ? Colors.white.withOpacity(0.1)
+//                           : Colors.black.withOpacity(0.1),
+//                       child: SvgPicture.asset(
+//                           'assets/icons/callibri_device-${currentSensor.color}.svg',
+//                           width: 16,
+//                           semanticsLabel: 'Battery'),
+//                     ),
+//                   ),
+//                   const SizedBox(height: 2),
+//                   AppBatteryIndicator(
+//                       batteryLevel: currentSensor.battery!,
+//                       appBatteryIndicatorLabelPosition:
+//                           AppBatteryIndicatorLabelPosition.inside)
+//                 ],
+//               ),
+//               const SizedBox(width: 12),
+//               Expanded(
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   mainAxisAlignment: MainAxisAlignment.center,
+//                   children: [
+//                     Text(
+//                       currentSensor.placement == null
+//                           ? 'Not assigned'
+//                           : idToBodyRegionString(
+//                               bodyRegionId:
+//                                   currentSensor.placement!.bodyRegionId),
+//                       style: Get.isDarkMode
+//                           ? AppTheme.appDarkTheme.textTheme.caption
+//                               ?.copyWith(color: const Color(0xff878787))
+//                           : AppTheme.appTheme.textTheme.caption?.copyWith(
+//                               color: const Color(0xff444547),
+//                             ),
+//                     ),
+//                     const SizedBox(height: 2),
+//                     Text(
+//                         currentSensor.placement == null
+//                             ? 'Not assigned'
+//                             : currentSensor.placement!.muscleName,
+//                         style: Get.isDarkMode
+//                             ? AppTheme.appDarkTheme.textTheme.bodyText1
+//                             : AppTheme.appTheme.textTheme.bodyText1),
+//                     const SizedBox(height: 2),
+//                     if (currentSensor.placement?.side != null)
+//                       AppMuscleSideIndicator(
+//                           side: currentSensor.placement!.side!)
+//                   ],
+//                 ),
+//               ),
+//               AppIconButton(
+//                   svgIconPath: 'trash', onPressed: onPressedRemovePlacement),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 /**
  * WIDGETS USED IN CURRENT SCREEN
@@ -791,10 +803,6 @@ class CardSensorPlacementInfo extends StatelessWidget {
                             ])),
               child: Stack(
                 children: [
-                  // const Positioned(
-                  //     left: 0,
-                  //     top: 0,
-                  //     child: AppIconButton(svgIconPath: 'info')),
                   Positioned(
                     bottom: 0,
                     child: Container(
