@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:neuro_sdk_isolate/neuro_sdk_isolate.dart';
 import 'package:neuro_sdk_isolate_example/database/registered_sensor_operations.dart';
@@ -22,7 +23,7 @@ class SensorScreen extends StatefulWidget {
 }
 
 class _SensorScreenState extends State<SensorScreen> {
-  List<RegisteredSensor> listSensorsInRegistrationQueue = [];
+  List<RegisteredSensor> _listSensorsInRegistrationQueue = [];
   bool _isLoading = false;
 
   late Future connectedSensorMinimalInfo;
@@ -30,6 +31,8 @@ class _SensorScreenState extends State<SensorScreen> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: [SystemUiOverlay.bottom]);
     connectedSensorMinimalInfo = _addConnecterSensorsToRegistrationQueue();
   }
 
@@ -60,7 +63,7 @@ class _SensorScreenState extends State<SensorScreen> {
             ),
             Expanded(
               child: ListView.builder(
-                itemCount: listSensorsInRegistrationQueue.length,
+                itemCount: _listSensorsInRegistrationQueue.length,
                 itemBuilder: (context, index) {
                   return Padding(
                     padding:
@@ -88,7 +91,7 @@ class _SensorScreenState extends State<SensorScreen> {
                                 Row(
                                   children: [
                                     Image.asset(
-                                      'assets/images/callibri_${listSensorsInRegistrationQueue[index].color}.png',
+                                      'assets/images/callibri_${_listSensorsInRegistrationQueue[index].color}.png',
                                       semanticLabel: 'Sensor Icon}',
                                       height: 44,
                                     ),
@@ -98,7 +101,7 @@ class _SensorScreenState extends State<SensorScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Callibri ${listSensorsInRegistrationQueue[index].color}',
+                                          'Callibri ${_listSensorsInRegistrationQueue[index].color}',
                                           style: Get.isDarkMode
                                               ? AppTheme.appDarkTheme.textTheme
                                                   .bodyText1
@@ -117,7 +120,7 @@ class _SensorScreenState extends State<SensorScreen> {
                                                   text: 'Serial Number: '),
                                               TextSpan(
                                                   text:
-                                                      listSensorsInRegistrationQueue[
+                                                      _listSensorsInRegistrationQueue[
                                                               index]
                                                           .serialNumber,
                                                   style: Get.isDarkMode
@@ -230,7 +233,7 @@ class _SensorScreenState extends State<SensorScreen> {
 
   Future<void> _saveSensorsInDataBase() async {
     await RegisteredSensorOperations().updateUserUsedSensors();
-    for (var sensorToRegister in listSensorsInRegistrationQueue) {
+    for (var sensorToRegister in _listSensorsInRegistrationQueue) {
       await RegisteredSensorOperations().insertNewSensor(sensorToRegister);
     }
   }
@@ -242,50 +245,57 @@ class _SensorScreenState extends State<SensorScreen> {
   }
 
   void _removeSensorFromRegistrationQueue({required int index}) {
-    listSensorsInRegistrationQueue.removeAt(index);
+    _listSensorsInRegistrationQueue.removeAt(index);
 
     setState(() {});
   }
 
   Future<void> _addConnecterSensorsToRegistrationQueue() async {
-    List<RegisteredSensor> listSensorsToRegister = [];
+    List<RegisteredSensor> listRegistrationQueue = [];
     for (var sensor in widget.listConnectedSensor) {
-      late final String serialNumber;
-      late final String address;
-      late final CallibriColorType color;
-      late final User? user;
-      late final int? userId;
-      late final int battery;
+      var sensorForRegistrationQueue =
+          await _createRegisteredSensorFromConnectedSensor(sensor: sensor);
+      listRegistrationQueue.add(sensorForRegistrationQueue);
 
-      serialNumber = await sensor.serialNumber.value;
-      address = await sensor.address.value;
-      color = await sensor.color.value;
-      user = await UserOperations().getLoggedInUser();
-      userId = user!.id;
-      battery = await sensor.battery.value;
-
-      var registeredSensor = RegisteredSensor(
-        serialNumber: serialNumber,
-        address: address,
-        color: buildColorNameFromSensor(rawSensorNameAndColor: '$color'),
-        userId: userId!,
-        battery: battery,
-        isBeingUsed: 1,
-      );
-      listSensorsToRegister.add(registeredSensor);
-      await Future.delayed(const Duration(milliseconds: 100));
-      log('disconnecting');
-      _disconnectFromSensors(sensor);
+      // Disconnect from added sensor to registerQueue (Dispose returns an exception, maybe because any stream was started from a sensor)
+      await _disconnectFromSensors(sensor);
     }
-    listSensorsInRegistrationQueue = listSensorsToRegister;
+    _listSensorsInRegistrationQueue = listRegistrationQueue;
 
     _isLoading = false;
     setState(() {});
   }
 
-  void _disconnectFromSensors(Sensor connectedSensor) {
-      connectedSensor.disconnect();
-    
-  
+  Future<void> _disconnectFromSensors(Sensor connectedSensor) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    log('Disconnecting...');
+    connectedSensor.disconnect();
+  }
+
+  Future<RegisteredSensor> _createRegisteredSensorFromConnectedSensor(
+      {required Sensor sensor}) async {
+    late final String serialNumber;
+    late final String address;
+    late final CallibriColorType color;
+    late final User? user;
+    late final int? userId;
+    late final int battery;
+
+    serialNumber = await sensor.serialNumber.value;
+    address = await sensor.address.value;
+    color = await sensor.color.value;
+    user = await UserOperations().getLoggedInUser();
+    userId = user!.id;
+    battery = await sensor.battery.value;
+
+    var registeredSensor = RegisteredSensor(
+      serialNumber: serialNumber,
+      address: address,
+      color: buildColorNameFromSensor(rawSensorNameAndColor: '$color'),
+      userId: userId!,
+      battery: battery,
+      isBeingUsed: 1,
+    );
+    return registeredSensor;
   }
 }
