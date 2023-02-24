@@ -294,6 +294,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                     ]),
                           ],
                         ),
+                        SizedBox(height: 8),
                       ],
                     ),
                   ),
@@ -310,28 +311,6 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                     Expanded(
                       child: Stack(
                         children: [
-                          Positioned(
-                              bottom: 16,
-                              right: 6,
-                              child: ZoomTapAnimation(
-                                onTap: _startSession,
-                                child: Container(
-                                  height: 56,
-                                  width: 56,
-                                  decoration: BoxDecoration(
-                                    color:
-                                        AppTheme.appTheme.colorScheme.secondary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Center(
-                                    child: SvgPicture.asset(
-                                      'assets/icons/ui/plus.svg',
-                                      color: Colors.white,
-                                      height: 32,
-                                    ),
-                                  ),
-                                ),
-                              )),
                           ListView.builder(
                             shrinkWrap: true,
                             itemCount: _textEditingController.text.isNotEmpty
@@ -355,7 +334,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                                 child: Container(
                                   width: _sidePanelWidth - 24,
                                   height: 64,
-                                  margin: EdgeInsets.only(top: 4),
+                                  margin: EdgeInsets.only(bottom: 4),
                                   padding: EdgeInsets.symmetric(horizontal: 12),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(4),
@@ -398,6 +377,28 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen> {
                               );
                             },
                           ),
+                          Positioned(
+                              bottom: 16,
+                              right: 6,
+                              child: ZoomTapAnimation(
+                                onTap: _startSession,
+                                child: Container(
+                                  height: 56,
+                                  width: 56,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        AppTheme.appTheme.colorScheme.secondary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: SvgPicture.asset(
+                                      'assets/icons/ui/plus.svg',
+                                      color: Colors.white,
+                                      height: 32,
+                                    ),
+                                  ),
+                                ),
+                              )),
                         ],
                       ),
                     ),
@@ -890,7 +891,7 @@ class MessageWhenAnySessions extends StatelessWidget {
         children: [
           Builder(builder: (context) {
             if (selectedBodyRegion != null && selectedBodyRegion == 0) {
-              return AppHeaderInfo(
+              return const AppHeaderInfo(
                 title: 'Empty Journal',
                 labelPrimary: "You haven't recorded any session",
               );
