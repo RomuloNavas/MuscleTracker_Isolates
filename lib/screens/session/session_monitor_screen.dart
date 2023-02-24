@@ -58,7 +58,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
   List<Workout> _completedWorkouts = [];
 
   /// currentWorkout value can be changed only if isRecording == true.
-  Exercise _selectedExercise = Exercise(id: 0, name: 'Unknown');
+  late Exercise _selectedExercise;
 
   /// Variable used to prevent reconnection to disconnected device, after the session has finished.
   bool _isSessionFinished = false;
@@ -92,6 +92,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
     initAllExercises = _getAllExercises();
     _sessionStartedAt = DateTime.now().toIso8601String();
     _scrollController = FixedExtentScrollController();
+    _selectedExercise = Exercise(id: 0, name: 'Unknown');
 
     Wakelock.enable();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
@@ -110,12 +111,12 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
 
   @override
   void deactivate() {
-    log('Deactivating....');
+    log('\n\n=================Deactivating....');
     _timerAddCerosToDisconnectedDevice?.cancel();
     _timerReconnect?.cancel();
     _timerUpdateChart?.cancel();
     _timerUpdateConnectionStatus?.cancel();
-    log('Timers canceled');
+    log('================Timers canceled\n\n');
     super.deactivate();
   }
 
@@ -230,6 +231,7 @@ class _SessionMonitorScreenState extends State<SessionMonitorScreen> {
                                       sessionEndedAt: sessionEndedAt,
                                     );
                                   });
+
                                 }),
                           ],
                         ),
