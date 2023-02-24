@@ -82,35 +82,35 @@ class AppTheme {
 
   static TextTheme appTextTheme = TextTheme(
     headline1: TextStyle(
-        fontFamily: 'gotham',
+        fontFamily: 'inputmono',
         fontSize: 26,
         color: Color(0xff242a2f),
         letterSpacing: 0.3,
         height: 1.1,
         fontWeight: FontWeight.w600),
     headline2: TextStyle(
-        fontFamily: 'gotham',
+        fontFamily: 'inputmono',
         fontSize: 24,
         color: Color(0xff242a2f),
         fontWeight: FontWeight.w600),
     headline3: TextStyle(
-        fontFamily: 'gotham',
+        fontFamily: 'inputmono',
         fontSize: 22,
         color: Color(0xff242a2f),
         fontWeight: FontWeight.w500),
     headline4: TextStyle(
-        fontFamily: 'gotham',
+        fontFamily: 'inputmono',
         fontSize: 20,
         color: Color(0xff242a2f),
         fontWeight: FontWeight.w500),
     headline5: TextStyle(
-        fontFamily: 'gotham',
+        fontFamily: 'inputmono',
         fontSize: 18,
         fontWeight: FontWeight.w500,
         letterSpacing: 0.4,
         color: Colors.black),
     headline6: TextStyle(
-        fontFamily: 'gotham',
+        fontFamily: 'inputmono',
         fontSize: 16,
         fontWeight: FontWeight.w500,
         letterSpacing: 0.4,
@@ -144,35 +144,35 @@ class AppTheme {
 
   static TextTheme appTextThemeDark = TextTheme(
     headline1: TextStyle(
-        fontFamily: 'gotham',
+        fontFamily: 'inputmono',
         fontSize: 26,
         color: Color(0xffeeeeee),
         letterSpacing: 0.3,
         height: 1.1,
         fontWeight: FontWeight.w600),
     headline2: TextStyle(
-        fontFamily: 'gotham',
+        fontFamily: 'inputmono',
         fontSize: 24,
         color: Color(0xffeeeeee),
         fontWeight: FontWeight.w600),
     headline3: TextStyle(
-        fontFamily: 'gotham',
+        fontFamily: 'inputmono',
         fontSize: 22,
         color: Color(0xffcecece),
         fontWeight: FontWeight.w500),
     headline4: TextStyle(
-        fontFamily: 'gotham',
+        fontFamily: 'inputmono',
         fontSize: 20,
         color: Color(0xffcecece),
         fontWeight: FontWeight.w500),
     headline5: TextStyle(
-        fontFamily: 'gotham',
+        fontFamily: 'inputmono',
         fontSize: 18,
         fontWeight: FontWeight.w500,
         letterSpacing: 0.4,
         color: Color(0xffcecece)),
     headline6: TextStyle(
-        fontFamily: 'gotham',
+        fontFamily: 'inputmono',
         fontSize: 16,
         fontWeight: FontWeight.w500,
         letterSpacing: 0.4,
