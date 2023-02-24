@@ -60,7 +60,7 @@ class _MyAppState extends State<MyApp> {
       // themeMode: ThemeMode.system,
       theme: AppTheme.appTheme,
       darkTheme: AppTheme.appDarkTheme,
-   
+
       home: Builder(
         builder: (context) {
           if (_isLoading)
@@ -86,7 +86,7 @@ class _MyAppState extends State<MyApp> {
     if (loggedUser != null) {
       _loggedUser = loggedUser;
       _registeredSensors = await registeredSensorOperations
-          .getRegisteredSensorsByUser(_loggedUser!);
+          .getRegisteredSensorsUsedByUser(_loggedUser!);
     }
 
     // INIT THE TEST VALUES FOR DATABASE:

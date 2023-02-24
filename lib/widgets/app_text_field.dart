@@ -21,12 +21,12 @@ class AppTextFieldSearch extends StatelessWidget {
       cursorColor: Colors.grey,
       decoration: InputDecoration(
         fillColor: Get.isDarkMode
-            ? AppTheme.appDarkTheme.colorScheme.surfaceVariant
-            : AppTheme.appTheme.colorScheme.surfaceVariant,
+            ? AppTheme.appDarkTheme.colorScheme.surface
+            : AppTheme.appTheme.colorScheme.surface,
         filled: true,
         contentPadding: const EdgeInsets.all(0),
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(500),
             borderSide: BorderSide.none),
         hintText: hintText,
         hintStyle: TextStyle(

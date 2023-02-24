@@ -76,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _textEditingController.addListener(() {
       filterContacts();
     });
-    servicesManager.requestBluetoothAndGPS();
+    servicesManager.requestServices();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
     super.initState();
@@ -163,11 +163,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           ),
-                        ),
-                        ContactCircleAvatar(
-                          radius: 25,
-                          padding: const EdgeInsets.all(8),
-                          isFavorite: c.isFavorite != 1 ? false : true,
                         ),
                         Flexible(
                           flex: 1,
@@ -259,6 +254,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     super.dispose();
+    _allRegisteredClients.clear();
+    _allRegisteredSensors.clear();
+    _foundSensorsWithCallback.clear();
+    _textEditingController.dispose();
     _subscription.cancel();
     _searchController.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
@@ -292,6 +291,9 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: EdgeInsets.only(right: 20),
               decoration: BoxDecoration(
+                color: Get.isDarkMode
+                    ? AppTheme.appDarkTheme.colorScheme.surfaceVariant
+                    : AppTheme.appTheme.colorScheme.surfaceVariant,
                 border: Border(
                   bottom: BorderSide(
                       width: 1,
@@ -308,9 +310,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 6),
                           width: 250,
-                          height: 80,
+                          height: 72,
                           decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
                             color: Get.isDarkMode
                                 ? AppTheme.appDarkTheme.colorScheme.surface
                                 : AppTheme.appTheme.colorScheme.surface,
@@ -542,19 +547,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Future<List<RegisteredSensor?>> getRegisteredSensors() async {
-  //   var user = await userOperations.getLoggedInUser();
-  //   int? userId;
-  //   List<RegisteredSensor> registeredSensor = [];
-  //   if (user != null) {
-  //     registeredSensor =
-  //         await RegisteredSensorOperations().getRegisteredSensorsByUser(user);
-  //   }
-  //   _allRegisteredSensors = registeredSensor;
-  //   _isLoadingSensors = false;
-  //   return registeredSensor;
-  // }
-
   Future<void> _initRegisteredSensorsDBAsync() async {
     if (_foundSensorsWithCallback.isNotEmpty) {
       List<SensorInfo> allRegisteredAndDiscoveredSensors = [];
@@ -583,8 +575,8 @@ class _HomeScreenState extends State<HomeScreen> {
         currentRegisteredSensor?.battery ??= (connectedSensorBattery);
 
         if (currentRegisteredSensor != null) {
-          RegisteredSensorOperations().updateRegisteredSensorBatteryByAddress(
-              currentRegisteredSensor.address, currentRegisteredSensor);
+          RegisteredSensorOperations()
+              .updateRegisteredSensorBattery(currentRegisteredSensor);
         }
 
         allConnectedSensors.add(connectedSensor);
@@ -602,8 +594,8 @@ class _HomeScreenState extends State<HomeScreen> {
     int? userId;
     List<RegisteredSensor> registeredSensor = [];
     if (user != null) {
-      registeredSensor =
-          await RegisteredSensorOperations().getRegisteredSensorsByUser(user);
+      registeredSensor = await RegisteredSensorOperations()
+          .getRegisteredSensorsUsedByUser(user);
     }
     _allRegisteredSensors = registeredSensor;
     _isLoadingSensors = false;
@@ -1005,14 +997,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-
-      // title: Text("AlertDialog"),
-      // content: Text(
-      //     "Would you like to continue learning how to use Flutter alerts?"),
-      // actions: [
-      //   cancelButton,
-      //   continueButton,
-      // ],
     );
 
     // show the dialog
