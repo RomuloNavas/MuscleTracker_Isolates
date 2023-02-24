@@ -56,12 +56,8 @@ class DatabaseRepository {
             registeredSensorSerialNumber TEXT,
             registeredSensorAddress TEXT,
             registeredSensorColor TEXT,
-            registeredSensorGain TEXT,
-            registeredSensorDataOffset TEXT,
-            registeredSensorADCinput TEXT,
-            registeredSensorHardwareFilters TEXT,
-            registeredSensorSamplingFrequency TEXT,
             registeredSensorBattery INTEGER,
+            registered_sensor_is_being_used BOOLEAN,
 
             user_id INT NOT NULL,
             FOREIGN KEY (user_id) REFERENCES user (user_id)

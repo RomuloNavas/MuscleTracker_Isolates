@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:neuro_sdk_isolate_example/database/database.dart';
 import 'package:neuro_sdk_isolate_example/database/users_operations.dart';
 
@@ -5,7 +7,7 @@ class RegisteredSensorOperations {
   RegisteredSensorOperations? registeredSensorOperations;
   final dbProvider = DatabaseRepository.instance;
 
-  Future<void>insertNewSensor(RegisteredSensor registeredSensor) async {
+  Future<void> insertNewSensor(RegisteredSensor registeredSensor) async {
     final db = await dbProvider.database;
     db.insert('registeredSensor', registeredSensor.toJson());
   }
@@ -31,7 +33,8 @@ class RegisteredSensorOperations {
     }
   }
 
-  Future<List<RegisteredSensor>> getRegisteredSensorsByUser(User user) async {
+  Future<List<RegisteredSensor>> getAllRegisteredSensorsByUser(
+      User user) async {
     final db = await dbProvider.database;
     List<Map<String, dynamic>> allRows = await db.rawQuery('''
     SELECT * FROM registeredSensor 
@@ -43,11 +46,59 @@ class RegisteredSensorOperations {
     return registeredSensors;
   }
 
-  Future<void> updateRegisteredSensorBatteryByAddress(
-      String address, RegisteredSensor registeredSensor) async {
+  Future<List<RegisteredSensor>> getRegisteredSensorsUsedByUser(
+      User user) async {
     final db = await dbProvider.database;
-    await db.update('registeredSensor', registeredSensor.toJson(),
-        where: 'registeredSensorAddress=?', whereArgs: [address]);
+    List<Map<String, dynamic>> allRows = await db.rawQuery('''
+    SELECT * FROM registeredSensor 
+    WHERE registeredSensor.user_id = ${user.id} AND registeredSensor.registered_sensor_is_being_used = 1
+    ''');
+    List<RegisteredSensor> registeredSensors =
+        allRows.map((rsJson) => RegisteredSensor.fromJson(rsJson)).toList();
+
+    return registeredSensors;
+  }
+
+  Future<void> updateRegisteredSensorBattery(
+      RegisteredSensor registeredSensor) async {
+    final db = await dbProvider.database;
+    User? loggedInUser;
+    try {
+      loggedInUser = await UserOperations().getLoggedInUser();
+    } catch (e) {
+      log("Could't get logged user to update sensor");
+    }
+    if (loggedInUser != null) {
+      registeredSensor.userId = loggedInUser.id!;
+      await db.update('registeredSensor', registeredSensor.toJson(),
+          where: 'registeredSensorId=?', whereArgs: [registeredSensor.id]);
+    }
+  }
+
+  Future<void> updateUserUsedSensors() async {
+    final db = await dbProvider.database;
+    User? loggedInUser;
+    try {
+      loggedInUser = await UserOperations().getLoggedInUser();
+    } catch (e) {
+      log('$e',
+          name:
+              'registered_sensor_operations, updateUserUsedSensors, loggedInUse');
+    }
+
+    if (loggedInUser != null) {
+      try {
+        int id = await db.rawUpdate('''
+    UPDATE registeredSensor 
+    SET registered_sensor_is_being_used = 0
+    WHERE registeredSensor.user_id = ${loggedInUser.id}
+    ''');
+      } catch (e) {
+        log('$e',
+            name:
+                'registered_sensor_operations, updateUserUsedSensors, loggedInUser');
+      }
+    }
   }
 
   Future<RegisteredSensor?> getRegisteredSensorById(
@@ -72,13 +123,9 @@ class RegisteredSensor {
   String serialNumber;
   String address;
   String color;
-  String gain;
-  String dataOffset;
-  String adcInput;
-  String hardwareFilters;
-  String samplingFrequency;
   int userId;
   int? battery;
+  int isBeingUsed;
 
   bool? isSelectedToAssignPlacement;
 
@@ -87,14 +134,9 @@ class RegisteredSensor {
     required this.serialNumber,
     required this.address,
     required this.color,
-    required this.gain,
-    required this.dataOffset,
-    required this.adcInput,
-    required this.hardwareFilters,
-    required this.samplingFrequency,
     required this.userId,
+    required this.isBeingUsed,
     this.battery,
-    
 
     // This parameter doesn't go to database. It is used in SessionSetupScreen.
     this.isSelectedToAssignPlacement,
@@ -106,12 +148,8 @@ class RegisteredSensor {
         serialNumber: json["registeredSensorSerialNumber"],
         address: json["registeredSensorAddress"],
         color: json["registeredSensorColor"],
-        gain: json["registeredSensorGain"],
-        dataOffset: json["registeredSensorDataOffset"],
-        adcInput: json["registeredSensorADCinput"],
-        hardwareFilters: json["registeredSensorHardwareFilters"],
-        samplingFrequency: json["registeredSensorSamplingFrequency"],
         battery: json["registeredSensorBattery"],
+        isBeingUsed: json["registered_sensor_is_being_used"],
         userId: json["user_id"],
       );
 
@@ -119,12 +157,8 @@ class RegisteredSensor {
         "registeredSensorSerialNumber": serialNumber,
         "registeredSensorAddress": address,
         "registeredSensorColor": color,
-        "registeredSensorGain": gain,
-        "registeredSensorDataOffset": dataOffset,
-        "registeredSensorADCinput": adcInput,
-        "registeredSensorHardwareFilters": hardwareFilters,
-        "registeredSensorSamplingFrequency": samplingFrequency,
         "registeredSensorBattery": battery,
+        "registered_sensor_is_being_used": isBeingUsed,
         "user_id": userId,
       };
 }
